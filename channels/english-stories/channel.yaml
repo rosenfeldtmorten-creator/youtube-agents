@@ -1,0 +1,50 @@
+# Slow English stories: graded stories for English learners, narrated slowly.
+name: Slow English Stories
+slug: english-stories
+format: story
+
+# Upload pacing. The pipeline never uploads more than this, whatever is queued.
+cadence:
+  per_week: 3
+  min_days_between: 2
+
+youtube:
+  # Secret holding this channel's OAuth refresh token (see docs/SETUP.md).
+  refresh_token_secret: YT_REFRESH_TOKEN_ENGLISH_STORIES
+  category_id: "27"          # Education
+  language: en
+  privacy: public            # Uploads stay private until Google approves the API audit.
+  made_for_kids: false
+  contains_synthetic_media: true   # Narration is a cloned voice, so YouTube requires disclosure.
+  upload_captions: true
+
+voice:
+  backend: chatterbox        # chatterbox | espeak | silent
+  reference: voice/reference.wav
+  exaggeration: 0.4
+  cfg_weight: 0.3            # Lower = slower, more deliberate pacing.
+  tempo: 0.92                # Extra slow-down applied after synthesis.
+
+render:
+  width: 1920
+  height: 1080
+  fps: 24
+  sentence_pause: 0.8        # Seconds of silence after each sentence.
+  quiz_think_time: 5         # Seconds to answer each quiz question.
+  min_minutes: 8
+  max_minutes: 30
+  accent: "#F2B33D"
+  background_source: pexels  # pexels | generated
+
+# Word count and sentence length limits per CEFR level.
+levels:
+  A2: {min_words: 600, max_words: 1100, max_avg_sentence_words: 11}
+  B1: {min_words: 850, max_words: 1500, max_avg_sentence_words: 15}
+  B2: {min_words: 1100, max_words: 2000, max_avg_sentence_words: 20}
+
+description_footer: |
+  New slow English stories every week, at levels A2, B1 and B2.
+  Read along with the subtitles, learn the key words, then test yourself with the quiz.
+
+  Narration uses an AI clone of the creator's own voice.
+  Background photos from Pexels.

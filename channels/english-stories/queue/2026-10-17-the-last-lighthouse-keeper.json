@@ -1,0 +1,68 @@
+{
+  "slug": "the-last-lighthouse-keeper",
+  "title": "The Last Lighthouse Keeper | Slow English Story (B1) with Subtitles",
+  "level": "B1",
+  "summary": "An old lighthouse keeper spends his final night at work before the light becomes automatic, and a stormy visitor changes his mind about leaving.",
+  "description": "Learn English with a slow, calm story at level B1 (intermediate). Thomas has looked after the lighthouse on Gull Island for forty years. Tomorrow a machine will do his job. But on his last night, a storm brings an unexpected visitor.\n\nListen, read the subtitles, learn the key words, and test yourself with the quiz at the end.",
+  "tags": ["slow english", "english story", "learn english", "B1 english", "english listening practice", "english with subtitles", "graded reader", "intermediate english", "english story for learners"],
+  "thumbnail_text": "The Last Lighthouse Keeper",
+  "vocabulary": [
+    {"word": "lighthouse", "meaning": "a tall tower by the sea with a strong light that guides ships"},
+    {"word": "keeper", "meaning": "a person whose job is to look after a place"},
+    {"word": "automatic", "meaning": "working by itself, without a person controlling it"},
+    {"word": "shore", "meaning": "the land along the edge of the sea"},
+    {"word": "shiver", "meaning": "to shake a little because you are cold or afraid"},
+    {"word": "rescue", "meaning": "to save someone from danger"},
+    {"word": "grateful", "meaning": "feeling thankful because someone helped you"},
+    {"word": "logbook", "meaning": "a book where you write down what happens every day"}
+  ],
+  "paragraphs": [
+    {
+      "image_query": "lighthouse island sunset",
+      "text": "Thomas Bell was sixty-eight years old. For forty years, he was the keeper of the lighthouse on Gull Island. The island was small and rocky. It was two miles from the shore, and there were no trees on it. There was only the white tower, a little stone house, and thousands of noisy birds. Every evening, Thomas climbed the one hundred and twelve steps to the top of the tower. He cleaned the big glass lamp and turned on the light. Every morning, he climbed the steps again and turned it off. He did this in summer and in winter, in good weather and in bad weather."
+    },
+    {
+      "image_query": "old man reading letter window",
+      "text": "One day in October, a letter arrived on the supply boat. Thomas read it slowly at his kitchen table. The letter said that the lighthouse was going to become automatic. A computer would turn the light on and off. Nobody needed to live on the island anymore. Thomas could leave on the boat next Friday. He put the letter down and looked out of the window at the grey sea. He did not feel happy, and he did not feel sad. He felt strange, like a man who forgets a word that he uses every day."
+    },
+    {
+      "image_query": "stone cottage kitchen candle",
+      "text": "On Thursday, his last evening, Thomas packed his things. He did not have very much. He had some warm clothes, a few books, and a photo of his wife, Mary. Mary lived on the island with him for thirty years. She died five years ago, and since then he was alone with the birds and the wind. Last of all, he took the old logbook from the shelf. It was a thick book with a brown cover. Every day for forty years, Thomas wrote in it. He wrote about the weather, the ships he saw, and anything unusual that happened."
+    },
+    {
+      "image_query": "storm clouds over sea",
+      "text": "At six o'clock, Thomas climbed the steps for the last time. The sky was dark, and the wind was getting stronger. Far away, he could see black clouds moving quickly towards the island. He turned on the light, and the great beam moved slowly across the water. Then he sat in his old chair by the window and watched the storm arrive. The rain began to hit the glass. The waves grew bigger and bigger. They crashed against the rocks with a sound like thunder."
+    },
+    {
+      "image_query": "small boat big waves night",
+      "text": "At nine o'clock, Thomas saw something in the water. At first, he thought it was a piece of wood. Then the beam of light passed over it again, and he saw that it was a small boat. It was moving up and down on the waves, and it was very close to the rocks. Thomas did not wait. He put on his heavy coat and his boots, and he ran down the steps as fast as his old legs could go. Outside, the wind almost pushed him over."
+    },
+    {
+      "image_query": "rocky coast storm waves",
+      "text": "He took a long rope from the shed and went down to the rocks. The boat was there, and a young woman was inside it. She was holding on to the side with both hands. \"Catch the rope!\" Thomas shouted. He threw it once, and it fell into the sea. He threw it a second time, and this time she caught it. Slowly, carefully, he pulled the boat towards a flat rock. The woman jumped out, and Thomas held her arm. Together, they walked back to the house through the rain."
+    },
+    {
+      "image_query": "fireplace warm room night",
+      "text": "Inside, Thomas made a fire and gave her a blanket. She could not stop shivering. Her name was Anna, and she was a student from the town on the shore. She studied birds, and she wanted to count the birds on Gull Island. \"The weather report said the storm was coming tomorrow,\" she said. \"I thought I had enough time.\" Thomas gave her a cup of hot tea. \"The sea does not listen to weather reports,\" he said, and for the first time that day, he smiled."
+    },
+    {
+      "image_query": "old book pages candlelight",
+      "text": "They talked for hours while the storm shouted outside. Anna asked many questions about the island, and Thomas answered all of them. He told her about the birds that came back every spring. He told her about the winter when the sea froze, and about the night a big ship almost hit the rocks. Then he showed her the logbook. Anna turned the pages very carefully. \"This is amazing,\" she said quietly. \"You wrote down every bird you saw for forty years. Nobody has information like this.\""
+    },
+    {
+      "image_query": "calm sea morning sunrise",
+      "text": "In the morning, the storm was gone. The sea was calm and silver, and the sun was shining. The boat came at ten o'clock to take Thomas to the shore. Anna stood with him by the water. \"Thank you for rescuing me,\" she said. \"I am so grateful.\" Then she asked him a question. \"My university wants to study the birds on this island. We need someone who knows the island well. Would you help us? You could come here every week with our team.\""
+    },
+    {
+      "image_query": "lighthouse morning seabirds",
+      "text": "Thomas looked up at the white tower. Tonight, a computer would turn on the light. But the birds would still come back every spring, and somebody still needed to count them. He thought about Mary. She always said that the island was not just his job. It was his home. \"Yes,\" Thomas said. \"I would like that very much.\" He climbed into the boat with his bag and the old logbook. As the boat moved away, the birds flew above them, and Thomas did not feel strange anymore. He felt like a man at the beginning of a new page."
+    }
+  ],
+  "quiz": [
+    {"question": "How long was Thomas the keeper of the lighthouse?", "options": ["Twenty years", "Thirty years", "Forty years"], "answer": 2},
+    {"question": "Why did Thomas have to leave the island?", "options": ["He was ill", "The lighthouse became automatic", "His wife wanted to move"], "answer": 1},
+    {"question": "What did Thomas see in the water during the storm?", "options": ["A small boat", "A big ship", "A piece of wood"], "answer": 0},
+    {"question": "Why did Anna come to Gull Island?", "options": ["To visit Thomas", "To take photos of the lighthouse", "To count the birds"], "answer": 2},
+    {"question": "What did Anna find so special in the logbook?", "options": ["Forty years of bird records", "Maps of the island", "Letters from Mary"], "answer": 0}
+  ]
+}

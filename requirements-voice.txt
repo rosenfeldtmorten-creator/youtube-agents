@@ -1,0 +1,4 @@
+# Voice cloning (MIT licensed, commercial use allowed). Heavy: pulls in PyTorch.
+# Install CPU-only wheels with:
+#   pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
+chatterbox-tts==0.1.7

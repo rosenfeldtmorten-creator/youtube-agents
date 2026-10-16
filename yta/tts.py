@@ -1,0 +1,100 @@
+"""Text-to-speech backends. Each returns mono float32 audio at audio.SR."""
+from __future__ import annotations
+
+import subprocess
+import tempfile
+from pathlib import Path
+
+import numpy as np
+
+from . import audio
+
+
+class SilentVoice:
+    """No sound, timed like slow speech. For test renders without a voice model."""
+
+    def say(self, text: str) -> np.ndarray:
+        return audio.silence(max(1.0, len(text.split()) / 2.0))
+
+
+class EspeakVoice:
+    """Robotic but free and fast. Useful to hear timing during tests."""
+
+    def __init__(self, speed: int = 140):
+        self.speed = speed
+
+    def say(self, text: str) -> np.ndarray:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "s.wav"
+            subprocess.run(["espeak-ng", "-v", "en-us", "-s", str(self.speed), "-w", str(out), text], check=True)
+            data, sr = audio.read_wav(out)
+        return audio.resample(data, sr)
+
+
+class ChatterboxVoice:
+    """Zero-shot voice clone from a short reference clip (Resemble AI Chatterbox, MIT licence)."""
+
+    def __init__(self, reference: Path, exaggeration: float = 0.5, cfg_weight: float = 0.5, allow_default: bool = False):
+        import torch  # imported here so the light backends work without PyTorch installed
+        from chatterbox.tts import ChatterboxTTS
+
+        has_reference = Path(reference).exists()
+        if not has_reference and not allow_default:
+            raise FileNotFoundError(
+                f"Voice reference {reference} is missing. Add a 10-20 second WAV of the narrator (see docs/SETUP.md)."
+            )
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = ChatterboxTTS.from_pretrained(device=device)
+        if has_reference:
+            self.model.prepare_conditionals(str(reference), exaggeration=exaggeration)
+        else:
+            print(f"  {reference} not found: test render uses Chatterbox's built-in voice")
+        self.exaggeration = exaggeration
+        self.cfg_weight = cfg_weight
+
+    def say(self, text: str) -> np.ndarray:
+        wav = self.model.generate(text, exaggeration=self.exaggeration, cfg_weight=self.cfg_weight)
+        data = wav.squeeze(0).detach().cpu().numpy().astype(np.float32)
+        return audio.trim_silence(audio.resample(data, self.model.sr))
+
+
+class Narrator:
+    """Wraps a backend with the channel's tempo and a cache, so re-renders don't re-synthesize."""
+
+    def __init__(self, backend, tempo: float = 1.0, cache_dir: Path | None = None):
+        self.backend = backend
+        self.tempo = tempo
+        self.cache_dir = cache_dir
+        if cache_dir:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def say(self, text: str) -> np.ndarray:
+        import hashlib
+
+        key = hashlib.sha1(f"{type(self.backend).__name__}|{self.tempo}|{text}".encode()).hexdigest()
+        cached = self.cache_dir / f"{key}.wav" if self.cache_dir else None
+        if cached and cached.exists():
+            return audio.read_wav(cached)[0]
+        data = audio.change_tempo(self.backend.say(text), self.tempo)
+        if cached:
+            audio.write_wav(cached, data)
+        return data
+
+
+def make_narrator(voice_cfg: dict, repo_root: Path, backend: str | None = None, cache_dir: Path | None = None,
+                  allow_default_voice: bool = False) -> Narrator:
+    name = backend or voice_cfg.get("backend", "silent")
+    if name == "silent":
+        impl = SilentVoice()
+    elif name == "espeak":
+        impl = EspeakVoice()
+    elif name == "chatterbox":
+        impl = ChatterboxVoice(
+            repo_root / voice_cfg["reference"],
+            exaggeration=voice_cfg.get("exaggeration", 0.5),
+            cfg_weight=voice_cfg.get("cfg_weight", 0.5),
+            allow_default=allow_default_voice,
+        )
+    else:
+        raise ValueError(f"Unknown voice backend '{name}'")
+    return Narrator(impl, tempo=voice_cfg.get("tempo", 1.0) if name != "silent" else 1.0, cache_dir=cache_dir)
