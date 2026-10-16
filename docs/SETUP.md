@@ -35,9 +35,10 @@ Videos uploaded through a new API project are locked to **private** until Google
 4. Click **Authorize APIs**. Choose your Google account, then **choose the Slow English Stories channel** when asked which account or channel to use. Google warns that the app is unverified: click **Advanced** and continue. It is your own app.
 5. Click **Exchange authorization code for tokens**. Copy the **Refresh token**.
 
-## 4. Get a Pexels key
+## 4. Background photos (optional)
 
-Sign up at <https://www.pexels.com/api/> and copy your API key. It is free.
+Without a key, videos use generated colour backgrounds. If Pexels is issuing API keys again, you can get a free one at
+<https://www.pexels.com/api/> and add it as the `PEXELS_API_KEY` secret below to use stock photos instead.
 
 ## 5. Store the secrets in GitHub
 
@@ -49,7 +50,7 @@ In the repository on GitHub, open **Settings > Secrets and variables > Actions >
 | `YT_CLIENT_SECRET` | Client secret from step 2 |
 | `YT_REFRESH_TOKEN_ENGLISH_STORIES` | Refresh token from step 3, for the English channel |
 | `YT_REFRESH_TOKEN_MONEY_CHARTS` | Refresh token from step 3, repeated for the finance channel |
-| `PEXELS_API_KEY` | Key from step 4 |
+| `PEXELS_API_KEY` | Optional: key from step 4 |
 
 Never paste these into a chat, an issue or a file in the repository.
 
