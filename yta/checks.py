@@ -89,11 +89,6 @@ def upload_due(channel_dir: Path, cadence: dict, today: dt.date | None = None) -
     return True, "upload allowed"
 
 
-def check_story(story: Story, channel_dir: Path, config: dict) -> None:
-    check_level(story, config["levels"])
-    check_duplicates(story, published_stories(channel_dir))
-
-
 def check_duration(seconds: float, render_cfg: dict) -> None:
     minutes = seconds / 60
     if not render_cfg["min_minutes"] <= minutes <= render_cfg["max_minutes"]:
