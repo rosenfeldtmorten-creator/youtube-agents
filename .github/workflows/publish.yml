@@ -19,6 +19,10 @@ on:
         description: Upload to YouTube (untick for a test render you can download)
         type: boolean
         default: false
+      force:
+        description: Upload even if the weekly pacing says it's too soon (manual runs only)
+        type: boolean
+        default: false
       voice:
         description: Voice
         type: choice
@@ -80,7 +84,7 @@ jobs:
           YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
         run: |
           if [ "$UPLOAD" = "true" ]; then
-            python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE"
+            python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" ${{ inputs.force && '--force' || '' }}
           else
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" --no-upload --force
           fi

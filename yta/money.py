@@ -21,7 +21,7 @@ CHART_SCRIPT = ROOT / "charts" / "chart.R"
 BG = (14, 23, 38)
 
 OUTRO = ("That's it for today. Everything you saw came from public data, and the sources are in the description. "
-         "This video is for education only, not financial advice. Subscribe for a new chart every week.")
+         "This video is for education only, not financial advice. Subscribe to Economics in Charts for a new one every week.")
 
 
 def chart_rows(ep: Episode, chart: dict) -> list[dict]:

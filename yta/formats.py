@@ -45,7 +45,7 @@ class StoryFormat:
 
 
 class EpisodeFormat:
-    """Money, in charts."""
+    """Economics in Charts."""
 
     @staticmethod
     def load(path: Path):

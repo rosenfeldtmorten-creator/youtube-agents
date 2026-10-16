@@ -1,4 +1,4 @@
-# Writing guide: Money, in charts
+# Writing guide: Economics in Charts
 
 This is the brief for the scheduled writing task. Follow it exactly.
 
