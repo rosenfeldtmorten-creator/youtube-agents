@@ -3,6 +3,7 @@
     python -m yta check  --channel english-stories
     python -m yta run    --channel english-stories [--no-upload] [--voice silent] [--force]
     python -m yta render --channel english-stories --item path/to/story.json --voice silent
+    python -m yta snapshot   # save a copy of every data series in use (data/snapshot), for offline checks
 """
 from __future__ import annotations
 
@@ -140,6 +141,23 @@ def cmd_run(args) -> int:
     return 0
 
 
+def cmd_snapshot(args) -> int:
+    """Refresh data/snapshot with every series listed in data/series.json or used by any episode."""
+    from .data import refresh_snapshot
+
+    specs = list(json.loads((ROOT / "data" / "series.json").read_text()).values())
+    for path in sorted(ROOT.glob("channels/*/*/*.json")):
+        try:
+            specs += list(json.loads(path.read_text(encoding="utf-8")).get("data", {}).values())
+        except (json.JSONDecodeError, AttributeError):
+            continue
+    saved, failed = refresh_snapshot(specs)
+    print(f"Saved {saved} series to data/snapshot.")
+    for f in failed:
+        print(f"FAIL {f}")
+    return 1 if failed and not saved else 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="yta", description="YouTube channel agents")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -153,5 +171,6 @@ def main(argv=None) -> int:
             sp.add_argument("--force", action="store_true", help="ignore the pacing rules (for tests)")
         if name == "render":
             sp.add_argument("--item", required=True)
+    sub.add_parser("snapshot")
     args = p.parse_args(argv)
-    return {"check": cmd_check, "run": cmd_run, "render": cmd_render}[args.cmd](args)
+    return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot}[args.cmd](args)
