@@ -9,7 +9,7 @@ cadence:
   min_days_between: 3
 
 youtube:
-  refresh_token_secret: YT_REFRESH_TOKEN_MONEY_CHARTS
+  refresh_token_secret: YT_REFRESH_TOKEN_ENGLISH_STORIES   # the channel first made for Slow English now runs Money, in charts
   category_id: "27"          # Education
   language: en
   privacy: public

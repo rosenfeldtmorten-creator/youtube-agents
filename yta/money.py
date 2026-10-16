@@ -53,6 +53,11 @@ def chart_rows(ep: Episode, chart: dict) -> list[dict]:
             rows.append({"x": y, "y": monthly * 12 * y, "group": "Money you put in", "label": ""})
             rows.append({"x": y, "y": metrics.FUNCTIONS["compound"](monthly, rate, y), "group": "What it grew to", "label": ""})
         return rows
+    if kind == "scatter":
+        return [
+            {"x": xv, "y": yv, "group": "", "label": str(year)}
+            for year, xv, yv in metrics.paired_years(ep.series[chart["x"]], ep.series[chart["y"]], chart.get("from"), chart.get("to"))
+        ]
     raise ValueError(f"no rows for chart type {kind}")
 
 
@@ -69,8 +74,11 @@ def draw_chart(ep: Episode, chart: dict, out_dir: Path, n_frames: int, size: tup
     spec = dict(chart)
     spec["source_note"] = chart.get("source_note") or "; ".join(
         ep.data[n].get("short_source", "FRED" if ep.data[n]["source"] == "fred" else ep.data[n]["source"])
-        for n in chart.get("series", ep.data.keys())
+        for n in (chart.get("series") or [chart[k] for k in ("x", "y") if k in chart] or ep.data.keys())
     )
+    if chart["type"] == "scatter":
+        spec["x_label"] = chart.get("x_label") or ep.series[chart["x"]].label
+        spec["y_label"] = chart.get("y_label") or ep.series[chart["y"]].label
     spec_json = out_dir / "spec.json"
     spec_json.write_text(json.dumps(spec, ensure_ascii=False))
     subprocess.run(

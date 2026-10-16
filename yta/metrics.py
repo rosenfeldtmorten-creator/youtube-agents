@@ -41,6 +41,47 @@ def _years(s, start, end) -> float:
     return (b - a).days / 365.25
 
 
+def _trend_per_year(s, start=None, end=None) -> float:
+    """Slope of a straight line through the yearly averages: how much the series rises per year on trend."""
+    pts = _s(s).between(start, end).yearly_mean().points
+    if len(pts) < 3:
+        raise MetricError("need at least 3 years of data for a trend")
+    xs = [d.year for d, _ in pts]
+    ys = [v for _, v in pts]
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    return sum((a - mx) * (b - my) for a, b in zip(xs, ys)) / sum((a - mx) ** 2 for a in xs)
+
+
+def paired_years(x, y, start=None, end=None) -> list[tuple[int, float, float]]:
+    """(year, x, y) for every year both series cover, using yearly averages. Shared with the scatter chart."""
+    xs = {d.year: v for d, v in _s(x).between(start, end).yearly_mean().points}
+    ys = {d.year: v for d, v in _s(y).between(start, end).yearly_mean().points}
+    years = sorted(set(xs) & set(ys))
+    if len(years) < 3:
+        raise MetricError("need at least 3 years where both series have data")
+    return [(yr, xs[yr], ys[yr]) for yr in years]
+
+
+def linear_fit(x, y, start=None, end=None) -> tuple[float, float, float]:
+    """Least-squares line y = a + b*x on yearly averages. Returns (intercept, slope, r_squared)."""
+    pts = paired_years(x, y, start, end)
+    n = len(pts)
+    mx = sum(p[1] for p in pts) / n
+    my = sum(p[2] for p in pts) / n
+    sxx = sum((p[1] - mx) ** 2 for p in pts)
+    syy = sum((p[2] - my) ** 2 for p in pts)
+    sxy = sum((p[1] - mx) * (p[2] - my) for p in pts)
+    if sxx == 0 or syy == 0:
+        raise MetricError("one of the series doesn't change, so there is no relationship to measure")
+    slope = sxy / sxx
+    return my - slope * mx, slope, sxy * sxy / (sxx * syy)
+
+
+def _correlation(x, y, start=None, end=None) -> float:
+    _, slope, r2 = linear_fit(x, y, start, end)
+    return (r2 ** 0.5) * (1 if slope >= 0 else -1)
+
+
 FUNCTIONS = {
     "value": lambda s, when: _s(s).at(when)[1],
     "first": lambda s, start=None, end=None: _s(s).between(start, end).first[1],
@@ -59,6 +100,11 @@ FUNCTIONS = {
     "compound": lambda monthly, rate, years: (
         monthly * 12 * years if rate == 0 else monthly * (((1 + rate) ** (years) - 1) / ((1 + rate) ** (1 / 12) - 1))
     ),
+    # simple models, on yearly averages (the scatter chart draws the same fit)
+    "correlation": _correlation,
+    "slope": lambda x, y, start=None, end=None: linear_fit(x, y, start, end)[1],
+    "r_squared": lambda x, y, start=None, end=None: linear_fit(x, y, start, end)[2],
+    "trend_per_year": lambda s, start=None, end=None: _trend_per_year(s, start, end),
     "in_todays_money": lambda amount, cpi, then: amount * _s(cpi).last[1] / _s(cpi).at(then)[1],
 }
 

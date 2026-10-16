@@ -13,8 +13,8 @@ on:
       channel:
         description: Channel
         type: choice
-        options: [english-stories, money-charts]
-        default: english-stories
+        options: [money-charts, english-stories]
+        default: money-charts
       upload:
         description: Upload to YouTube (untick for a test render you can download)
         type: boolean
@@ -41,7 +41,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["english-stories"]') }}
+        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]') }}
     env:
       PYTHONUNBUFFERED: "1"   # show render progress live in the Actions log
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
@@ -85,11 +85,11 @@ jobs:
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" --no-upload --force
           fi
 
-      - name: Keep the test video
-        if: env.UPLOAD != 'true'
+      - name: Keep the video
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-video-${{ matrix.channel }}
+          name: video-${{ matrix.channel }}
           path: |
             out/**/video.mp4
             out/**/thumbnail.jpg
