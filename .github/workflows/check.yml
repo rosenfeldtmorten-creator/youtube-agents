@@ -1,0 +1,27 @@
+name: Check
+
+# Validates queued stories and runs the tests whenever code or content changes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core
+      - run: pip install -r requirements.txt pytest
+      - name: Tests
+        run: python -m pytest -q
+      - name: Queued stories
+        run: |
+          for dir in channels/*/; do
+            python -m yta check --channel "$(basename "$dir")"
+          done
