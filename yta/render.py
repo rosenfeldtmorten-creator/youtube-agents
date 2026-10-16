@@ -90,6 +90,14 @@ def build_segments(story: Story, cfg: dict, narrator, out_dir: Path, cache_dir: 
     return segs, bgs
 
 
+# Voice mastering: cut rumble, thin out the boxy low-mids a phone mic adds, lift clarity, then even out
+# loudness to YouTube's speech target (-16 LUFS, peaks below -1.5 dB).
+AUDIO_MASTER = (
+    "highpass=f=70,equalizer=f=300:t=q:w=1.2:g=-2,equalizer=f=5000:t=q:w=1:g=2,"
+    "loudnorm=I=-16:TP=-1.5:LRA=11"
+)
+
+
 def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int) -> tuple[Path, float]:
     """Join still frames (each shown for its duration) with an audio track into an MP4."""
     wav = out_dir / "narration.wav"
@@ -108,7 +116,7 @@ def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps:
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(wav),
         "-vf", f"fps={fps},format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "20",
-        "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", str(video),
+        "-af", AUDIO_MASTER, "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(video),
     ], check=True)
     return video, seconds
 

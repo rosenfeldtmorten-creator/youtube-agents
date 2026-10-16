@@ -21,9 +21,9 @@ youtube:
 voice:
   backend: chatterbox        # chatterbox | espeak | silent
   reference: voice/reference.wav
-  exaggeration: 0.4
+  exaggeration: 0.5         # Chatterbox's default; lower sounds flat.
   cfg_weight: 0.3            # Lower = slower, more deliberate pacing.
-  tempo: 0.92                # Extra slow-down applied after synthesis.
+  tempo: 1.0                 # Stretching the audio afterwards makes it sound metallic; keep 1.0.
 
 render:
   width: 1920
