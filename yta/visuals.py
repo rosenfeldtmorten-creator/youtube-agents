@@ -291,7 +291,8 @@ class SlideMaker:
         return self.save(img)
 
 
-def thumbnail(bg: Image.Image, text: str, level: str, accent: str, path: Path) -> Path:
+def thumbnail(bg: Image.Image, text: str, badge_text: str | None, accent: str, path: Path,
+              label: str = "SLOW ENGLISH") -> Path:
     size = (1280, 720)
     img = cover(bg, size)
     shade = Image.new("L", size)
@@ -301,12 +302,13 @@ def thumbnail(bg: Image.Image, text: str, level: str, accent: str, path: Path) -
     img = Image.composite(Image.new("RGB", size, (0, 0, 0)), img, shade)
     acc = hex_rgb(accent)
     draw = ImageDraw.Draw(img)
-    draw.text((60, 52), "SLOW ENGLISH", font=font(44, "bold"), fill=acc)
+    draw.text((60, 52), label, font=font(44, "bold"), fill=acc)
     draw_rich_text(img, text.upper(), (60, 140, 760, 420), 104, acc, weight="bold", align="left")
-    f = font(120, "bold")
-    w = draw.textlength(level, font=f)
-    draw.rounded_rectangle((size[0] - w - 120, size[1] - 210, size[0] - 50, size[1] - 50), radius=36, fill=acc)
-    draw.text((size[0] - w - 85, size[1] - 203), level, font=f, fill=(20, 20, 20))
+    if badge_text:
+        f = font(120, "bold")
+        w = draw.textlength(badge_text, font=f)
+        draw.rounded_rectangle((size[0] - w - 120, size[1] - 210, size[0] - 50, size[1] - 50), radius=36, fill=acc)
+        draw.text((size[0] - w - 85, size[1] - 203), badge_text, font=f, fill=(20, 20, 20))
     img.save(path, quality=90)
     return path
 

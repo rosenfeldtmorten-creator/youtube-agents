@@ -47,7 +47,8 @@ In the repository on GitHub, open **Settings > Secrets and variables > Actions >
 | --- | --- |
 | `YT_CLIENT_ID` | Client ID from step 2 |
 | `YT_CLIENT_SECRET` | Client secret from step 2 |
-| `YT_REFRESH_TOKEN_ENGLISH_STORIES` | Refresh token from step 3 |
+| `YT_REFRESH_TOKEN_ENGLISH_STORIES` | Refresh token from step 3, for the English channel |
+| `YT_REFRESH_TOKEN_MONEY_CHARTS` | Refresh token from step 3, repeated for the finance channel |
 | `PEXELS_API_KEY` | Key from step 4 |
 
 Never paste these into a chat, an issue or a file in the repository.
@@ -62,6 +63,8 @@ Upload it in the project chat. Claude cuts the cleanest 10-20 seconds and saves 
 1. In GitHub, open **Actions > Publish > Run workflow**, keep **upload** unticked, and run it.
    When it finishes, download the test video from the run's **Artifacts** and watch it.
 2. If you like it, run it again with **upload** ticked. That uploads the first video.
-3. To let it run by itself every day, go to **Settings > Secrets and variables > Actions > Variables** and add `AUTOPUBLISH` with the value `true`.
+3. To let it run by itself every day, go to **Settings > Secrets and variables > Actions > Variables** and add:
+   - `AUTOPUBLISH` with the value `true`
+   - `ACTIVE_CHANNELS` with the channels that should publish, for example `["english-stories","money-charts"]`
 
 The pacing in `channels/<channel>/channel.yaml` decides how often a video goes out (3 a week for Slow English).

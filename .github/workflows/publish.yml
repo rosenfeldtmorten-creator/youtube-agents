@@ -2,6 +2,7 @@ name: Publish
 
 # Renders the next queued video for each channel and uploads it to YouTube.
 # The daily schedule only runs once the repository variable AUTOPUBLISH is set to "true".
+# It publishes the channels listed in the variable ACTIVE_CHANNELS, e.g. ["english-stories","money-charts"].
 # Run it by hand from the Actions tab: leave "upload" unticked to get a test video you can download.
 
 on:
@@ -12,7 +13,7 @@ on:
       channel:
         description: Channel
         type: choice
-        options: [english-stories]
+        options: [english-stories, money-charts]
         default: english-stories
       upload:
         description: Upload to YouTube (untick for a test render you can download)
@@ -40,7 +41,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || '["english-stories"]') }}
+        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["english-stories"]') }}
     env:
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
       VOICE: ${{ inputs.voice || 'chatterbox' }}
@@ -53,7 +54,7 @@ jobs:
           cache: pip
 
       - name: Install system tools
-        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core espeak-ng
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core espeak-ng r-base-core r-cran-ggplot2 r-cran-jsonlite r-cran-scales
 
       - name: Cache voice model
         if: env.VOICE == 'chatterbox'
@@ -75,6 +76,7 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
+          YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
         run: |
           if [ "$UPLOAD" = "true" ]; then
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE"

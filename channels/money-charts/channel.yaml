@@ -1,0 +1,48 @@
+# Money, in charts: finance explainers built on public data. Every number is computed, never typed.
+name: Money, in charts
+slug: money-charts
+format: episode
+thumbnail_label: MONEY, IN CHARTS
+
+cadence:
+  per_week: 2
+  min_days_between: 3
+
+youtube:
+  refresh_token_secret: YT_REFRESH_TOKEN_MONEY_CHARTS
+  category_id: "27"          # Education
+  language: en
+  privacy: public
+  made_for_kids: false
+  contains_synthetic_media: true   # cloned narrator voice
+  upload_captions: true
+
+voice:
+  backend: chatterbox
+  reference: voice/reference.wav
+  exaggeration: 0.5
+  cfg_weight: 0.5
+  tempo: 1.0
+
+render:
+  width: 1920
+  height: 1080
+  fps: 24
+  sentence_pause: 0.35
+  scene_pause: 0.8
+  chart_frames: 36           # frames R draws to reveal each chart
+  chart_reveal_seconds: 6
+  min_minutes: 5
+  max_minutes: 20
+  accent: "#F2B33D"
+
+script:
+  min_words: 600
+  max_words: 2200
+  min_scenes: 6
+  max_scenes: 16
+  min_charts: 4
+
+description_footer: |
+  Money, in charts: one question about money each week, answered with public data.
+  Narration uses an AI clone of the creator's own voice. Charts are drawn from the data sources listed above.

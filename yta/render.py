@@ -90,17 +90,17 @@ def build_segments(story: Story, cfg: dict, narrator, out_dir: Path, cache_dir: 
     return segs, bgs
 
 
-def encode(segs: list[Segment], out_dir: Path, fps: int) -> tuple[Path, float]:
-    track = np.concatenate([np.concatenate([s.voice, audio.silence(s.pause)]) for s in segs])
+def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int) -> tuple[Path, float]:
+    """Join still frames (each shown for its duration) with an audio track into an MP4."""
     wav = out_dir / "narration.wav"
     audio.write_wav(wav, track)
     seconds = len(track) / audio.SR
 
-    listing = out_dir / "slides.txt"
+    listing = out_dir / "frames.txt"
     lines = []
-    for s in segs:
-        lines += [f"file '{s.image.resolve()}'", f"duration {s.seconds:.3f}"]
-    lines.append(f"file '{segs[-1].image.resolve()}'")  # concat demuxer needs the last frame repeated
+    for image, duration in frames:
+        lines += [f"file '{Path(image).resolve()}'", f"duration {duration:.3f}"]
+    lines.append(f"file '{Path(frames[-1][0]).resolve()}'")  # concat demuxer needs the last frame repeated
     listing.write_text("\n".join(lines) + "\n")
 
     video = out_dir / "video.mp4"
@@ -111,6 +111,11 @@ def encode(segs: list[Segment], out_dir: Path, fps: int) -> tuple[Path, float]:
         "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", str(video),
     ], check=True)
     return video, seconds
+
+
+def encode(segs: list[Segment], out_dir: Path, fps: int) -> tuple[Path, float]:
+    track = np.concatenate([np.concatenate([s.voice, audio.silence(s.pause)]) for s in segs])
+    return mux([(s.image, s.seconds) for s in segs], track, out_dir, fps)
 
 
 def write_captions(segs: list[Segment], path: Path) -> Path:
