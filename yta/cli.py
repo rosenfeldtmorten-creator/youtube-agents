@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 
 from . import checks
-from .story import StoryError, load_story
+from .formats import FORMATS, LOAD_ERRORS
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -44,17 +44,15 @@ def reject(item: Path, channel_dir: Path, reason: str) -> None:
 
 def cmd_check(args) -> int:
     channel_dir, cfg = load_channel(args.channel)
-    previous = checks.published_stories(channel_dir)
-    items, bad = queue_items(channel_dir), 0
+    fmt = FORMATS[cfg["format"]]
+    items, bad, earlier = queue_items(channel_dir), 0, []
     for item in items:
         try:
-            story = load_story(item)
-            checks.check_level(story, cfg["levels"])
-            checks.check_duplicates(story, previous)
-            others = [load_story(p) for p in items if p != item]
-            checks.check_duplicates(story, [o for o in others if o.path.name < item.name])
-            print(f"ok   {item.name}  ({story.level}, {story.word_count} words, {story.avg_sentence_words:.1f} words/sentence)")
-        except (StoryError, checks.CheckFailed) as exc:
+            obj = fmt.load(item)
+            summary = fmt.check(obj, channel_dir, cfg, earlier, ROOT / ".cache")
+            earlier.append(obj)
+            print(f"ok   {item.name}  ({summary})")
+        except LOAD_ERRORS as exc:
             bad += 1
             print(f"FAIL {item.name}: {exc}")
     due, why = checks.upload_due(channel_dir, cfg["cadence"])
@@ -62,28 +60,31 @@ def cmd_check(args) -> int:
     return 1 if bad else 0
 
 
-def render_item(item: Path, channel_dir: Path, cfg: dict, voice: str | None, test: bool = False):
-    from .render import render_story
+def render_item(obj, channel_dir: Path, cfg: dict, voice: str | None, test: bool = False):
     from .tts import make_narrator
 
-    story = load_story(item)
     cache = ROOT / ".cache"
     narrator = make_narrator(cfg["voice"], ROOT, backend=voice, cache_dir=cache / "voice", allow_default_voice=test)
-    out_dir = ROOT / "out" / channel_dir.name / story.slug
-    print(f"Rendering '{story.title}' ({story.level}, {story.word_count} words)")
-    result = render_story(story, cfg, narrator, out_dir, cache)
+    out_dir = ROOT / "out" / channel_dir.name / obj.slug
+    print(f"Rendering '{obj.title}'")
+    result = FORMATS[cfg["format"]].render(obj, cfg, narrator, out_dir, cache)
     print(f"Rendered {result.video} ({result.seconds / 60:.1f} min)")
-    return story, result
+    return result
 
 
 def cmd_render(args) -> int:
     channel_dir, cfg = load_channel(args.channel)
-    render_item(Path(args.item), channel_dir, cfg, args.voice, test=True)
+    fmt = FORMATS[cfg["format"]]
+    obj = fmt.load(Path(args.item))
+    if cfg["format"] == "episode":
+        obj.load_data(ROOT / ".cache" / "data")
+    render_item(obj, channel_dir, cfg, args.voice, test=True)
     return 0
 
 
 def cmd_run(args) -> int:
     channel_dir, cfg = load_channel(args.channel)
+    fmt = FORMATS[cfg["format"]]
     due, why = checks.upload_due(channel_dir, cfg["cadence"])
     if not due and not args.force:
         print(f"Nothing to do: {why}.")
@@ -91,13 +92,16 @@ def cmd_run(args) -> int:
 
     for item in queue_items(channel_dir):
         try:
-            story = load_story(item)
-            checks.check_story(story, channel_dir, cfg)
-        except (StoryError, checks.CheckFailed) as exc:
+            obj = fmt.load(item)
+            fmt.check(obj, channel_dir, cfg, [], ROOT / ".cache")
+        except LOAD_ERRORS as exc:
+            if "could not download" in str(exc):
+                print(f"Skipping {item.name} for now: {exc}")
+                continue
             reject(item, channel_dir, str(exc))
             continue
 
-        story, result = render_item(item, channel_dir, cfg, args.voice, test=args.no_upload)
+        result = render_item(obj, channel_dir, cfg, args.voice, test=args.no_upload)
         try:
             checks.check_duration(result.seconds, cfg["render"])
         except checks.CheckFailed as exc:
@@ -111,11 +115,11 @@ def cmd_run(args) -> int:
         from . import upload
 
         yt = cfg["youtube"]
-        vocab = "Key words:\n" + "\n".join(f"- {v['word']}: {v['meaning']}" for v in story.vocabulary)
-        credits = "Photos: " + "; ".join(result.photo_credits) if result.photo_credits else ""
-        description = upload.build_description(story.description, result.chapters, [vocab, credits], cfg["description_footer"])
+        description = upload.build_description(
+            obj.description, result.chapters, fmt.extra_description(obj, result), cfg["description_footer"]
+        )
         client = upload.youtube_client(yt["refresh_token_secret"])
-        video_id = upload.upload_video(client, result.video, story.title, description, story.tags, yt)
+        video_id = upload.upload_video(client, result.video, obj.title, description, obj.tags, yt)
         print(f"Uploaded: https://youtu.be/{video_id}")
         upload.set_thumbnail(client, video_id, result.thumbnail)
         if yt.get("upload_captions"):
@@ -132,7 +136,7 @@ def cmd_run(args) -> int:
         item.unlink()
         return 0
 
-    print("Queue is empty: the writing task needs to add stories.")
+    print("Queue is empty: the writing task needs to add more.")
     return 0
 
 

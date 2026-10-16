@@ -5,14 +5,15 @@ Agents that write, narrate, render and upload videos for a set of YouTube channe
 | Channel | Status |
 | --- | --- |
 | Slow English Stories | Pipeline built; waiting for setup |
-| Money, in charts | Planned |
+| Money, in charts | Pipeline built; waiting for setup |
 | Deep sleep sounds | Planned |
 
 ## How it works
 
 1. **Writing.** A scheduled Claude task reads `channels/<channel>/WRITING_GUIDE.md`, writes new items into the channel's `queue/`, checks them, and pushes them here.
 2. **Checks.** `python -m yta check` validates every queued item: format, level, length, and similarity to everything already published. Items that fail at publish time move to `rejected/` with the reason.
-3. **Rendering.** `python -m yta run` takes the next item, narrates it with a clone of the creator's voice ([Chatterbox](https://github.com/resemble-ai/chatterbox), MIT licence), draws the slides, and builds the video with FFmpeg.
+3. **Rendering.** `python -m yta run` takes the next item, narrates it with a clone of the creator's voice ([Chatterbox](https://github.com/resemble-ai/chatterbox), MIT licence), draws the slides or charts, and builds the video with FFmpeg. Finance charts are drawn in R with ggplot2 (`charts/chart.R`); change their look in `theme_money()`.
+   Finance scripts never type numbers: every figure is a `{{ ... }}` placeholder computed from public data (FRED, World Bank), and every comparison made in words is listed under `claims` and checked against the data before upload.
 4. **Upload.** The YouTube Data API uploads the video with title, description, chapters, tags, thumbnail and captions, with AI voice disclosure switched on. The item moves to `published/`.
 5. **Pacing.** `channel.yaml` caps uploads per week, so the channel never posts faster than a person could.
 
@@ -43,5 +44,6 @@ channels/<channel>/queue/           items waiting to be published
 channels/<channel>/published/       items already uploaded, with their YouTube links
 channels/<channel>/rejected/        items that failed a check, with the reason
 yta/                                the pipeline (Python)
+charts/chart.R                      finance chart style and animation (R, ggplot2)
 voice/reference.wav                 10-20 second clip of the narrator
 ```

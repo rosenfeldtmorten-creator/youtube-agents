@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core r-base-core r-cran-ggplot2 r-cran-jsonlite r-cran-scales
       - run: pip install -r requirements.txt pytest
       - name: Tests
         run: python -m pytest -q

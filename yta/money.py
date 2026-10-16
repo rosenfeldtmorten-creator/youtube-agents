@@ -1,0 +1,143 @@
+"""Renders a finance episode: narration over charts drawn in R (charts/chart.R)."""
+from __future__ import annotations
+
+import csv
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+
+from . import audio, metrics
+from .episode import Episode
+from .render import RenderResult, _fmt_srt, mux
+from .story import split_sentences
+from .visuals import SlideMaker, dim, draw_rich_text, generated_background, thumbnail
+
+ROOT = Path(__file__).resolve().parent.parent
+CHART_SCRIPT = ROOT / "charts" / "chart.R"
+BG = (14, 23, 38)
+
+OUTRO = ("That's it for today. Everything you saw came from public data, and the sources are in the description. "
+         "This video is for education only, not financial advice. Subscribe for a new chart every week.")
+
+
+def chart_rows(ep: Episode, chart: dict) -> list[dict]:
+    """The rows R draws, computed here so that every plotted value comes from the data."""
+    kind = chart["type"]
+    if kind == "line":
+        rows = []
+        for name in chart["series"]:
+            s = ep.series[name].between(chart.get("from"), chart.get("to"))
+            if chart.get("yearly"):
+                s = s.yearly()
+            if not s.points:
+                raise metrics.MetricError(f"{name} has no data between {chart.get('from')} and {chart.get('to')}")
+            base = s.at(chart["index"])[1] / 100 if chart.get("index") else 1
+            label = chart.get("labels", {}).get(name, s.label)
+            rows += [{"x": d.isoformat(), "y": v / base, "group": label, "label": ""} for d, v in s.points]
+        return rows
+    if kind == "bars":
+        return [
+            {"x": i, "y": metrics.evaluate(b["value"], ep.series), "group": "", "label": b["label"]}
+            for i, b in enumerate(chart["bars"])
+        ]
+    if kind == "growth":
+        monthly = metrics.evaluate(str(chart["monthly"]), ep.series)
+        rate = metrics.evaluate(str(chart["rate"]), ep.series)
+        years = int(metrics.evaluate(str(chart["years"]), ep.series))
+        rows = []
+        for y in range(0, years + 1):
+            rows.append({"x": y, "y": monthly * 12 * y, "group": "Money you put in", "label": ""})
+            rows.append({"x": y, "y": metrics.FUNCTIONS["compound"](monthly, rate, y), "group": "What it grew to", "label": ""})
+        return rows
+    raise ValueError(f"no rows for chart type {kind}")
+
+
+def draw_chart(ep: Episode, chart: dict, out_dir: Path, n_frames: int, size: tuple[int, int]) -> list[Path]:
+    if not shutil.which("Rscript"):
+        raise RuntimeError("Rscript not found. Install R with the ggplot2, jsonlite and scales packages.")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = chart_rows(ep, chart)
+    data_csv = out_dir / "data.csv"
+    with data_csv.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["x", "y", "group", "label"])
+        w.writeheader()
+        w.writerows(rows)
+    spec = dict(chart)
+    spec["source_note"] = chart.get("source_note") or "; ".join(
+        ep.data[n].get("short_source", "FRED" if ep.data[n]["source"] == "fred" else ep.data[n]["source"])
+        for n in chart.get("series", ep.data.keys())
+    )
+    spec_json = out_dir / "spec.json"
+    spec_json.write_text(json.dumps(spec, ensure_ascii=False))
+    subprocess.run(
+        ["Rscript", str(CHART_SCRIPT), str(spec_json), str(data_csv), str(out_dir), str(n_frames), str(size[0]), str(size[1])],
+        check=True,
+    )
+    frames = sorted(out_dir.glob("frame_*.png"))
+    if len(frames) != n_frames:
+        raise RuntimeError(f"chart.R wrote {len(frames)} frames, expected {n_frames}")
+    return frames
+
+
+def card(slides: SlideMaker, text: str, accent_label: str = "") -> Path:
+    img = dim(generated_background("money-card", slides.size), 0.55)
+    if accent_label:
+        draw_rich_text(img, accent_label, (160, int(slides.h * 0.22), slides.w - 320, 80), 36, slides.accent, color=slides.accent, weight="bold")
+    draw_rich_text(img, text, (160, int(slides.h * 0.30), slides.w - 320, int(slides.h * 0.45)), 92, slides.accent, weight="bold")
+    return slides.save(img)
+
+
+def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: Path) -> RenderResult:
+    r = cfg["render"]
+    size = (r["width"], r["height"])
+    out_dir.mkdir(parents=True, exist_ok=True)
+    slides = SlideMaker(size, r["accent"], out_dir / "cards")
+    frames: list[tuple[Path, float]] = []
+    voice_parts: list[np.ndarray] = []
+    captions: list[tuple[float, float, str]] = []
+    chapters: list[tuple[float, str]] = []
+    t = 0.0
+    first_chart: Path | None = None
+
+    scenes = [(sc.filled, sc.chart) for sc in ep.scenes] + [(OUTRO, {"type": "card", "title_filled": "Thanks for watching"})]
+    for i, (text, chart) in enumerate(scenes, 1):
+        print(f"  scene {i}/{len(scenes)} ({chart['type']})")
+        scene_audio = []
+        for sentence in split_sentences(text):
+            voice = narrator.say(sentence)
+            start = t + sum(len(a) for a in scene_audio) / audio.SR
+            captions.append((start, start + len(voice) / audio.SR, sentence))
+            scene_audio += [voice, audio.silence(r["sentence_pause"])]
+        scene_audio.append(audio.silence(r["scene_pause"]))
+        track = np.concatenate(scene_audio)
+        seconds = len(track) / audio.SR
+        voice_parts.append(track)
+        if chart.get("chapter"):
+            chapters.append((t, chart["chapter"]))
+
+        if chart["type"] == "card":
+            frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+        else:
+            n = r["chart_frames"]
+            imgs = draw_chart(ep, chart, out_dir / f"chart_{i:02d}", n, size)
+            reveal = min(seconds * 0.6, r["chart_reveal_seconds"])
+            frames += [(p, reveal / n) for p in imgs[:-1]]
+            frames.append((imgs[-1], seconds - reveal * (n - 1) / n))
+            first_chart = first_chart or imgs[-1]
+        t += seconds
+
+    if chapters and chapters[0][0] > 0:
+        chapters.insert(0, (0.0, "Introduction"))
+    print(f"  encoding {len(frames)} frames")
+    video, seconds = mux(frames, np.concatenate(voice_parts), out_dir, r["fps"])
+
+    srt = out_dir / "captions.srt"
+    srt.write_text("\n".join(f"{n}\n{_fmt_srt(a)} --> {_fmt_srt(b)}\n{txt}\n" for n, (a, b, txt) in enumerate(captions, 1)),
+                   encoding="utf-8")
+    bg = Image.open(first_chart).convert("RGB") if first_chart else generated_background(ep.slug, size)
+    thumb = thumbnail(bg, ep.thumbnail_text, None, r["accent"], out_dir / "thumbnail.jpg", label=cfg["thumbnail_label"])
+    return RenderResult(video, thumb, srt, seconds, [], chapters if len(chapters) >= 3 else [])
