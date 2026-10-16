@@ -52,6 +52,13 @@ def _trend_per_year(s, start=None, end=None) -> float:
     return sum((a - mx) * (b - my) for a, b in zip(xs, ys)) / sum((a - mx) ** 2 for a in xs)
 
 
+def _payment(principal, rate_percent, years) -> float:
+    r, n = rate_percent / 100 / 12, int(round(years * 12))
+    if r == 0:
+        return principal / n
+    return principal * r / (1 - (1 + r) ** -n)
+
+
 def paired_years(x, y, start=None, end=None) -> list[tuple[int, float, float]]:
     """(year, x, y) for every year both series cover, using yearly averages. Shared with the scatter chart."""
     xs = {d.year: v for d, v in _s(x).between(start, end).yearly_mean().points}
@@ -105,6 +112,8 @@ FUNCTIONS = {
     "slope": lambda x, y, start=None, end=None: linear_fit(x, y, start, end)[1],
     "r_squared": lambda x, y, start=None, end=None: linear_fit(x, y, start, end)[2],
     "trend_per_year": lambda s, start=None, end=None: _trend_per_year(s, start, end),
+    # monthly payment on a loan: rate is a yearly percentage as FRED quotes it (6.5 means 6.5%)
+    "payment": lambda principal, rate_percent, years: _payment(principal, rate_percent, years),
     "in_todays_money": lambda amount, cpi, then: amount * _s(cpi).last[1] / _s(cpi).at(then)[1],
 }
 

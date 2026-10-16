@@ -21,7 +21,9 @@ Every number in the narration and chart titles must be a placeholder that the pi
 Years such as 2000 may be typed. Everything else, including example amounts, goes in a placeholder: `{{ 200 | usd }}`.
 The check rejects any other digit.
 
-**Functions:** `value(s, "2010-06")`, `latest(s)`, `latest_year(s)`, `first(s, start, end)`, `change(s, a, b)`, `pct_change(s, a, b)`, `ratio(s, a, b)`, `cagr(s, a, b)`, `highest(s, a, b)`, `lowest(s, a, b)`, `year_of_highest(s, a, b)`, `year_of_lowest(s, a, b)`, `grow(amount, rate, years)`, `compound(monthly, rate, years)`, `in_todays_money(amount, cpi, "2000-01")`, plus `+ - * /`.
+**Functions:** `value(s, "2010-06")`, `latest(s)`, `latest_year(s)`, `first(s, start, end)`, `change(s, a, b)`, `pct_change(s, a, b)`, `ratio(s, a, b)`, `cagr(s, a, b)`, `highest(s, a, b)`, `lowest(s, a, b)`, `year_of_highest(s, a, b)`, `year_of_lowest(s, a, b)`, `grow(amount, rate, years)`, `compound(monthly, rate, years)`, `in_todays_money(amount, cpi, "2000-01")`, `payment(principal, rate_percent, years)` (monthly loan payment; pass a FRED rate such as `value(mortgage, "2021")` directly), plus `+ - * /`.
+
+**Model functions** (on yearly averages, the same fit the scatter chart draws): `correlation(x, y, start, end)`, `slope(x, y, start, end)` (how much y moves per one unit of x), `r_squared(x, y, start, end)` (share of y's ups and downs the line explains), `trend_per_year(s, start, end)`.
 Dates are `"2000"`, `"2000-06"`, `"2000-06-30"` or `"latest"`.
 
 **Formats** (after `|`): `usd`, `usd_cents`, `pct`, `pct1`, `pts`, `num`, `times`, `year`, `years`.
@@ -44,16 +46,24 @@ Use only public series that need no key:
 
 Give each series a `label` (shown in legends) and a `short_source` (shown under charts).
 
+Two optional settings on a series:
+
+- `"transform": "yoy"` turns levels into the change on a year earlier, as a fraction. Use it for inflation from CPI (`y_format: "pct"`).
+- `"in_todays_dollars": "cpi"` restates a dollar series in today's money using another series in `data` (here `cpi`). Every function and chart then works on the real values.
+
+**Checking offline.** If the check can't download a series (blocked network), it uses the copy in `data/snapshot/`, refreshed daily from the list in `data/series.json`. Prefer series from that list. A new series gets a snapshot after you push an episode that uses it, so if the check fails only because a snapshot is missing, push the episode anyway; the publish run downloads live data and rejects it if anything is wrong.
+
 ## What makes a good episode
 
 - **One question a normal person asks about money**, answered with data: "Is renting really throwing money away?", "What happened to the price of fuel?", "How much does waiting ten years to invest cost?". Vary topics; never repeat a question already in `published/` or `queue/`.
-- 900-1600 words, 7-12 scenes, at least 4 charts. Open with the question on a `card`, end with the answer on a `card`.
+- 900-1600 words, 7-12 scenes, at least 4 charts. Where it fits the question, include one model chart (`scatter` or a `trend`): the channel's edge is explaining what the data says, not just showing it. Open with the question on a `card`, end with the answer on a `card`.
 - Plain spoken English. Explain every term the first time. No hype, no "you should buy", no individual stocks or crypto tips. This channel explains; it never advises.
 - Give the scenes that start a new part a `chapter` name (at least 3 per episode) so YouTube shows chapters.
 
 ## Chart types
 
-- `line`: `series` (list of data names), `from`, optional `to`, `index` (rebase every series to 100 at that date, needed when units differ), `labels` (legend names), `y_format` (`usd`, `pct`, `num`, `index`), `yearly: true` for long daily series, `log: true` for very long growth.
+- `line`: `series` (list of data names), `from`, optional `to`, `index` (rebase every series to 100 at that date, needed when units differ), `labels` (legend names), `y_format` (`usd`, `pct`, `num`, `index`), `yearly: true` for long daily series, `log: true` for very long growth, `trend: "linear"` or `"smooth"` to draw a fitted trend line once the data is shown.
+- `scatter`: a simple model. `x` and `y` (data names), `from`, optional `to`, `x_format`, `y_format`, `x_label`, `y_label`, `fit` (`linear`, `smooth` or `none`), `connect: true` to join the years in order. One point per year (yearly averages), revealed in time order, then the fitted line with its 95% band. Explain in plain words what the line means, and back any statement about it with `correlation`, `slope` or `r_squared` in `claims`. Say "moved together", never "caused", unless you explain why.
 - `bars`: `bars` = list of `{"label": "...", "value": "<expression>"}`, `y_format`.
 - `growth`: `monthly`, `rate`, `years` (expressions). Shows money put in versus what it grew to.
 - `card`: `title` and optional `label`, for big statements.

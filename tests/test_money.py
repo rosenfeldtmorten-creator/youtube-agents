@@ -194,3 +194,12 @@ def test_model_charts_render_with_r(tmp_path):
     for i, chart in enumerate((scatter, line)):
         frames = draw_chart(ep, chart, tmp_path / f"c{i}", 4, (1280, 720))
         assert len(frames) == 4 and frames[-1].stat().st_size > 5_000
+
+
+def test_payment_and_real_dollars():
+    from yta.episode import in_todays_dollars
+
+    assert metrics.evaluate("payment(200000, 6, 30)", {}) == pytest.approx(1199.10, abs=0.01)
+    cpi = Series("cpi", "", "", [(dt.date(2000, 1, 1), 100.0), (dt.date(2020, 1, 1), 200.0)])
+    wage = Series("w", "", "", [(dt.date(2000, 1, 1), 5.0), (dt.date(2020, 1, 1), 7.0)])
+    assert [v for _, v in in_todays_dollars(wage, cpi).points] == [10.0, 7.0]

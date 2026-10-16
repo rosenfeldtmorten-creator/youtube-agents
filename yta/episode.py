@@ -14,6 +14,18 @@ TRENDS = ("linear", "smooth")
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
 
 
+def in_todays_dollars(s: Series, cpi: Series) -> Series:
+    """Restate every value in the money of the latest price index reading."""
+    latest = cpi.last[1]
+    pts = []
+    for d, v in s.points:
+        try:
+            pts.append((d, v * latest / cpi.at(d.isoformat())[1]))
+        except ValueError:  # before the price index starts
+            continue
+    return Series(s.name, s.label, s.unit, pts)
+
+
 @dataclass
 class Scene:
     narration: str
@@ -45,6 +57,9 @@ class Episode:
     def load_data(self, cache_dir: Path) -> None:
         """Download the series, test every claim, and fill every placeholder. Raises MetricError on any problem."""
         self.series = fetch_all(self.data, cache_dir)
+        for name, spec in self.data.items():
+            if spec.get("in_todays_dollars"):
+                self.series[name] = in_todays_dollars(self.series[name], self.series[spec["in_todays_dollars"]])
         for claim in self.raw.get("claims", []):
             if not metrics.evaluate(claim["check"], self.series):
                 raise metrics.MetricError(f"the data no longer supports: \"{claim['says']}\" ({claim['check']} is false)")
@@ -92,6 +107,8 @@ def load_episode(path: Path) -> Episode:
             raise StoryError(f"{path.name}: data '{name}' needs source fred, worldbank or inline")
         if spec.get("transform") not in (None, "yoy"):
             raise StoryError(f"{path.name}: data '{name}' transform must be 'yoy' or left out")
+        if spec.get("in_todays_dollars") and spec["in_todays_dollars"] not in data["data"]:
+            raise StoryError(f"{path.name}: data '{name}' in_todays_dollars must name a price index in data")
         if spec.get("source") == "inline" and not spec.get("citation"):
             raise StoryError(f"{path.name}: inline data '{name}' needs a 'citation' naming where the numbers come from")
 
