@@ -107,6 +107,19 @@
       }
     },
     {
+      "narration": "Let's zoom in on the last few years, because that is where the whole story happens. Before the pandemic, rates were already low by historical standards. In December 2019, the average was {{ value(rate, \"2019-12\") | num }} percent. During the pandemic the Federal Reserve cut its own rate to almost zero and bought large amounts of mortgage bonds, which pushed mortgage rates to record lows. When inflation took off in 2021 and 2022, the Fed reversed course and raised its rate quickly. Mortgage rates followed, climbing as high as {{ highest(rate, \"2021\", \"latest\") | num }} percent. For anyone buying a home, that was one of the fastest rises in borrowing costs in decades.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "rate"
+        ],
+        "from": "2015",
+        "y_format": "num",
+        "title": "From record lows to a sharp climb",
+        "subtitle": "Thirty-year fixed mortgage rate, percent per year"
+      }
+    },
+    {
       "narration": "Let's turn those two numbers into a monthly payment. We assume a buyer puts twenty percent down and borrows the rest over thirty years, the most common setup. The standard loan formula then gives the monthly payment for interest and repayment. In early 2021, that was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }}. Today it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}. That is {{ payment(0.8 * latest(price), latest(rate), 30) / payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | times }} as much, for a house that costs only {{ pct_change(price, \"2021-01\", \"latest\") | pct }} more.",
       "chart": {
         "type": "bars",
@@ -199,7 +212,7 @@
       }
     },
     {
-      "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too.",
+      "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too. For buyers, the practical lesson is simple. When you compare homes, compare monthly payments at today's rate, not just prices, because the rate can matter more than the sticker.",
       "chart": {
         "type": "card",
         "title": "Mostly rates, not prices",
@@ -208,7 +221,7 @@
       }
     },
     {
-      "narration": "A few honest caveats. Real payments also include property tax and insurance, which we left out. Your own price, down payment and rate will be different. And these are new homes, which sell for a bit more than existing ones. But the split between the price effect and the rate effect is the same simple maths, and now you know how to do it yourself.",
+      "narration": "A few honest caveats. Real payments also include property tax and insurance, which we left out. Your own price, down payment and rate will be different. And these are new homes, which sell for a bit more than existing ones. But the split between the price effect and the rate effect is the same simple maths, and now you know how to do it yourself. If you want to try it with your own numbers, any online mortgage calculator uses the same formula we used here.",
       "chart": {
         "type": "card",
         "title": "Taxes and insurance come on top",
