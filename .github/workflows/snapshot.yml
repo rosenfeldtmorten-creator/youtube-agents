@@ -7,6 +7,8 @@ on:
   schedule:
     - cron: "17 5 * * *"   # daily, before the writing task
   workflow_dispatch:
+  push:
+    paths: ["data/series.json", ".github/workflows/snapshot.yml", "channels/*/queue/*.json"]
 
 permissions:
   contents: write
