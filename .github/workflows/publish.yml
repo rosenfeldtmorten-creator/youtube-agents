@@ -47,8 +47,8 @@ jobs:
       matrix:
         channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]') }}
     env:
-      PYTHONUNBUFFERED: "1"
-      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance   # show render progress live in the Actions log
+      PYTHONUNBUFFERED: "1"   # show render progress live in the Actions log
+      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
       VOICE: ${{ inputs.voice || 'chatterbox' }}
     steps:
