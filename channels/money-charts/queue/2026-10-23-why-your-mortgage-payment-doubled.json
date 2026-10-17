@@ -1,232 +1,294 @@
 {
-  "slug": "why-your-mortgage-payment-doubled",
-  "title": "Why Your Mortgage Payment Doubled (It's Not Just House Prices)",
-  "description": "House prices went up, but the monthly payment on a typical home rose far faster than the price. We take the official numbers for the median new home and the 30-year mortgage rate, rebuild the payment with the standard loan formula, and split the increase into the part caused by prices and the part caused by interest rates.\n\nEverything is computed from public data from the Census Bureau, Freddie Mac and the Bureau of Labor Statistics, via FRED. The sources are listed below. Education only, not financial advice.",
-  "tags": [
-    "mortgage rates",
-    "mortgage payment",
-    "housing market",
-    "house prices",
-    "interest rates explained",
-    "economics explained",
-    "economics in charts",
-    "personal finance",
-    "data visualization",
-    "affordability"
-  ],
-  "thumbnail_text": "It's not the price",
-  "data": {
-    "price": {
-      "source": "fred",
-      "id": "MSPUS",
-      "label": "Median sales price of new homes",
-      "unit": "usd",
-      "short_source": "FRED (Census Bureau, HUD)"
-    },
-    "rate": {
-      "source": "fred",
-      "id": "MORTGAGE30US",
-      "label": "30-year fixed mortgage rate (%)",
-      "unit": "percent",
-      "short_source": "FRED (Freddie Mac)"
-    },
-    "wages": {
-      "source": "fred",
-      "id": "AHETPI",
-      "label": "Average hourly pay",
-      "unit": "usd",
-      "short_source": "FRED (BLS average hourly earnings)"
-    }
+ "slug": "why-your-mortgage-payment-doubled",
+ "title": "Why Your Mortgage Payment Doubled (It's Not Just House Prices)",
+ "description": "US mortgage rates just hit their highest level in three years. We show why the monthly payment on a typical home nearly doubled since 2021, and how much of that came from prices versus rates.\n\nBuilt on Census, Freddie Mac and Labor Department data with the standard loan formula, plus our honest take for buyers.",
+ "tags": [
+  "mortgage rates",
+  "mortgage payment",
+  "housing market",
+  "house prices",
+  "interest rates explained",
+  "economics explained",
+  "economics in charts",
+  "personal finance",
+  "data visualization",
+  "affordability"
+ ],
+ "thumbnail_text": "It's not the price",
+ "data": {
+  "price": {
+   "source": "fred",
+   "id": "MSPUS",
+   "label": "Median sales price of new homes",
+   "unit": "usd",
+   "short_source": "FRED (Census Bureau, HUD)"
   },
-  "claims": [
-    {
-      "says": "The monthly payment on the median home nearly doubled since early 2021",
-      "check": "payment(0.8 * latest(price), latest(rate), 30) > 1.8 * payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
-    },
-    {
-      "says": "The payment rose much faster than the price",
-      "check": "payment(0.8 * latest(price), latest(rate), 30) / payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) > 2 * ratio(price, \"2021-01\", \"latest\") - 1"
-    },
-    {
-      "says": "Higher rates added more to the payment than higher prices",
-      "check": "payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) > 3 * (payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30))"
-    },
-    {
-      "says": "Early 2021 rates were close to the lowest on record",
-      "check": "value(rate, \"2021-01\") < 1.1 * lowest(rate, \"1971\", \"latest\")"
-    },
-    {
-      "says": "Rates are still far below the early 1980s peak",
-      "check": "latest(rate) < highest(rate, \"1971\", \"latest\") / 2"
-    },
-    {
-      "says": "The payment takes more hours of work than in early 2021",
-      "check": "payment(0.8 * latest(price), latest(rate), 30) / latest(wages) > payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\")"
-    },
-    {
-      "says": "The mortgage rate more than doubled since early 2021",
-      "check": "latest(rate) > 2 * value(rate, \"2021-01\")"
-    }
-  ],
+  "rate": {
+   "source": "fred",
+   "id": "MORTGAGE30US",
+   "label": "30-year fixed mortgage rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (Freddie Mac)"
+  },
+  "wages": {
+   "source": "fred",
+   "id": "AHETPI",
+   "label": "Average hourly pay",
+   "unit": "usd",
+   "short_source": "FRED (BLS average hourly earnings)"
+  },
+  "rate_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-10-01",
+     0.0728
+    ]
+   ],
+   "label": "30-year mortgage rate (news)",
+   "unit": "fraction",
+   "short_source": "Freddie Mac via Trading Economics",
+   "citation": "Freddie Mac Primary Mortgage Market Survey (1 Oct 2026), as reported by Trading Economics: 30-year fixed rate 7.28%, highest since November 2023"
+  }
+ },
+ "claims": [
+  {
+   "says": "The monthly payment on the median home nearly doubled since early 2021",
+   "check": "payment(0.8 * latest(price), latest(rate), 30) > 1.8 * payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
+  },
+  {
+   "says": "The payment rose much faster than the price",
+   "check": "payment(0.8 * latest(price), latest(rate), 30) / payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) > 2 * ratio(price, \"2021-01\", \"latest\") - 1"
+  },
+  {
+   "says": "Higher rates added more to the payment than higher prices",
+   "check": "payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) > 3 * (payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30))"
+  },
+  {
+   "says": "Early 2021 rates were close to the lowest on record",
+   "check": "value(rate, \"2021-01\") < 1.1 * lowest(rate, \"1971\", \"latest\")"
+  },
+  {
+   "says": "Rates are still far below the early 1980s peak",
+   "check": "latest(rate) < highest(rate, \"1971\", \"latest\") / 2"
+  },
+  {
+   "says": "The payment takes more hours of work than in early 2021",
+   "check": "payment(0.8 * latest(price), latest(rate), 30) / latest(wages) > payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\")"
+  },
+  {
+   "says": "The mortgage rate more than doubled since early 2021",
+   "check": "latest(rate) > 2 * value(rate, \"2021-01\")"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "At the start of October, the average rate on a thirty-year mortgage in the United States climbed to {{ latest(rate_news) | pct1 }}. That is the highest since late 2023. For anyone trying to buy a home, that number matters more than almost anything else, more even than the price on the listing. Here is why.",
+   "chart": {
+    "type": "card",
+    "title": "Mortgage rates hit a three-year high",
+    "label": "WHAT JUST HAPPENED",
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "If you have looked at buying a home recently, you have probably noticed something strange. House prices went up, yes. But the monthly payment went up much, much more. In early 2021, the payment on a typical new home was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }} a month. In the latest data, it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}. Today we will find out exactly where that difference came from, using the official data and the same formula the banks use.",
+   "chart": {
+    "type": "card",
+    "title": "Why did mortgage payments nearly double?",
+    "label": "HOUSING, IN NUMBERS",
+    "chapter": "The question"
+   }
+  },
+  {
+   "narration": "Every monthly payment comes from just two ingredients: the price of the house and the interest rate on the loan.",
+   "chart": {
+    "type": "photo",
+    "query": "for sale sign house United States",
+    "after": 2015,
+    "caption": "Two ingredients: price and rate"
+   }
+  },
+  {
+   "narration": "Start with the price. This is the median sales price of a new home in the United States, which means half of new homes sell for more and half for less. In early 2021 it was {{ value(price, \"2021-01\") | usd }}. In the latest data it is {{ latest(price) | usd }}. That is a rise of {{ pct_change(price, \"2021-01\", \"latest\") | pct }}. A big increase, but nowhere near double.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "price"
+    ],
+    "from": "2000",
+    "y_format": "usd",
+    "title": "The median new home price",
+    "subtitle": "US, dollars",
+    "chapter": "Prices"
+   }
+  },
+  {
+   "narration": "Now the second ingredient, the interest rate. This is the average rate on a thirty-year fixed mortgage, going back to 1971. It peaked at {{ highest(rate, \"1971\", \"latest\") | num }} percent in {{ year_of_highest(rate, \"1971\", \"latest\") | year }}, and then fell for four decades. In early 2021 it was only {{ value(rate, \"2021-01\") | num }} percent, close to the lowest ever recorded. Then, as the Federal Reserve fought inflation, it shot up. The latest reading is {{ latest(rate) | num }} percent.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "rate"
+    ],
+    "from": "1971",
+    "y_format": "num",
+    "title": "The thirty-year mortgage rate",
+    "subtitle": "Percent per year",
+    "chapter": "Interest rates"
+   }
+  },
+  {
+   "narration": "Let's zoom in on the last few years, because that is where the whole story happens. Before the pandemic, rates were already low by historical standards. In December 2019, the average was {{ value(rate, \"2019-12\") | num }} percent. During the pandemic the Federal Reserve cut its own rate to almost zero and bought large amounts of mortgage bonds, which pushed mortgage rates to record lows. When inflation took off in 2021 and 2022, the Fed reversed course and raised its rate quickly. Mortgage rates followed, climbing as high as {{ highest(rate, \"2021\", \"latest\") | num }} percent. For anyone buying a home, that was one of the fastest rises in borrowing costs in decades.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "rate"
+    ],
+    "from": "2015",
+    "y_format": "num",
+    "title": "From record lows to a sharp climb",
+    "subtitle": "Thirty-year fixed mortgage rate, percent per year"
+   }
+  },
+  {
+   "narration": "Let's turn those two numbers into a monthly payment. We assume a buyer puts twenty percent down and borrows the rest over thirty years, the most common setup. The standard loan formula then gives the monthly payment for interest and repayment. In early 2021, that was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }}. Today it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}. That is {{ payment(0.8 * latest(price), latest(rate), 30) / payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | times }} as much, for a house that costs only {{ pct_change(price, \"2021-01\", \"latest\") | pct }} more.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2021",
+      "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
+     },
+     {
+      "label": "Latest",
+      "value": "payment(0.8 * latest(price), latest(rate), 30)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Monthly payment on the median new home",
+    "subtitle": "Twenty percent down, thirty-year fixed loan, interest and repayment only",
+    "chapter": "The payment"
+   }
+  },
+  {
+   "narration": "Now the interesting part. We can split the increase in two with a simple model. First, keep the 2021 interest rate, but use today's price. That raises the payment by about {{ payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }} a month. That is the price effect. Then switch to today's interest rate. That adds another {{ payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) | usd }} a month. That is the rate effect. The rate effect is more than three times bigger. Your mortgage payment did not double because of house prices. It doubled mostly because of interest rates.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Payment in 2021",
+      "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
+     },
+     {
+      "label": "Added by prices",
+      "value": "payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
+     },
+     {
+      "label": "Added by rates",
+      "value": "payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Where the increase came from",
+    "subtitle": "Monthly payment, split into a price effect and a rate effect",
+    "chapter": "The split"
+   }
+  },
+  {
+   "narration": "So when you sign for a loan, the rate you lock in can matter more than the price you negotiate.",
+   "chart": {
+    "type": "photo",
+    "query": "house keys",
+    "after": 2010,
+    "caption": "Locking in a rate"
+   }
+  },
+  {
+   "narration": "Why do rates matter so much? Because on a thirty-year loan, most of your early payments are interest. Here is the payment on today's median home at different rates. At three percent, it would be about {{ payment(0.8 * latest(price), 3, 30) | usd }}. At five percent, about {{ payment(0.8 * latest(price), 5, 30) | usd }}. At seven percent, about {{ payment(0.8 * latest(price), 7, 30) | usd }}. Every extra point on the rate costs hundreds of dollars a month, for decades.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "At 3%",
+      "value": "payment(0.8 * latest(price), 3, 30)"
+     },
+     {
+      "label": "At 5%",
+      "value": "payment(0.8 * latest(price), 5, 30)"
+     },
+     {
+      "label": "At 7%",
+      "value": "payment(0.8 * latest(price), 7, 30)"
+     },
+     {
+      "label": "Today's rate",
+      "value": "payment(0.8 * latest(price), latest(rate), 30)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Same house, different rates",
+    "subtitle": "Monthly payment on today's median new home",
+    "chapter": "Why rates matter"
+   }
+  },
+  {
+   "narration": "Finally, let's measure it in time instead of dollars. In early 2021, the monthly payment took about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\") | num }} hours of work at the average hourly wage. Today it takes about {{ payment(0.8 * latest(price), latest(rate), 30) / latest(wages) | num }} hours. Pay went up too, but not nearly enough to keep up with the payment.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2021",
+      "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\")"
+     },
+     {
+      "label": "Latest",
+      "value": "payment(0.8 * latest(price), latest(rate), 30) / latest(wages)"
+     }
+    ],
+    "y_format": "num",
+    "title": "Hours of work to pay one month's mortgage",
+    "subtitle": "Monthly payment divided by average hourly pay",
+    "chapter": "In hours of work"
+   }
+  },
+  {
+   "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too. For buyers, the practical lesson is simple. When you compare homes, compare monthly payments at today's rate, not just prices, because the rate can matter more than the sticker.",
+   "chart": {
+    "type": "card",
+    "title": "Mostly rates, not prices",
+    "label": "THE ANSWER",
+    "chapter": "The answer"
+   }
+  },
+  {
+   "narration": "Here is my take. Waiting for prices to fall is the wrong focus for most buyers, because the rate does more of the damage. Prices rarely fall far, but rates can move a lot in a couple of years, and a loan can often be refinanced later if rates come down. That cuts both ways, though. Nobody knows where rates are going, so a payment only makes sense if you can afford it at today's rate. A few honest caveats. Real payments also include property tax and insurance, which we left out, and your own price, down payment and rate will be different.",
+   "chart": {
+    "type": "card",
+    "title": "Watch the rate, not just the price",
+    "label": "MY TAKE",
+    "chapter": "My take"
+   }
+  }
+ ],
+ "hashtags": [
+  "Mortgage",
+  "HousingMarket",
+  "InterestRates",
+  "Economics"
+ ],
+ "method": "Monthly payments use the standard fixed-rate loan formula with twenty percent down over thirty years, on the median new-home price and the average thirty-year rate. To split the rise, we change the price first at the old rate, then the rate.",
+ "references": [
+  {
+   "source": "Trading Economics",
+   "date": "2026-10-01",
+   "says": "Freddie Mac 30-year fixed mortgage rate rose to 7.28%, the highest since November 2023, from 7.03% a week earlier",
+   "url": "https://tradingeconomics.com/united-states/30-year-mortgage-rate/news/588887"
+  }
+ ],
+ "short": {
+  "title": "Why mortgage rates matter more than prices",
   "scenes": [
-    {
-      "narration": "If you have looked at buying a home recently, you have probably noticed something strange. House prices went up, yes. But the monthly payment went up much, much more. In early 2021, the payment on a typical new home was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }} a month. In the latest data, it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}. Today we will find out exactly where that difference came from, using the official data and the same formula the banks use.",
-      "chart": {
-        "type": "card",
-        "title": "Why did mortgage payments nearly double?",
-        "label": "HOUSING, IN NUMBERS",
-        "chapter": "The question"
-      }
-    },
-    {
-      "narration": "Start with the price. This is the median sales price of a new home in the United States, which means half of new homes sell for more and half for less. In early 2021 it was {{ value(price, \"2021-01\") | usd }}. In the latest data it is {{ latest(price) | usd }}. That is a rise of {{ pct_change(price, \"2021-01\", \"latest\") | pct }}. A big increase, but nowhere near double.",
-      "chart": {
-        "type": "line",
-        "series": [
-          "price"
-        ],
-        "from": "2000",
-        "y_format": "usd",
-        "title": "The median new home price",
-        "subtitle": "US, dollars",
-        "chapter": "Prices"
-      }
-    },
-    {
-      "narration": "Now the second ingredient, the interest rate. This is the average rate on a thirty-year fixed mortgage, going back to 1971. It peaked at {{ highest(rate, \"1971\", \"latest\") | num }} percent in {{ year_of_highest(rate, \"1971\", \"latest\") | year }}, and then fell for four decades. In early 2021 it was only {{ value(rate, \"2021-01\") | num }} percent, close to the lowest ever recorded. Then, as the Federal Reserve fought inflation, it shot up. The latest reading is {{ latest(rate) | num }} percent.",
-      "chart": {
-        "type": "line",
-        "series": [
-          "rate"
-        ],
-        "from": "1971",
-        "y_format": "num",
-        "title": "The thirty-year mortgage rate",
-        "subtitle": "Percent per year",
-        "chapter": "Interest rates"
-      }
-    },
-    {
-      "narration": "Let's zoom in on the last few years, because that is where the whole story happens. Before the pandemic, rates were already low by historical standards. In December 2019, the average was {{ value(rate, \"2019-12\") | num }} percent. During the pandemic the Federal Reserve cut its own rate to almost zero and bought large amounts of mortgage bonds, which pushed mortgage rates to record lows. When inflation took off in 2021 and 2022, the Fed reversed course and raised its rate quickly. Mortgage rates followed, climbing as high as {{ highest(rate, \"2021\", \"latest\") | num }} percent. For anyone buying a home, that was one of the fastest rises in borrowing costs in decades.",
-      "chart": {
-        "type": "line",
-        "series": [
-          "rate"
-        ],
-        "from": "2015",
-        "y_format": "num",
-        "title": "From record lows to a sharp climb",
-        "subtitle": "Thirty-year fixed mortgage rate, percent per year"
-      }
-    },
-    {
-      "narration": "Let's turn those two numbers into a monthly payment. We assume a buyer puts twenty percent down and borrows the rest over thirty years, the most common setup. The standard loan formula then gives the monthly payment for interest and repayment. In early 2021, that was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }}. Today it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}. That is {{ payment(0.8 * latest(price), latest(rate), 30) / payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | times }} as much, for a house that costs only {{ pct_change(price, \"2021-01\", \"latest\") | pct }} more.",
-      "chart": {
-        "type": "bars",
-        "bars": [
-          {
-            "label": "Early 2021",
-            "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
-          },
-          {
-            "label": "Latest",
-            "value": "payment(0.8 * latest(price), latest(rate), 30)"
-          }
-        ],
-        "y_format": "usd",
-        "title": "Monthly payment on the median new home",
-        "subtitle": "Twenty percent down, thirty-year fixed loan, interest and repayment only",
-        "chapter": "The payment"
-      }
-    },
-    {
-      "narration": "Now the interesting part. We can split the increase in two with a simple model. First, keep the 2021 interest rate, but use today's price. That raises the payment by about {{ payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }} a month. That is the price effect. Then switch to today's interest rate. That adds another {{ payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) | usd }} a month. That is the rate effect. The rate effect is more than three times bigger. Your mortgage payment did not double because of house prices. It doubled mostly because of interest rates.",
-      "chart": {
-        "type": "bars",
-        "bars": [
-          {
-            "label": "Payment in 2021",
-            "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
-          },
-          {
-            "label": "Added by prices",
-            "value": "payment(0.8 * latest(price), value(rate, \"2021-01\"), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
-          },
-          {
-            "label": "Added by rates",
-            "value": "payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30)"
-          }
-        ],
-        "y_format": "usd",
-        "title": "Where the increase came from",
-        "subtitle": "Monthly payment, split into a price effect and a rate effect",
-        "chapter": "The split"
-      }
-    },
-    {
-      "narration": "Why do rates matter so much? Because on a thirty-year loan, most of your early payments are interest. Here is the payment on today's median home at different rates. At three percent, it would be about {{ payment(0.8 * latest(price), 3, 30) | usd }}. At five percent, about {{ payment(0.8 * latest(price), 5, 30) | usd }}. At seven percent, about {{ payment(0.8 * latest(price), 7, 30) | usd }}. Every extra point on the rate costs hundreds of dollars a month, for decades.",
-      "chart": {
-        "type": "bars",
-        "bars": [
-          {
-            "label": "At 3%",
-            "value": "payment(0.8 * latest(price), 3, 30)"
-          },
-          {
-            "label": "At 5%",
-            "value": "payment(0.8 * latest(price), 5, 30)"
-          },
-          {
-            "label": "At 7%",
-            "value": "payment(0.8 * latest(price), 7, 30)"
-          },
-          {
-            "label": "Today's rate",
-            "value": "payment(0.8 * latest(price), latest(rate), 30)"
-          }
-        ],
-        "y_format": "usd",
-        "title": "Same house, different rates",
-        "subtitle": "Monthly payment on today's median new home",
-        "chapter": "Why rates matter"
-      }
-    },
-    {
-      "narration": "Finally, let's measure it in time instead of dollars. In early 2021, the monthly payment took about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\") | num }} hours of work at the average hourly wage. Today it takes about {{ payment(0.8 * latest(price), latest(rate), 30) / latest(wages) | num }} hours. Pay went up too, but not nearly enough to keep up with the payment.",
-      "chart": {
-        "type": "bars",
-        "bars": [
-          {
-            "label": "Early 2021",
-            "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) / value(wages, \"2021-01\")"
-          },
-          {
-            "label": "Latest",
-            "value": "payment(0.8 * latest(price), latest(rate), 30) / latest(wages)"
-          }
-        ],
-        "y_format": "num",
-        "title": "Hours of work to pay one month's mortgage",
-        "subtitle": "Monthly payment divided by average hourly pay",
-        "chapter": "In hours of work"
-      }
-    },
-    {
-      "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too. For buyers, the practical lesson is simple. When you compare homes, compare monthly payments at today's rate, not just prices, because the rate can matter more than the sticker.",
-      "chart": {
-        "type": "card",
-        "title": "Mostly rates, not prices",
-        "label": "THE ANSWER",
-        "chapter": "The answer"
-      }
-    },
-    {
-      "narration": "A few honest caveats. Real payments also include property tax and insurance, which we left out. Your own price, down payment and rate will be different. And these are new homes, which sell for a bit more than existing ones. But the split between the price effect and the rate effect is the same simple maths, and now you know how to do it yourself. If you want to try it with your own numbers, any online mortgage calculator uses the same formula we used here.",
-      "chart": {
-        "type": "card",
-        "title": "Taxes and insurance come on top",
-        "label": "CAVEATS"
-      }
-    }
+   10
   ]
+ }
 }
