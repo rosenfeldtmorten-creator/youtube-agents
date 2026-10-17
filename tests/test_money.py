@@ -260,7 +260,7 @@ def test_photo_frames_push_in(tmp_path):
     photo = Photo(src, "File:P.jpg", "Jane Doe", "CC BY 4.0", "https://commons.wikimedia.org/wiki/File:P.jpg")
     out = frames(photo, "Washington, 1968", (640, 360), 2.0, tmp_path / "f", fps=6)
     assert len(out) == 12 and abs(sum(d for _, d in out) - 2.0) < 1e-6
-    assert Image.open(out[0][0]).size == (640, 360) and out[0][0].suffix == ".png"
+    assert Image.open(out[0][0]).size == (640, 360) and out[0][0].suffix == ".jpg"
 
 
 @pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")

@@ -150,7 +150,7 @@ def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, ou
                 frame.paste(Image.blend(frame, text, strength), (0, 0), text_mask)
         frame = frame.convert("RGBA")
         frame.alpha_composite(overlay)
-        path = out_dir / f"photo_{i:04d}.png"  # PNG like every other frame: ffmpeg's concat needs one image codec
-        frame.convert("RGB").save(path, compress_level=1)
+        path = out_dir / f"photo_{i:04d}.jpg"  # one codec per scene is all ffmpeg's concat needs, as each scene is encoded on its own
+        frame.convert("RGB").save(path, quality=93)
         out.append((path, seconds / n))
     return out

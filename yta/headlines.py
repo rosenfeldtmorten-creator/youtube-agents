@@ -98,7 +98,7 @@ def frames(items: list[dict], size: tuple[int, int], seconds: float, out_dir: Pa
             x = (w - c.width) // 2 + dx
             y = (h - c.height) // 2 + dy + int(80 * (1 - p))
             frame.alpha_composite(c, (max(0, x), max(0, y)))
-        path = out_dir / f"head_{i:04d}.png"
-        frame.convert("RGB").save(path, compress_level=1)
+        path = out_dir / f"head_{i:04d}.jpg"  # JPEG keeps the runner's disk free; each scene is encoded on its own
+        frame.convert("RGB").save(path, quality=93)
         out.append((path, seconds / n))
     return out

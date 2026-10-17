@@ -40,6 +40,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space   # the voice models, two copies of torch and full-HD frames don't fit in a stock runner
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af > /dev/null || true
+          echo "::notice title=Disk before::$(df -h / | tail -1)"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -87,6 +93,12 @@ jobs:
           path: .cache/voice
           key: narration-${{ env.CHANNEL }}-${{ github.run_id }}-narrated
 
+      - name: Drop the restoration model before rendering
+        if: always() && env.VOICE == 'chatterbox'
+        run: |
+          rm -rf /tmp/re ~/.cache/pip
+          echo "::notice title=Disk before render::$(df -h / | tail -1)"
+
       - name: Render
         shell: bash
         run: |
@@ -99,6 +111,7 @@ jobs:
         run: |
           msg=$(tail -c 3500 run.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
           echo "::error title=Preview failed::${msg}"
+          echo "::notice title=Disk at failure::$(df -h / | tail -1)"
 
       - name: Save narration cache
         if: always() && env.VOICE == 'chatterbox'

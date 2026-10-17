@@ -54,6 +54,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space   # the voice models, two copies of torch and full-HD frames don't fit in a stock runner
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af > /dev/null || true
+          echo "::notice title=Disk before::$(df -h / | tail -1)"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -100,6 +106,12 @@ jobs:
         with:
           path: .cache/voice
           key: narration-${{ matrix.channel }}-${{ github.run_id }}-narrated
+
+      - name: Drop the restoration model before rendering
+        if: always() && env.VOICE == 'chatterbox'
+        run: |
+          rm -rf /tmp/re ~/.cache/pip
+          echo "::notice title=Disk before render::$(df -h / | tail -1)"
 
       - name: Render and publish
         env:
