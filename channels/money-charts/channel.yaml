@@ -32,7 +32,7 @@ render:
   scene_pause: 0.8
   chart_frames: 36           # frames R draws to reveal each chart
   chart_reveal_seconds: 6
-  min_minutes: 5
+  min_minutes: 3            # the cloned voice reads ~1000 words in about 4-5 minutes
   max_minutes: 20
   accent: "#F2B33D"
 

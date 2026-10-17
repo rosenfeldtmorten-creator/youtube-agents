@@ -51,6 +51,11 @@ class ChatterboxVoice:
             print(f"  {reference} not found: test render uses Chatterbox's built-in voice")
         self.exaggeration = exaggeration
         self.cfg_weight = cfg_weight
+        import hashlib
+
+        ref = hashlib.sha1(Path(reference).read_bytes()).hexdigest()[:12] if has_reference else "default"
+        # Part of the narration cache key, so a new voice clip or setting never reuses old audio.
+        self.cache_tag = f"chatterbox-{ref}-{exaggeration}-{cfg_weight}"
 
     def say(self, text: str) -> np.ndarray:
         wav = self.model.generate(text, exaggeration=self.exaggeration, cfg_weight=self.cfg_weight)
@@ -71,7 +76,8 @@ class Narrator:
     def say(self, text: str) -> np.ndarray:
         import hashlib
 
-        key = hashlib.sha1(f"{type(self.backend).__name__}|{self.tempo}|{text}".encode()).hexdigest()
+        tag = getattr(self.backend, "cache_tag", type(self.backend).__name__)
+        key = hashlib.sha1(f"{tag}|{self.tempo}|{text}".encode()).hexdigest()
         cached = self.cache_dir / f"{key}.wav" if self.cache_dir else None
         if cached and cached.exists():
             return audio.read_wav(cached)[0]

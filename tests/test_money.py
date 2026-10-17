@@ -12,9 +12,7 @@ from yta.data import Series
 from yta.episode import check_script, load_episode
 
 CFG = yaml.safe_load((ROOT / "channels" / "money-charts" / "channel.yaml").read_text())
-SAMPLE = next((ROOT / "channels" / "money-charts" / "queue").glob("*.json"), None) or next(
-    (ROOT / "channels" / "money-charts" / "published").glob("*.json")
-)
+SAMPLE = ROOT / "tests" / "data" / "sample-episode.json"  # fixed copy, so tests don't depend on what's queued
 
 
 def fake_series(name, start, growth, step=1):

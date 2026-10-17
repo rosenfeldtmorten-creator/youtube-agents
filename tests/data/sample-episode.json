@@ -196,9 +196,5 @@
         "label": "ONE LAST THING"
       }
     }
-  ],
-  "_rejected": {
-    "date": "2026-10-17",
-    "reason": "video is 4.3 min; allowed 5-20 min"
-  }
+  ]
 }

@@ -1,0 +1,200 @@
+{
+  "slug": "did-your-paycheck-keep-up",
+  "title": "Did Your Paycheck Keep Up? Prices, Wages and Houses Since 2000",
+  "description": "Prices feel higher than ever, but so are wages. So who is winning? We compare a quarter century of US consumer prices, average hourly pay and house prices, using official public data, and look at what that means for your money today.",
+  "tags": [
+    "inflation explained",
+    "wages vs inflation",
+    "cost of living",
+    "house prices",
+    "personal finance",
+    "economics explained",
+    "money explained",
+    "data visualization"
+  ],
+  "thumbnail_text": "Did your paycheck keep up?",
+  "data": {
+    "cpi": {
+      "source": "fred",
+      "id": "CPIAUCSL",
+      "label": "Consumer prices",
+      "unit": "index",
+      "short_source": "FRED (BLS consumer price index)"
+    },
+    "wages": {
+      "source": "fred",
+      "id": "AHETPI",
+      "label": "Average hourly pay",
+      "unit": "usd",
+      "short_source": "FRED (BLS average hourly earnings)"
+    },
+    "homes": {
+      "source": "fred",
+      "id": "CSUSHPINSA",
+      "label": "House prices",
+      "unit": "index",
+      "short_source": "FRED (S&P CoreLogic Case-Shiller)"
+    },
+    "median_home": {
+      "source": "fred",
+      "id": "MSPUS",
+      "label": "Median house price",
+      "unit": "usd",
+      "short_source": "FRED (Census Bureau, HUD)"
+    }
+  },
+  "claims": [
+    {
+      "says": "Pay rose faster than prices since 2000",
+      "check": "ratio(wages, \"2000-01\", \"latest\") > ratio(cpi, \"2000-01\", \"latest\")"
+    },
+    {
+      "says": "Prices rose much faster in 2021-2023 than the yearly pace before the pandemic",
+      "check": "pct_change(cpi, \"2021-01\", \"2023-01\") > 2 * cagr(cpi, \"2000-01\", \"2019-12\")"
+    },
+    {
+      "says": "House prices rose faster than both prices and pay",
+      "check": "ratio(homes, \"2000-01\", \"latest\") > ratio(wages, \"2000-01\", \"latest\")"
+    },
+    {
+      "says": "A median home costs more hours of work today than in 2000",
+      "check": "latest(median_home) / latest(wages) > value(median_home, \"2000-03\") / value(wages, \"2000-03\")"
+    }
+  ],
+  "scenes": [
+    {
+      "narration": "In January 2000, the average American production worker earned {{ value(wages, \"2000-01\") | usd_cents }} an hour. In the latest data, that number is {{ latest(wages) | usd_cents }}. On paper, that is a huge raise. But over the same years, almost everything you buy got more expensive too. Groceries, rent, insurance, a tank of fuel. So here is the question for today. Did your paycheck actually keep up? Instead of guessing, we are going to answer it with the official data, one chart at a time.",
+      "chart": {
+        "type": "card",
+        "title": "Did your paycheck keep up?",
+        "label": "PRICES, WAGES AND HOUSES SINCE 2000",
+        "chapter": "The question"
+      }
+    },
+    {
+      "narration": "Let's start with prices. This line is the consumer price index. Every month, government statisticians check the prices of a huge basket of everyday things, from bread to doctor visits, and combine them into one number. We set it to one hundred in January 2000, so you can read the line as a percentage of what things cost back then. Since January 2000, it has gone up {{ pct_change(cpi, \"2000-01\", \"latest\") | pct }}. In plain words, a basket of shopping that cost {{ 100 | usd }} in 2000 costs about {{ in_todays_money(100, cpi, \"2000-01\") | usd }} today.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "cpi"
+        ],
+        "from": "2000-01",
+        "index": "2000-01",
+        "y_format": "index",
+        "title": "Consumer prices since 2000",
+        "subtitle": "Index, January 2000 = 100",
+        "chapter": "Prices"
+      }
+    },
+    {
+      "narration": "For most of that time, the rise was slow and steady. Before the pandemic, prices grew about {{ cagr(cpi, \"2000-01\", \"2019-12\") | pct1 }} a year. That is the kind of inflation you barely notice. Then came the jump. Between January 2021 and January 2023 alone, prices rose {{ pct_change(cpi, \"2021-01\", \"2023-01\") | pct }}. Two years did the work of many normal years, and that is why the last few years felt so different at the checkout.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "cpi"
+        ],
+        "from": "2015-01",
+        "index": "2015-01",
+        "y_format": "index",
+        "title": "The post-pandemic jump",
+        "subtitle": "Consumer prices, index, January 2015 = 100"
+      }
+    },
+    {
+      "narration": "Now let's bring in wages. This is average hourly pay for production and non-supervisory workers, which covers most people who work for a living. Over the same period, it rose {{ pct_change(wages, \"2000-01\", \"latest\") | pct }}. When we put both lines on the same scale, both starting at one hundred in the year 2000, you can watch the race directly. For years the two lines run close together. Then they separate.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "cpi",
+          "wages"
+        ],
+        "from": "2000-01",
+        "index": "2000-01",
+        "y_format": "index",
+        "labels": {
+          "cpi": "Prices",
+          "wages": "Hourly pay"
+        },
+        "title": "Prices versus pay",
+        "subtitle": "Index, January 2000 = 100",
+        "chapter": "Wages"
+      }
+    },
+    {
+      "narration": "Here are the two totals side by side. Prices are up {{ pct_change(cpi, \"2000-01\", \"latest\") | pct }}, and pay is up {{ pct_change(wages, \"2000-01\", \"latest\") | pct }}. So on average, pay is ahead. After adjusting for inflation, an hour of work now buys about {{ ratio(wages, \"2000-01\", \"latest\") / ratio(cpi, \"2000-01\", \"latest\") - 1 | pct }} more than it did in 2000. That is a real gain. But it is spread over a quarter of a century, so from one year to the next it is easy to miss, especially when a few bad years eat into it.",
+      "chart": {
+        "type": "bars",
+        "bars": [
+          {
+            "label": "Prices",
+            "value": "pct_change(cpi, \"2000-01\", \"latest\")"
+          },
+          {
+            "label": "Hourly pay",
+            "value": "pct_change(wages, \"2000-01\", \"latest\")"
+          }
+        ],
+        "y_format": "pct",
+        "title": "Total rise since January 2000"
+      }
+    },
+    {
+      "narration": "Houses are a different story. The Case-Shiller index follows the price of the same homes as they are sold again and again, so it measures how much the same house has gained in value. Since January 2000, it has risen {{ pct_change(homes, \"2000-01\", \"latest\") | pct }}. You can see the bubble before 2008, the crash, and then a long climb that left both prices and wages far behind.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "cpi",
+          "wages",
+          "homes"
+        ],
+        "from": "2000-01",
+        "index": "2000-01",
+        "y_format": "index",
+        "labels": {
+          "cpi": "Prices",
+          "wages": "Hourly pay",
+          "homes": "House prices"
+        },
+        "title": "Houses ran away",
+        "subtitle": "Index, January 2000 = 100",
+        "chapter": "Houses"
+      }
+    },
+    {
+      "narration": "Let's make that personal. The median price of a new home sold in the United States went from {{ value(median_home, \"2000-03\") | usd }} in early 2000 to {{ latest(median_home) | usd }} in the latest data. Now divide that by the average hourly wage. In 2000, the median home cost about {{ value(median_home, \"2000-03\") / value(wages, \"2000-03\") | num }} hours of work. Today it costs about {{ latest(median_home) / latest(wages) | num }} hours. Same kind of house, a lot more of your life spent paying for it.",
+      "chart": {
+        "type": "bars",
+        "bars": [
+          {
+            "label": "Early 2000",
+            "value": "value(median_home, \"2000-03\") / value(wages, \"2000-03\")"
+          },
+          {
+            "label": "Latest",
+            "value": "latest(median_home) / latest(wages)"
+          }
+        ],
+        "y_format": "num",
+        "title": "Hours of work to buy the median new home",
+        "subtitle": "Median sales price divided by average hourly pay"
+      }
+    },
+    {
+      "narration": "So, did your paycheck keep up? With everyday prices, yes. On average, and slowly, pay has stayed ahead. With houses, no. Home prices raced ahead of both, and that gap is a big reason so many people feel squeezed, even when their pay is rising. If you already owned a home, the same chart worked in your favour. If you are trying to buy one, it is working against you.",
+      "chart": {
+        "type": "card",
+        "title": "Prices: pay kept up. Houses: it did not.",
+        "label": "THE ANSWER",
+        "chapter": "The answer"
+      }
+    },
+    {
+      "narration": "One last thing. These are national averages. Your own city, your job and your rent can look very different, and averages always hide people who did much better or much worse. But the big picture is clear in the data. Next time someone says wages never keep up, or that inflation is nothing to worry about, you will know exactly where to look.",
+      "chart": {
+        "type": "card",
+        "title": "Averages hide a lot of local detail",
+        "label": "ONE LAST THING"
+      }
+    }
+  ]
+}

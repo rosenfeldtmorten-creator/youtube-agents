@@ -68,6 +68,13 @@ jobs:
           path: ~/.cache/huggingface
           key: hf-chatterbox-0.1.7
 
+      - name: Restore narration cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ matrix.channel }}-${{ github.run_id }}
+          restore-keys: narration-${{ matrix.channel }}-
+
       - name: Install Python packages
         run: |
           pip install -r requirements.txt
@@ -88,6 +95,13 @@ jobs:
           else
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" --no-upload --force
           fi
+
+      - name: Save narration cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ matrix.channel }}-${{ github.run_id }}
 
       - name: Keep the video
         if: always()
