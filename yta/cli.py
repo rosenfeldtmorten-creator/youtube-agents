@@ -210,6 +210,11 @@ def cmd_narrate(args) -> int:
             print(f"  {k}/{len(sentences)}", flush=True)
             narrator.say(sentence)
         print(f"Narrated {len(sentences)} sentences of '{obj.title}'")
+        if narrator.enhance:
+            try:
+                print(f"Restored {narrator.enhance_cached(sentences)} sentences with {narrator.enhance}")
+            except Exception as exc:  # the video still works with the plain voice
+                print(f"::warning title=Voice restoration skipped::{exc}")
         return 0
     print("Nothing queued to narrate.")
     return 0

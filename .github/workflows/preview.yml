@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 300
     env:
       PYTHONUNBUFFERED: "1"
+      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
       CHANNEL: ${{ inputs.channel || 'money-charts' }}
       VOICE: ${{ inputs.voice || 'chatterbox' }}
       CUT: ${{ inputs.seconds || '0' }}
@@ -67,6 +68,13 @@ jobs:
           if [ "$VOICE" = "chatterbox" ]; then
             pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
           fi
+
+      - name: Install the voice restoration model
+        if: env.VOICE == 'chatterbox'
+        continue-on-error: true   # without it the video still renders, with the plain cloned voice
+        run: |
+          python -m venv /tmp/re
+          /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
 
       - name: Narrate (saved before rendering, so a failed render keeps the voice work)
         if: env.VOICE == 'chatterbox'

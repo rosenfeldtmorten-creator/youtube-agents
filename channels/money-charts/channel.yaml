@@ -23,6 +23,7 @@ voice:
   exaggeration: 0.5
   cfg_weight: 0.5
   tempo: 1.0
+  enhance: resemble         # restoration pass after cloning (owner's pick in voice test round 2)
 
 render:
   width: 1920

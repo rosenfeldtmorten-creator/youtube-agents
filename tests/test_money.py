@@ -331,3 +331,23 @@ def test_long_text_card_needs_a_photo(tmp_path):
     path.write_text(json.dumps(data))
     with pytest.raises(checks.CheckFailed, match="photo"):
         check_script(load_episode(path), CFG["script"])
+
+
+def test_narrator_prefers_restored_copy(tmp_path):
+    import numpy as np
+
+    from yta import audio
+    from yta.tts import Narrator, SilentVoice
+
+    n = Narrator(SilentVoice(), cache_dir=tmp_path, enhance="resemble")
+    plain = n.say("one two three four")
+    key = n._key("one two three four")
+    old = tmp_path / f"{key}.wav"
+    audio.write_wav(old, np.zeros(24000, dtype=np.float32), 24000)  # a cache file from the 24 kHz days
+    assert len(n.say("one two three four")) == audio.SR
+    restored = tmp_path / "resemble" / f"{key}.wav"
+    restored.parent.mkdir()
+    audio.write_wav(restored, np.full(44100, 0.1, dtype=np.float32), 44100)
+    out = n.say("one two three four")
+    assert len(out) == audio.SR and abs(float(out.mean()) - 0.1) < 1e-3
+    assert len(plain) > 0
