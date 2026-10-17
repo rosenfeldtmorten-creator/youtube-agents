@@ -30,7 +30,7 @@ render:
   fps: 24
   sentence_pause: 0.35
   scene_pause: 0.8
-  chart_frames: 36           # frames R draws to reveal each chart
+  chart_frames: 144          # frames R draws to reveal each chart: 6 s at 24 fps, so lines draw smoothly
   chart_reveal_seconds: 6
   min_minutes: 3            # the cloned voice reads ~1000 words in about 4-5 minutes
   max_minutes: 20

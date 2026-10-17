@@ -48,21 +48,19 @@ def render_short(ep, short: dict, cfg: dict, narrator, out_dir: Path, cache_dir:
         durations = [len(c) / audio.SR + r["sentence_pause"] for c in clips]
         for c in clips:
             voice += [c, audio.silence(r["sentence_pause"])]
-        chart_frames: list[Image.Image] = []
+        chart_frames: list[Path] = []
         if scene.chart["type"] not in ("card", "photo"):
-            paths = draw_chart(ep, scene.chart, out_dir / f"chart_{k}", r["chart_frames"], (W, W))
-            chart_frames = [Image.open(p).convert("RGB") for p in paths]
-        # Step through the chart reveal over the first sentence, then hold the full chart.
+            chart_frames = draw_chart(ep, scene.chart, out_dir / f"chart_{k}", r["chart_frames"], (W, W))
+        # Draw the chart over the first sentence (every frame, so the line moves smoothly), then hold it.
         for j, (sentence, seconds) in enumerate(zip(sentences, durations)):
             if chart_frames and j == 0:
-                steps = chart_frames[:: max(1, len(chart_frames) // 12)]
-                for img in steps:
+                for p in chart_frames:
                     n += 1
-                    frames.append((_frame(img, headline, sentence, accent, "ECONOMICS IN CHARTS", out_dir / f"f{n:04d}.png"),
-                                   seconds / len(steps)))
+                    frames.append((_frame(Image.open(p).convert("RGB"), headline, sentence, accent, "ECONOMICS IN CHARTS",
+                                          out_dir / f"f{n:04d}.png"), seconds / len(chart_frames)))
                 continue
             n += 1
-            still = chart_frames[-1] if chart_frames else None
+            still = Image.open(chart_frames[-1]).convert("RGB") if chart_frames else None
             caption = sentence if still is not None else ""
             text_headline = headline if still is not None else (scene.chart.get("title_filled") or sentence)
             frames.append((_frame(still, text_headline, caption, accent, "ECONOMICS IN CHARTS", out_dir / f"f{n:04d}.png"),
