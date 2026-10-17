@@ -61,11 +61,39 @@ def cmd_check(args) -> int:
     return 1 if bad else 0
 
 
-def render_item(obj, channel_dir: Path, cfg: dict, voice: str | None, test: bool = False):
+_NARRATORS: dict = {}
+
+
+def get_narrator(cfg: dict, voice: str | None, test: bool):
+    """One narrator per run, so a Short reuses the loaded voice model and its cached sentences."""
     from .tts import make_narrator
 
+    key = (cfg["slug"], voice, test)
+    if key not in _NARRATORS:
+        _NARRATORS[key] = make_narrator(cfg["voice"], ROOT, backend=voice, cache_dir=ROOT / ".cache" / "voice",
+                                        allow_default_voice=test)
+    return _NARRATORS[key]
+
+
+def make_short(obj, channel_dir: Path, cfg: dict, voice: str | None, test: bool):
+    """Render the episode's Short, or None if it has none or it can't be made (the long video still goes out)."""
+    if not getattr(obj, "raw", {}).get("short"):
+        return None
+    from .shorts import render_short
+
+    try:
+        out_dir = ROOT / "out" / channel_dir.name / obj.slug / "short"
+        video, seconds = render_short(obj, obj.raw["short"], cfg, get_narrator(cfg, voice, test), out_dir, ROOT / ".cache")
+        print(f"Rendered Short {video} ({seconds:.0f} s)")
+        return video
+    except Exception as exc:
+        print(f"Short skipped: {exc}")
+        return None
+
+
+def render_item(obj, channel_dir: Path, cfg: dict, voice: str | None, test: bool = False):
     cache = ROOT / ".cache"
-    narrator = make_narrator(cfg["voice"], ROOT, backend=voice, cache_dir=cache / "voice", allow_default_voice=test)
+    narrator = get_narrator(cfg, voice, test)
     out_dir = ROOT / "out" / channel_dir.name / obj.slug
     print(f"Rendering '{obj.title}'")
     result = FORMATS[cfg["format"]].render(obj, cfg, narrator, out_dir, cache)
@@ -116,6 +144,7 @@ def cmd_run(args) -> int:
             fmt.hashtags(obj),
         )
         result.video.with_name("description.txt").write_text(description, encoding="utf-8")
+        short = make_short(obj, channel_dir, cfg, args.voice, test=args.no_upload)
         if args.no_upload:
             print("Test render only: nothing uploaded, queue unchanged.")
             return 0
@@ -135,6 +164,16 @@ def cmd_run(args) -> int:
             "url": f"https://youtu.be/{video_id}",
             "minutes": round(result.seconds / 60, 1),
         }
+        if short:
+            from .shorts import short_description
+
+            try:
+                short_id = upload.upload_video(client, short, f"{obj.raw['short']['title']} #Shorts",
+                                               short_description(obj, video_id), obj.tags, yt)
+                data["_published"]["short_url"] = f"https://youtube.com/shorts/{short_id}"
+                print(f"Uploaded Short: https://youtube.com/shorts/{short_id}")
+            except Exception as exc:  # the long video is already up; don't lose its record over the Short
+                print(f"Short not uploaded: {exc}")
         (channel_dir / "published" / item.name).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         item.unlink()
         return 0

@@ -282,3 +282,31 @@ def test_music_is_mixed_under_the_voice(tmp_path):
     probe = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(video)],
                            capture_output=True, text=True).stdout
     assert abs(float(probe) - 7.0) < 0.3  # looped music must not make the video longer than the voice
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
+def test_short_renders_vertical(tmp_path):
+    import subprocess
+
+    from yta.shorts import render_short
+    from yta.tts import Narrator, SilentVoice
+
+    ep = _with_fake_data(load_episode(SAMPLE))
+    cards = [i for i, s in enumerate(ep.scenes, 1) if s.chart["type"] == "card"][:1]
+    cfg = {**CFG, "render": {**CFG["render"], "music": False}}
+    video, seconds = render_short(ep, {"title": "A test short", "scenes": cards}, cfg, Narrator(SilentVoice()),
+                                  tmp_path / "short", tmp_path)
+    size = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height",
+                           "-of", "csv=p=0", str(video)], capture_output=True, text=True).stdout.strip()
+    assert size == "1080,1920" and seconds <= 58
+
+
+def test_short_field_is_checked(tmp_path):
+    from yta.story import StoryError
+
+    data = json.loads(SAMPLE.read_text())
+    data["short"] = {"title": "Too far", "scenes": [99]}
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(StoryError, match="short"):
+        load_episode(path)
