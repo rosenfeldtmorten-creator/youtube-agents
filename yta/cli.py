@@ -109,16 +109,18 @@ def cmd_run(args) -> int:
             reject(item, channel_dir, str(exc))
             continue
 
+        from . import upload
+
+        description = upload.build_description(
+            obj.description, result.chapters, fmt.extra_description(obj, result), cfg["description_footer"],
+            fmt.hashtags(obj),
+        )
+        result.video.with_name("description.txt").write_text(description, encoding="utf-8")
         if args.no_upload:
             print("Test render only: nothing uploaded, queue unchanged.")
             return 0
 
-        from . import upload
-
         yt = cfg["youtube"]
-        description = upload.build_description(
-            obj.description, result.chapters, fmt.extra_description(obj, result), cfg["description_footer"]
-        )
         client = upload.youtube_client(yt["refresh_token_secret"])
         video_id = upload.upload_video(client, result.video, obj.title, description, obj.tags, yt)
         print(f"Uploaded: https://youtu.be/{video_id}")

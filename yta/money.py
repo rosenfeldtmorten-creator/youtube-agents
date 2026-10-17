@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from . import audio, metrics
+from . import audio, metrics, music, photos
 from .episode import Episode
 from .render import RenderResult, _fmt_srt, mux
 from .story import split_sentences
@@ -108,6 +108,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     voice_parts: list[np.ndarray] = []
     captions: list[tuple[float, float, str]] = []
     chapters: list[tuple[float, str]] = []
+    photo_credits: list[str] = []
     t = 0.0
     first_chart: Path | None = None
 
@@ -129,6 +130,15 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
 
         if chart["type"] == "card":
             frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+        elif chart["type"] == "photo":
+            try:
+                photo = photos.find(chart, cache_dir / "photos")
+                frames += photos.frames(photo, chart.get("caption", ""), size, seconds, out_dir / f"photo_{i:02d}")
+                if photo.description_line not in photo_credits:
+                    photo_credits.append(photo.description_line)
+            except Exception as exc:  # a missing photo should never stop a render
+                print(f"  photo: {exc}; showing a title card instead")
+                frames.append((card(slides, chart.get("caption", ""), chart.get("label", "")), seconds))
         else:
             n = r["chart_frames"]
             imgs = draw_chart(ep, chart, out_dir / f"chart_{i:02d}", n, size)
@@ -141,11 +151,14 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     if chapters and chapters[0][0] > 0:
         chapters.insert(0, (0.0, "Introduction"))
     print(f"  encoding {len(frames)} frames")
-    video, seconds = mux(frames, np.concatenate(voice_parts), out_dir, r["fps"])
+    track = music.pick(ep.slug, ep.raw.get("music"))
+    music_file = music.fetch(track, cache_dir / "music") if r.get("music", True) else None
+    video, seconds = mux(frames, np.concatenate(voice_parts), out_dir, r["fps"], music=music_file)
 
     srt = out_dir / "captions.srt"
     srt.write_text("\n".join(f"{n}\n{_fmt_srt(a)} --> {_fmt_srt(b)}\n{txt}\n" for n, (a, b, txt) in enumerate(captions, 1)),
                    encoding="utf-8")
     bg = Image.open(first_chart).convert("RGB") if first_chart else generated_background(ep.slug, size)
     thumb = thumbnail(bg, ep.thumbnail_text, None, r["accent"], out_dir / "thumbnail.jpg", label=cfg["thumbnail_label"])
-    return RenderResult(video, thumb, srt, seconds, [], chapters if len(chapters) >= 3 else [])
+    return RenderResult(video, thumb, srt, seconds, photo_credits, chapters if len(chapters) >= 3 else [],
+                        [music.credit(track)] if music_file else [])

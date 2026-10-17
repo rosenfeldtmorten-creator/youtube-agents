@@ -1,0 +1,108 @@
+name: Preview
+
+# Renders the next queued episode without uploading it and commits a small preview
+# (a 720p cut, the thumbnail, a few stills and the description) to previews/ on the same branch.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        options: [money-charts, english-stories]
+        default: money-charts
+      voice:
+        type: choice
+        options: [chatterbox, espeak, silent]
+        default: espeak
+      seconds:
+        description: Length of the preview cut (0 for the whole video)
+        default: "120"
+  push:
+    branches: [claude/voice-studio]
+    paths: [.github/workflows/preview.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      PYTHONUNBUFFERED: "1"
+      CHANNEL: ${{ inputs.channel || 'money-charts' }}
+      VOICE: ${{ inputs.voice || 'espeak' }}
+      CUT: ${{ inputs.seconds || '120' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core espeak-ng r-base-core r-cran-ggplot2 r-cran-jsonlite r-cran-scales
+
+      - name: Cache voice model
+        if: env.VOICE == 'chatterbox'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-chatterbox-0.1.7
+
+      - name: Restore narration cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ env.CHANNEL }}-${{ github.run_id }}
+          restore-keys: narration-${{ env.CHANNEL }}-
+
+      - name: Install Python packages
+        run: |
+          pip install -r requirements.txt
+          if [ "$VOICE" = "chatterbox" ]; then
+            pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
+          fi
+
+      - name: Render
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m yta run --channel "$CHANNEL" --voice "$VOICE" --no-upload --force 2>&1 | tee run.log
+
+      - name: Report the error
+        if: failure()
+        shell: bash
+        run: |
+          msg=$(tail -c 3500 run.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
+          echo "::error title=Preview failed::${msg}"
+
+      - name: Save narration cache
+        if: always() && env.VOICE == 'chatterbox'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ env.CHANNEL }}-${{ github.run_id }}
+
+      - name: Commit the preview
+        shell: bash
+        run: |
+          src=$(dirname "$(ls -t out/"$CHANNEL"/*/video.mp4 | head -1)")
+          slug=$(basename "$src")
+          dst="previews/$slug"
+          rm -rf "$dst" && mkdir -p "$dst"
+          cut=(); [ "$CUT" != "0" ] && cut=(-t "$CUT")
+          ffmpeg -loglevel error -y -i "$src/video.mp4" "${cut[@]}" -vf scale=1280:-2 -c:v libx264 -crf 28 -preset veryfast -c:a aac -b:a 128k "$dst/preview.mp4"
+          cp "$src/thumbnail.jpg" "$src/description.txt" "$dst/"
+          for t in 5 30 60 90; do ffmpeg -loglevel error -y -ss "$t" -i "$src/video.mp4" -frames:v 1 -vf scale=960:-2 "$dst/still-$t.jpg" || true; done
+          echo "voice: $VOICE" > "$dst/info.txt"
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add previews
+          git commit -m "Preview $slug ($VOICE voice)" || exit 0
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

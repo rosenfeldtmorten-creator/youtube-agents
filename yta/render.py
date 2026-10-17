@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +32,7 @@ class RenderResult:
     seconds: float
     photo_credits: list[str]
     chapters: list[tuple[float, str]]
+    music_credits: list[str] = field(default_factory=list)
 
 
 def _fmt_srt(t: float) -> str:
@@ -98,8 +99,28 @@ AUDIO_MASTER = (
 )
 
 
-def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int) -> tuple[Path, float]:
-    """Join still frames (each shown for its duration) with an audio track into an MP4."""
+# Background music sits about 14 dB under the voice and dips further while someone is speaking.
+MUSIC_LEVEL = "loudnorm=I=-30:TP=-8"
+MUSIC_DUCK = "sidechaincompress=threshold=0.03:ratio=6:attack=30:release=600"
+
+
+def audio_args(seconds: float, music: Path | None) -> list[str]:
+    if not music:
+        return ["-af", AUDIO_MASTER]
+    fade = max(0.0, seconds - 4)
+    graph = (
+        f"[1:a]{AUDIO_MASTER},aresample=48000,asplit=2[v][sc];"
+        f"[2:a]aformat=channel_layouts=mono,{MUSIC_LEVEL},aresample=48000,"
+        f"afade=t=in:d=2,afade=t=out:st={fade:.2f}:d=4[m0];"
+        f"[m0][sc]{MUSIC_DUCK}[m];"
+        "[v][m]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.9[a]"
+    )
+    return ["-filter_complex", graph, "-map", "0:v", "-map", "[a]"]
+
+
+def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int,
+        music: Path | None = None) -> tuple[Path, float]:
+    """Join still frames (each shown for its duration) with an audio track, and optional music, into an MP4."""
     wav = out_dir / "narration.wav"
     audio.write_wav(wav, track)
     seconds = len(track) / audio.SR
@@ -115,8 +136,9 @@ def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps:
     subprocess.run([
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(wav),
+        *(["-stream_loop", "-1", "-i", str(music)] if music else []),
         "-vf", f"fps={fps},format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "20",
-        "-af", AUDIO_MASTER, "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(video),
+        *audio_args(seconds, music), "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(video),
     ], check=True)
     return video, seconds
 

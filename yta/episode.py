@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from . import metrics
 from .data import Series, fetch_all
 from .story import StoryError, split_sentences
 
-CHART_TYPES = ("line", "bars", "growth", "scatter", "card")
+CHART_TYPES = ("line", "bars", "growth", "scatter", "card", "photo")
 TRENDS = ("linear", "smooth")
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
 
@@ -69,6 +70,24 @@ class Episode:
                 scene.chart["title_filled"] = metrics.fill(scene.chart["title"], self.series)
 
     @property
+    def hashtags(self) -> list[str]:
+        if self.raw.get("hashtags"):
+            return [str(t) for t in self.raw["hashtags"]]
+        return ["".join(w[:1].upper() + w[1:] for w in re.findall(r"[A-Za-z0-9]+", t)) for t in self.tags[:3]]
+
+    @property
+    def references(self) -> list[str]:
+        """News and reports the script cites, as 'Outlet (16 Oct 2026): what it says'."""
+        import datetime as dt
+
+        out = []
+        for ref in self.raw.get("references", []):
+            day = dt.date.fromisoformat(ref["date"])
+            line = f"{ref['source']} ({day.day} {day:%b %Y}): {ref['says']}"
+            out.append(f"{line} {ref['url']}" if ref.get("url") else line)
+        return out
+
+    @property
     def sources(self) -> list[str]:
         out = []
         for spec in self.data.values():
@@ -112,6 +131,17 @@ def load_episode(path: Path) -> Episode:
         if spec.get("source") == "inline" and not spec.get("citation"):
             raise StoryError(f"{path.name}: inline data '{name}' needs a 'citation' naming where the numbers come from")
 
+    for tag in data.get("hashtags", []):
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9]{1,29}", str(tag)):
+            raise StoryError(f"{path.name}: hashtag '{tag}' must be one word of letters and digits, without #")
+    if len(data.get("hashtags", [])) > 5:
+        raise StoryError(f"{path.name}: use at most 5 hashtags")
+    for ref in data.get("references", []):
+        if not (isinstance(ref, dict) and ref.get("source") and ref.get("date") and ref.get("says")):
+            raise StoryError(f"{path.name}: each reference needs 'source', 'date' (YYYY-MM-DD) and 'says'")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(ref["date"])):
+            raise StoryError(f"{path.name}: reference date '{ref['date']}' must look like 2026-10-16")
+
     scenes = []
     for i, sc in enumerate(data["scenes"], 1):
         chart = dict(sc.get("chart") or {"type": "card"})
@@ -122,6 +152,8 @@ def load_episode(path: Path) -> Episode:
         for name in list(chart.get("series", [])) + [chart[k] for k in ("x", "y") if chart["type"] == "scatter"]:
             if name not in data["data"]:
                 raise StoryError(f"{path.name}: scene {i} charts unknown data '{name}'")
+        if chart["type"] == "photo" and not (chart.get("file") or chart.get("query")):
+            raise StoryError(f"{path.name}: scene {i} photo needs a Wikimedia Commons 'file' or a search 'query'")
         if chart.get("trend") not in (None, *TRENDS):
             raise StoryError(f"{path.name}: scene {i} trend must be one of {', '.join(TRENDS)}")
         if not sc.get("narration", "").strip():

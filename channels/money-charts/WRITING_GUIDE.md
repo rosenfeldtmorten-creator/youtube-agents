@@ -42,7 +42,7 @@ Use only public series that need no key:
 
 - **FRED** (`"source": "fred", "id": "<series id>"`): for example CPIAUCSL (consumer prices), AHETPI (hourly pay), CSUSHPINSA (house prices), MSPUS (median house price), MORTGAGE30US (mortgage rate), FEDFUNDS, UNRATE, GASREGW (petrol price), DGS10 (10-year Treasury), SP500 (last ten years only), PSAVERT (savings rate), TOTALSL (consumer credit).
 - **World Bank** (`"source": "worldbank", "country": "US", "indicator": "NY.GDP.PCAP.CD"`) for country comparisons.
-- **Inline** (`"source": "inline", "points": [["2000", 1.5], ...], "citation": "..."`) only for small official tables you can cite exactly.
+- **Inline** (`"source": "inline", "points": [["2000", 1.5], ...], "citation": "..."`) only for small official tables, or a figure from a news report, that you can cite exactly.
 
 Give each series a `label` (shown in legends) and a `short_source` (shown under charts).
 
@@ -52,6 +52,32 @@ Two optional settings on a series:
 - `"in_todays_dollars": "cpi"` restates a dollar series in today's money using another series in `data` (here `cpi`). Every function and chart then works on the real values.
 
 **Checking offline.** If the check can't download a series (blocked network), it uses the copy in `data/snapshot/`, refreshed daily from the list in `data/series.json`. Prefer series from that list. A new series gets a snapshot after you push an episode that uses it, so if the check fails only because a snapshot is missing, push the episode anyway; the publish run downloads live data and rejects it if anything is wrong.
+
+## The shape of every episode
+
+Viewers should feel they are watching a sharp news explainer, not a lecture. Every episode follows this shape:
+
+1. **News hook (first scene, chapter "What just happened").** Open on something that happened in the last two weeks: a data release, a central bank decision, a company or government announcement. Search the news before writing and say when and who ("On Thursday the Labor Department said..."). Write dates in words ("the sixteenth of October"), never digits. Any number from the news goes in an `inline` series whose `citation` names the outlet and date, so it is still a placeholder.
+2. **The question.** Turn the news into the question a normal person asks about their money.
+3. **The data and the model.** The charts, with at least one model chart where it fits (see below), and real photos between them.
+4. **My take (last chapter, named "My take").** Two to four honest sentences: what the numbers mean for an ordinary household, and what would change your mind. Opinion, never advice.
+
+## Photos
+
+Put 2-4 `photo` scenes between charts so the video is not only charts: a real place, object or person the narration is about (the Federal Reserve building, a supermarket checkout, a 1968 picket line). Each one shows with a slow zoom, a caption and an on-screen credit, and is credited in the description.
+
+- `{"type": "photo", "query": "Marriner S. Eccles Federal Reserve Board Building", "caption": "The Federal Reserve, Washington"}` searches Wikimedia Commons and takes the first landscape photo with a free licence (public domain, CC0, CC BY or CC BY-SA).
+- `"file": "File:Exact name.jpg"` instead of `query` picks one Commons file exactly. Prefer this when you know a good one.
+- Keep a photo scene short (one to three sentences). If no free photo is found, the video shows the caption on a card instead, so the render never fails.
+
+## Description fields
+
+The description is built for you in this order: hashtags, `description`, CHAPTERS, HOW WE DID THE MATHS, SOURCES, PHOTOS, MUSIC, hashtags again. Fill these fields:
+
+- `hashtags`: 3-5 words without `#`, most important first (YouTube shows the first three above the title): `["Economics", "Inflation", "Wages"]`.
+- `method`: one or two sentences on any calculation that is ours ("We restate every wage in today's dollars with the consumer price index, then fit a straight line through the yearly averages.").
+- `references`: every news story or report the script mentions, as `{"source": "Reuters", "date": "2026-10-16", "says": "what it reported", "url": "https://..."}`. The data series are listed automatically.
+- `music` (optional): a Kevin MacLeod track title from `yta/music.py`; left out, one is picked for you.
 
 ## What makes a good episode
 
@@ -67,9 +93,10 @@ Two optional settings on a series:
 - `bars`: `bars` = list of `{"label": "...", "value": "<expression>"}`, `y_format`.
 - `growth`: `monthly`, `rate`, `years` (expressions). Shows money put in versus what it grew to.
 - `card`: `title` and optional `label`, for big statements.
+- `photo`: a real photo, see Photos above. Photos don't count towards the 4 charts.
 
 Every chart has a short `title` (no typed numbers) and may have a `subtitle` explaining units.
 
 ## Fields
 
-`slug`, `title` (at most 100 characters, a question or a clear promise, no placeholders), `description` (2 short paragraphs, no numbers that could go stale), `tags` (8-10), `thumbnail_text` (at most 5 words), `data`, `claims`, `scenes` (each `narration` + `chart`).
+`slug`, `title` (at most 100 characters, a question or a clear promise, no placeholders), `description` (2 short paragraphs: what happened and what the video answers), `tags` (8-10), `hashtags`, `method`, `references`, `thumbnail_text` (at most 5 words), `data`, `claims`, `scenes` (each `narration` + `chart`).
