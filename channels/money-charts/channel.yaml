@@ -14,7 +14,7 @@ youtube:
   language: en
   privacy: public
   made_for_kids: false
-  contains_synthetic_media: true   # cloned narrator voice
+  contains_synthetic_media: false   # Owner chose to leave the AI label unticked for now (17 Oct 2026).
   upload_captions: true
 
 voice:
