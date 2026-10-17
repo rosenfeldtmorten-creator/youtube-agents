@@ -54,11 +54,18 @@ def _pages(params: dict) -> list[dict]:
     return sorted(pages.values(), key=lambda p: p.get("index", 0))
 
 
-def _usable(page: dict) -> dict | None:
+def _year(meta: dict) -> int | None:
+    m = re.search(r"(19|20)\d\d", _strip_html(meta.get("DateTimeOriginal", {}).get("value", "")))
+    return int(m.group(0)) if m else None
+
+
+def _usable(page: dict, after: int | None = None) -> dict | None:
     info = (page.get("imageinfo") or [{}])[0]
     meta = info.get("extmetadata", {})
     licence = meta.get("LicenseShortName", {}).get("value", "")
     if info.get("mime") not in ("image/jpeg", "image/png") or not is_free(licence):
+        return None
+    if after and (_year(meta) or 0) < after:  # e.g. a 1970s petrol pump for a story about this year's prices
         return None
     if info.get("width", 0) < 1200 or info.get("width", 0) < info.get("height", 1):  # landscape, sharp enough for 1080p
         return None
@@ -70,7 +77,7 @@ def _usable(page: dict) -> dict | None:
 def find(chart: dict, cache_dir: Path) -> Photo:
     """The photo a scene asks for: a named Commons file, or the first freely licensed match for a search."""
     want = chart.get("file") or chart.get("query")
-    key = hashlib.sha1(want.encode()).hexdigest()[:16]
+    key = hashlib.sha1(f"{want}|{chart.get('after')}".encode()).hexdigest()[:16]
     cache_dir.mkdir(parents=True, exist_ok=True)
     meta_path, img_path = cache_dir / f"{key}.json", cache_dir / f"{key}.jpg"
     if not meta_path.exists():
@@ -80,7 +87,7 @@ def find(chart: dict, cache_dir: Path) -> Photo:
         else:
             candidates = _pages({"generator": "search", "gsrsearch": f"{want} filetype:bitmap", "gsrnamespace": 6,
                                  "gsrlimit": 25})
-        found = next((u for u in map(_usable, candidates) if u), None)
+        found = next((u for u in (_usable(c, chart.get("after")) for c in candidates) if u), None)
         if not found:
             raise LookupError(f"no freely licensed landscape photo for '{want}'")
         r = requests.get(found["url"], headers=HEADERS, timeout=60)

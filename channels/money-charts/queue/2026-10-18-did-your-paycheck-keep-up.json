@@ -118,8 +118,9 @@
    "narration": "Most of the damage came from one place: the pump. Petrol prices jumped {{ latest(gas_news) | pct1 }} in a single month, and that one item explained more than half of the rise in prices. Fuel is the price people notice most, because they see it on a big sign every time they drive past.",
    "chart": {
     "type": "photo",
-    "query": "gasoline pump price sign United States",
-    "caption": "Fuel drove September's jump"
+    "query": "gas station price sign",
+    "caption": "Fuel drove September's jump",
+    "after": 2018
    }
   },
   {
@@ -151,7 +152,8 @@
    "chart": {
     "type": "photo",
     "query": "supermarket checkout United States",
-    "caption": "The basket behind the price index"
+    "caption": "The basket behind the price index",
+    "after": 2010
    }
   },
   {
@@ -210,8 +212,9 @@
    "narration": "And then there is the biggest purchase most people ever make.",
    "chart": {
     "type": "photo",
-    "query": "suburban houses United States aerial",
-    "caption": "The biggest purchase most people make"
+    "query": "suburban housing development aerial",
+    "caption": "The biggest purchase most people make",
+    "after": 2010
    }
   },
   {
