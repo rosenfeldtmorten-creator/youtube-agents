@@ -119,6 +119,7 @@ def cmd_run(args) -> int:
         print(f"Nothing to do: {why}.")
         return 0
 
+    wanted, done_episodes = getattr(args, "episodes", 1) or 1, 0
     for item in queue_items(channel_dir):
         try:
             obj = fmt.load(item)
@@ -183,10 +184,11 @@ def cmd_run(args) -> int:
 
 
 def cmd_narrate(args) -> int:
-    """Speak every sentence of the next episode into the narration cache, before any video work.
+    """Speak every sentence of the next episode (or the next --episodes N) into the narration cache.
 
     The workflows save the cache right after this step, so a render that later fails (full disk, timeout)
-    never throws away an hour of voice synthesis."""
+    never throws away an hour of voice synthesis. The Prepare voices workflow runs it ahead of time, so
+    an upload day only has to render."""
     channel_dir, cfg = load_channel(args.channel)
     fmt = FORMATS[cfg["format"]]
     if cfg["format"] != "episode":
@@ -196,6 +198,7 @@ def cmd_narrate(args) -> int:
     from .shorts import OUTRO as SHORT_OUTRO
     from .story import split_sentences
 
+    wanted, done_episodes = getattr(args, "episodes", 1) or 1, 0
     for item in queue_items(channel_dir):
         try:
             obj = fmt.load(item)
@@ -213,7 +216,7 @@ def cmd_narrate(args) -> int:
             narrator.say(sentence)
             print(f"  {k}/{len(sentences)} ({time.time() - began:.0f} s)", flush=True)
         spoken = time.time() - began
-        print(f"::notice title=Narration::{len(sentences)} sentences in {spoken / 60:.0f} min")
+        print(f"::notice title=Narration ({obj.slug})::{len(sentences)} sentences in {spoken / 60:.0f} min")
         if narrator.enhance:
             began = time.time()
             try:
@@ -221,6 +224,10 @@ def cmd_narrate(args) -> int:
                 print(f"::notice title=Voice restoration::{done} sentences restored in {(time.time() - began) / 60:.0f} min")
             except Exception as exc:  # the video still works with the plain voice
                 print(f"::warning title=Voice restoration skipped::{exc}")
+        done_episodes += 1
+        if done_episodes >= wanted:
+            return 0
+    if done_episodes:
         return 0
     print("Nothing queued to narrate.")
     return 0
@@ -256,6 +263,8 @@ def main(argv=None) -> int:
             sp.add_argument("--force", action="store_true", help="ignore the pacing rules (for tests)")
         if name == "render":
             sp.add_argument("--item", required=True)
+        if name == "narrate":
+            sp.add_argument("--episodes", type=int, default=1, help="how many queued episodes to narrate")
     sub.add_parser("snapshot")
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
