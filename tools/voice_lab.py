@@ -4,7 +4,7 @@ Runs in the Voice lab workflow. For each candidate it renders the same test line
 masters it like a real video, scores it with Microsoft's DNSMOS (1-5, higher is
 cleaner) and writes short MP3s plus a score table to voice/lab/.
 
-Candidates:
+Round 1 compared reference clean-up (see git history); round 2 compares processing after cloning.
   current      voice/reference.wav as used today
   df-ref       the source clip cleaned with DeepFilterNet before cloning
   re-ref       the source clip restored with Resemble Enhance before cloning
@@ -104,71 +104,62 @@ def dnsmos(path: Path) -> tuple[float, float, float] | None:
     return tuple(float(np.mean(col)) for col in zip(*scores))
 
 
+STUDIO = (
+    # Broadcast-style chain: trim rumble and boxiness, tame "s" sounds, even out the level,
+    # add a little warmth, presence and air.
+    "highpass=f=80,equalizer=f=350:t=q:w=1.5:g=-3,deesser=i=0.4,"
+    "acompressor=threshold=-20dB:ratio=3:attack=5:release=80:makeup=2,"
+    "equalizer=f=120:t=q:w=1:g=2,equalizer=f=3500:t=q:w=1.2:g=2,highshelf=f=10000:g=3"
+)
+
+
+def studio(src: Path, dst: Path) -> Path:
+    ffmpeg("-i", str(src), "-af", STUDIO, "-ac", "1", "-ar", "48000", str(dst))
+    return dst
+
+
 def main() -> None:
+    """Round 2: today's voice (B) with extra processing after cloning."""
     LAB.mkdir(parents=True, exist_ok=True)
     WORK.mkdir(parents=True, exist_ok=True)
-    seg = WORK / "source-seg.wav"
-    ffmpeg("-ss", SEGMENT[0], "-t", SEGMENT[1], "-i", str(SOURCE), "-ac", "1", "-ar", "48000", str(seg))
-
-    refs: dict[str, Path] = {"current": ROOT / "voice" / "reference.wav"}
-    steps = {
-        "df-ref": lambda: as_reference(deep_filter(seg, WORK / "seg-df.wav"), LAB / "reference-df.wav"),
-        "re-ref": lambda: as_reference(resemble(seg, WORK / "seg-re.wav"), LAB / "reference-re.wav"),
-    }
-    for name, make in steps.items():
-        try:
-            refs[name] = make()
-        except Exception as exc:  # one missing tool shouldn't sink the whole comparison
-            print(f"::warning title=Voice lab::{name} skipped: {exc}")
-
+    import soundfile as sf
     import torch
     from chatterbox.tts import ChatterboxTTS
 
-    torch.manual_seed(0)
     model = ChatterboxTTS.from_pretrained(device="cpu")
-    raw: dict[str, Path] = {}
-    for name, ref in refs.items():
-        print(f"Rendering {name}...", flush=True)
-        model.prepare_conditionals(str(ref), exaggeration=0.5)
-        torch.manual_seed(0)
-        wav = model.generate(TEXT, exaggeration=0.5, cfg_weight=0.5).squeeze(0).numpy()
-        out = WORK / f"{name}.wav"
-        import soundfile as sf
+    model.prepare_conditionals(str(ROOT / "voice" / "reference.wav"), exaggeration=0.5)
+    torch.manual_seed(0)
+    base = WORK / "B.wav"
+    sf.write(base, model.generate(TEXT, exaggeration=0.5, cfg_weight=0.5).squeeze(0).numpy(), model.sr)
 
-        sf.write(out, wav, model.sr)
-        raw[name] = out
-
-    post = {
-        "current+df": lambda: deep_filter(raw["current"], WORK / "current+df.wav"),
-        "current+re": lambda: resemble(raw["current"], WORK / "current+re.wav"),
+    raw: dict[str, Path] = {"B": base}
+    steps = {
+        "B+studio": lambda: studio(base, WORK / "B+studio.wav"),
+        "B+clean": lambda: deep_filter(base, WORK / "B+clean.wav"),
+        "B+clean+studio": lambda: studio(deep_filter(base, WORK / "B+clean2.wav"), WORK / "B+clean+studio.wav"),
+        "B+restore": lambda: resemble(base, WORK / "B+restore.wav"),
+        "B+restore+studio": lambda: studio(resemble(base, WORK / "B+restore2.wav"), WORK / "B+restore+studio.wav"),
     }
-    if "df-ref" in raw:
-        post["df-ref+re"] = lambda: resemble(raw["df-ref"], WORK / "df-ref+re.wav")
-    for name, make in post.items():
+    for name, make in steps.items():
         try:
             raw[name] = make()
-        except Exception as exc:
+        except Exception as exc:  # one missing tool shouldn't sink the whole comparison
             print(f"::warning title=Voice lab::{name} skipped: {exc}")
 
+    out = LAB / "round2"
+    out.mkdir(parents=True, exist_ok=True)
     rows = []
-    benches = {"your-mic": seg}
-    target = WORK / "target.wav"
-    if target.exists():
-        benches["target-video"] = target
-    for name, src in [*benches.items(), *raw.items()]:
+    for name, src in raw.items():
         mastered = master(src, WORK / f"m-{name}.wav")
-        ffmpeg("-i", str(mastered), "-c:a", "libmp3lame", "-b:a", "160k", str(LAB / f"{name}.mp3"))
-        score = dnsmos(mastered)
-        rows.append((name, score))
+        ffmpeg("-i", str(mastered), "-c:a", "libmp3lame", "-b:a", "192k", str(out / f"{name}.mp3"))
+        rows.append((name, dnsmos(mastered)))
 
     lines = ["| Version | Voice clarity | Background | Overall |", "|---|---|---|---|"]
     for name, score in rows:
         cells = [f"{v:.2f}" for v in score] if score else ["n/a"] * 3
         lines.append(f"| {name} | " + " | ".join(cells) + " |")
     table = "\n".join(lines)
-    (LAB / "scores.md").write_text(
-        "DNSMOS scores (1-5, higher is cleaner) for the same test line.\n\n" + table + "\n"
-    )
+    (out / "scores.md").write_text("DNSMOS scores (1-5, higher is cleaner) for the same test line.\n\n" + table + "\n")
     print(table)
     print("::notice title=Voice lab scores::" + table.replace("\n", "%0A"))
 

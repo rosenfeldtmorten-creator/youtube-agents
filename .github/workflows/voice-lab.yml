@@ -52,13 +52,6 @@ jobs:
           python -m venv /tmp/re
           /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
 
-      - name: Grab 30 seconds of the target video's narration
-        continue-on-error: true
-        run: |
-          pip install -q yt-dlp
-          mkdir -p /tmp/voice-lab
-          yt-dlp -q -x --audio-format wav --download-sections "*120-150" -o "/tmp/voice-lab/target.%(ext)s" "https://www.youtube.com/watch?v=un-3SVhRX_c"
-
       - name: Run the lab
         run: python tools/voice_lab.py
 
