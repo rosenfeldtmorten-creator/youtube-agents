@@ -12,7 +12,7 @@ from PIL import Image
 
 from . import audio, headlines, metrics, music, photos
 from .episode import Episode
-from .render import RenderResult, _fmt_srt, mux
+from .render import RenderResult, _fmt_srt, encode_segment, frame_aligned, mux_segments, remove_dirs
 from .story import split_sentences
 from .visuals import SlideMaker, dim, draw_rich_text, generated_background, hex_rgb, thumbnail
 
@@ -104,7 +104,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     size = (r["width"], r["height"])
     out_dir.mkdir(parents=True, exist_ok=True)
     slides = SlideMaker(size, r["accent"], out_dir / "cards")
-    frames: list[tuple[Path, float]] = []
+    segments: list[Path] = []
     voice_parts: list[np.ndarray] = []
     captions: list[tuple[float, float, str]] = []
     chapters: list[tuple[float, str]] = []
@@ -125,7 +125,8 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             captions.append((start, start + len(voice) / audio.SR, sentence))
             scene_audio += [voice, audio.silence(r["sentence_pause"])]
         scene_audio.append(audio.silence(r["scene_pause"]))
-        track = np.concatenate(scene_audio)
+        track = frame_aligned(np.concatenate(scene_audio), r["fps"])
+        frames: list[tuple[Path, float]] = []
         seconds = len(track) / audio.SR
         voice_parts.append(track)
         if chart.get("chapter"):
@@ -172,15 +173,20 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             reveal = min(seconds * 0.6, r["chart_reveal_seconds"])
             frames += [(p, reveal / n) for p in imgs[:-1]]
             frames.append((imgs[-1], seconds - reveal * (n - 1) / n))
-            first_chart = first_chart or imgs[-1]
+            if first_chart is None:
+                first_chart = out_dir / "first_chart.png"
+                shutil.copy(imgs[-1], first_chart)
+        segments.append(encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
+        # Frames are big (24 a second at full HD); drop them once the scene is encoded so the disk never fills.
+        remove_dirs([out_dir / f"{kind}_{i:02d}" for kind in ("chart", "photo", "card", "headlines")])
         t += seconds
 
     if chapters and chapters[0][0] > 0:
         chapters.insert(0, (0.0, "Introduction"))
-    print(f"  encoding {len(frames)} frames")
+    print(f"  joining {len(segments)} scenes")
     track = music.pick(ep.slug, ep.raw.get("music"))
     music_file = music.fetch(track, cache_dir / "music") if r.get("music", True) else None
-    video, seconds = mux(frames, np.concatenate(voice_parts), out_dir, r["fps"], music=music_file)
+    video, seconds = mux_segments(segments, np.concatenate(voice_parts), out_dir, music=music_file)
 
     srt = out_dir / "captions.srt"
     srt.write_text("\n".join(f"{n}\n{_fmt_srt(a)} --> {_fmt_srt(b)}\n{txt}\n" for n, (a, b, txt) in enumerate(captions, 1)),

@@ -182,6 +182,39 @@ def cmd_run(args) -> int:
     return 0
 
 
+def cmd_narrate(args) -> int:
+    """Speak every sentence of the next episode into the narration cache, before any video work.
+
+    The workflows save the cache right after this step, so a render that later fails (full disk, timeout)
+    never throws away an hour of voice synthesis."""
+    channel_dir, cfg = load_channel(args.channel)
+    fmt = FORMATS[cfg["format"]]
+    if cfg["format"] != "episode":
+        print("Narration warm-up is only needed for finance episodes.")
+        return 0
+    from .money import OUTRO
+    from .shorts import OUTRO as SHORT_OUTRO
+    from .story import split_sentences
+
+    for item in queue_items(channel_dir):
+        try:
+            obj = fmt.load(item)
+            fmt.check(obj, channel_dir, cfg, [], ROOT / ".cache")
+        except LOAD_ERRORS as exc:
+            print(f"Skipping {item.name}: {exc}")
+            continue
+        narrator = get_narrator(cfg, args.voice, test=False)
+        sentences = [s for sc in obj.scenes for s in split_sentences(sc.filled or sc.narration)]
+        sentences += split_sentences(OUTRO) + ([SHORT_OUTRO] if obj.raw.get("short") else [])
+        for k, sentence in enumerate(sentences, 1):
+            print(f"  {k}/{len(sentences)}", flush=True)
+            narrator.say(sentence)
+        print(f"Narrated {len(sentences)} sentences of '{obj.title}'")
+        return 0
+    print("Nothing queued to narrate.")
+    return 0
+
+
 def cmd_snapshot(args) -> int:
     """Refresh data/snapshot with every series listed in data/series.json or used by any episode."""
     from .data import refresh_snapshot
@@ -202,7 +235,7 @@ def cmd_snapshot(args) -> int:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="yta", description="YouTube channel agents")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("check", "run", "render"):
+    for name in ("check", "run", "render", "narrate"):
         sp = sub.add_parser(name)
         sp.add_argument("--channel", required=True)
         if name != "check":
@@ -214,4 +247,5 @@ def main(argv=None) -> int:
             sp.add_argument("--item", required=True)
     sub.add_parser("snapshot")
     args = p.parse_args(argv)
-    return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot}[args.cmd](args)
+    return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
+            "narrate": cmd_narrate}[args.cmd](args)

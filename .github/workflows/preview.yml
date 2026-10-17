@@ -68,6 +68,17 @@ jobs:
             pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
           fi
 
+      - name: Narrate (saved before rendering, so a failed render keeps the voice work)
+        if: env.VOICE == 'chatterbox'
+        run: python -m yta narrate --channel "$CHANNEL" --voice chatterbox
+
+      - name: Save narration
+        if: always() && env.VOICE == 'chatterbox'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ env.CHANNEL }}-${{ github.run_id }}-narrated
+
       - name: Render
         shell: bash
         run: |
