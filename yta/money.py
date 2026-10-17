@@ -109,6 +109,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     captions: list[tuple[float, float, str]] = []
     chapters: list[tuple[float, str]] = []
     photo_credits: list[str] = []
+    last_photo = None
     t = 0.0
     first_chart: Path | None = None
 
@@ -136,7 +137,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             background = None
             if chart.get("photo"):
                 try:
-                    photo = photos.photo_for(chart, cache_dir / "photos")
+                    photo = last_photo = photos.photo_for(chart, cache_dir / "photos")
                     background = Image.open(photo.path).convert("RGB")
                     if photo.description_line not in photo_credits:
                         photo_credits.append(photo.description_line)
@@ -147,20 +148,25 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
         elif chart["type"] == "card" and chart.get("photo"):
             # The title shows for a few seconds over a dimmed photo, then the photo keeps moving on its own.
             try:
-                photo = photos.photo_for(chart, cache_dir / "photos")
+                photo = last_photo = photos.photo_for(chart, cache_dir / "photos")
                 frames += photos.frames(photo, "", size, seconds, out_dir / f"card_{i:02d}",
                                         title=chart.get("title_filled", ""), label=chart.get("label", ""),
                                         accent=hex_rgb(r["accent"]))
                 if photo.description_line not in photo_credits:
                     photo_credits.append(photo.description_line)
             except Exception as exc:
-                print(f"  photo: {exc}; showing a plain title card instead")
-                frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+                print(f"  photo: {exc}; " + ("reusing the last photo" if last_photo else "showing a plain title card"))
+                if last_photo:  # a moving photo beats a long still title card
+                    frames += photos.frames(last_photo, "", size, seconds, out_dir / f"card_{i:02d}",
+                                            title=chart.get("title_filled", ""), label=chart.get("label", ""),
+                                            accent=hex_rgb(r["accent"]))
+                else:
+                    frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
         elif chart["type"] == "card":
             frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
         elif chart["type"] == "photo":
             try:
-                photo = photos.find(chart, cache_dir / "photos")
+                photo = last_photo = photos.find(chart, cache_dir / "photos")
                 frames += photos.frames(photo, chart.get("caption", ""), size, seconds, out_dir / f"photo_{i:02d}")
                 if photo.description_line not in photo_credits:
                     photo_credits.append(photo.description_line)

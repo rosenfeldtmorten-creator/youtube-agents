@@ -99,9 +99,16 @@ def find(chart: dict, cache_dir: Path) -> Photo:
 
 
 def photo_for(chart: dict, cache_dir: Path) -> Photo:
-    """The photo a card or headlines scene asks for with "photo": a search string, or {"query"/"file", "after"}."""
-    want = chart["photo"]
-    return find(want if isinstance(want, dict) else {"query": want}, cache_dir)
+    """The photo a card or headlines scene asks for with "photo": a search string, {"query"/"file", "after"},
+    or a list of those tried in order until one finds a freely licensed photo."""
+    wants = chart["photo"] if isinstance(chart["photo"], list) else [chart["photo"]]
+    errors = []
+    for want in wants:
+        try:
+            return find(want if isinstance(want, dict) else {"query": want}, cache_dir)
+        except Exception as exc:
+            errors.append(str(exc))
+    raise LookupError("; ".join(errors))
 
 
 def _title_layer(size: tuple[int, int], title: str, label: str, accent: tuple[int, int, int]) -> Image.Image:

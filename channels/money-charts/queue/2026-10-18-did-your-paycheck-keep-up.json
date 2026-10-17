@@ -126,10 +126,20 @@
     "type": "card",
     "title": "Real pay fell over the past year",
     "label": "WHAT JUST HAPPENED",
-    "photo": {
-     "query": "paycheck cash wallet",
-     "after": 2010
-    }
+    "photo": [
+     {
+      "query": "United States dollar banknotes",
+      "after": 2010
+     },
+     {
+      "query": "cash register receipt",
+      "after": 2010
+     },
+     {
+      "query": "paycheck cash wallet",
+      "after": 2010
+     }
+    ]
    }
   },
   {
@@ -148,10 +158,20 @@
     "title": "Did your paycheck keep up?",
     "label": "PRICES, WAGES AND HOUSES SINCE 2000",
     "chapter": "The question",
-    "photo": {
-     "query": "office workers commuting city street",
-     "after": 2015
-    }
+    "photo": [
+     {
+      "query": "commuters rush hour New York",
+      "after": 2015
+     },
+     {
+      "query": "pedestrians crosswalk Manhattan",
+      "after": 2015
+     },
+     {
+      "query": "commuters train station platform",
+      "after": 2015
+     }
+    ]
    }
   },
   {
@@ -300,10 +320,20 @@
     "title": "One bad year, one long housing problem",
     "label": "MY TAKE",
     "chapter": "My take",
-    "photo": {
-     "query": "family moving boxes house",
-     "after": 2010
-    }
+    "photo": [
+     {
+      "query": "moving boxes",
+      "after": 2010
+     },
+     {
+      "query": "house for sale sign",
+      "after": 2010
+     },
+     {
+      "query": "suburban houses United States",
+      "after": 2010
+     }
+    ]
    }
   }
  ],

@@ -96,7 +96,7 @@ jobs:
       - name: Drop the restoration model before rendering
         if: always() && env.VOICE == 'chatterbox'
         run: |
-          rm -rf /tmp/re ~/.cache/pip
+          rm -rf /tmp/re   # keep ~/.cache/pip: setup-python saves it after the job
           echo "::notice title=Disk before render::$(df -h / | tail -1)"
 
       - name: Render

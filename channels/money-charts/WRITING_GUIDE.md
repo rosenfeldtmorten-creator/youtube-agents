@@ -70,7 +70,7 @@ Put 2-4 `photo` scenes between charts so the video is not only charts: a real pl
 - `{"type": "photo", "query": "Marriner S. Eccles Federal Reserve Board Building", "caption": "The Federal Reserve, Washington"}` searches Wikimedia Commons and takes the first landscape photo with a free licence (public domain, CC0, CC BY or CC BY-SA).
 - Add `"after": 2018` to a `query` to skip photos taken before that year, so a story about today's prices doesn't show a 1970s pump.
 - `"file": "File:Exact name.jpg"` instead of `query` picks one Commons file exactly. Prefer this when you know a good one.
-- Keep a photo scene short (one to three sentences). If no free photo is found, the video shows the caption on a card instead, so the render never fails.
+- Keep a photo scene short (one to three sentences). If no free photo is found, the video shows the caption on a card instead, so the render never fails. A card's `"photo"` can also be a list of searches, tried in order; give two or three, because Commons search is loose (a search for "office workers" once returned a bar called The Office). If none finds a photo, the card reuses the previous photo.
 
 ## Description fields
 
