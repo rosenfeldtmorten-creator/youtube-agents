@@ -96,7 +96,7 @@ class Episode:
             elif spec.get("source") == "worldbank":
                 out.append(f"World Bank: {spec.get('label', spec['indicator'])} ({spec['country']}, {spec['indicator']})")
             elif spec.get("source") == "inline" and spec.get("citation"):
-                out.append(spec["citation"])
+                out.append(spec["citation"].split(": ")[0])  # one line per report, not one per figure from it
         return list(dict.fromkeys(out))
 
 

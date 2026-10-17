@@ -18,7 +18,7 @@ on:
         default: "120"
   push:
     branches: [claude/voice-studio]
-    paths: [.github/workflows/preview.yml]
+    paths: [.github/workflows/preview.yml, "yta/**", "charts/**", "channels/money-charts/queue/**"]
 
 permissions:
   contents: write

@@ -31,7 +31,10 @@ class Photo:
 
     @property
     def description_line(self) -> str:
-        return f"{self.title.removeprefix('File:')}: {self.artist}, {self.licence}, {self.page}"
+        name = re.sub(r"\.(jpe?g|png)$", "", self.title.removeprefix("File:"), flags=re.I).split(" - NARA")[0]
+        if len(name) > 60:
+            name = name[:57].rsplit(" ", 1)[0] + "..."
+        return f"{name}: {self.artist}, {self.licence}, {self.page}"
 
 
 def _strip_html(text: str) -> str:
@@ -110,7 +113,7 @@ def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, ou
         left, top = (base.width - cw) // 2, (base.height - ch) // 2
         frame = base.crop((left, top, left + cw, top + ch)).resize(size, Image.BILINEAR).convert("RGBA")
         frame.alpha_composite(overlay)
-        path = out_dir / f"photo_{i:04d}.jpg"
-        frame.convert("RGB").save(path, quality=90)
+        path = out_dir / f"photo_{i:04d}.png"  # PNG like every other frame: ffmpeg's concat needs one image codec
+        frame.convert("RGB").save(path, compress_level=1)
         out.append((path, seconds / n))
     return out
