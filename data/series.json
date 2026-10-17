@@ -1,0 +1,246 @@
+{
+  "cpi": {
+    "source": "fred",
+    "id": "CPIAUCSL"
+  },
+  "core_cpi": {
+    "source": "fred",
+    "id": "CPILFESL"
+  },
+  "wages": {
+    "source": "fred",
+    "id": "AHETPI"
+  },
+  "unemployment": {
+    "source": "fred",
+    "id": "UNRATE"
+  },
+  "fed_funds": {
+    "source": "fred",
+    "id": "FEDFUNDS"
+  },
+  "mortgage_30y": {
+    "source": "fred",
+    "id": "MORTGAGE30US"
+  },
+  "treasury_10y": {
+    "source": "fred",
+    "id": "DGS10"
+  },
+  "treasury_2y": {
+    "source": "fred",
+    "id": "DGS2"
+  },
+  "sp500": {
+    "source": "fred",
+    "id": "SP500"
+  },
+  "savings_rate": {
+    "source": "fred",
+    "id": "PSAVERT"
+  },
+  "consumer_credit": {
+    "source": "fred",
+    "id": "TOTALSL"
+  },
+  "gas_price": {
+    "source": "fred",
+    "id": "GASREGW"
+  },
+  "home_prices": {
+    "source": "fred",
+    "id": "CSUSHPINSA"
+  },
+  "median_home_price": {
+    "source": "fred",
+    "id": "MSPUS"
+  },
+  "median_household_income": {
+    "source": "fred",
+    "id": "MEHOINUSA672N"
+  },
+  "real_gdp": {
+    "source": "fred",
+    "id": "GDPC1"
+  },
+  "gdp": {
+    "source": "fred",
+    "id": "GDP"
+  },
+  "real_gdp_per_capita": {
+    "source": "fred",
+    "id": "A939RX0Q048SBEA"
+  },
+  "federal_debt": {
+    "source": "fred",
+    "id": "GFDEBTN"
+  },
+  "debt_to_gdp": {
+    "source": "fred",
+    "id": "GFDEGDQ188S"
+  },
+  "m2": {
+    "source": "fred",
+    "id": "M2SL"
+  },
+  "oil_wti": {
+    "source": "fred",
+    "id": "DCOILWTICO"
+  },
+  "rent_cpi": {
+    "source": "fred",
+    "id": "CUUR0000SEHA"
+  },
+  "food_cpi": {
+    "source": "fred",
+    "id": "CPIUFDSL"
+  },
+  "egg_price": {
+    "source": "fred",
+    "id": "APU0000708111"
+  },
+  "labor_participation": {
+    "source": "fred",
+    "id": "CIVPART"
+  },
+  "job_openings": {
+    "source": "fred",
+    "id": "JTSJOL"
+  },
+  "real_disposable_income": {
+    "source": "fred",
+    "id": "DSPIC96"
+  },
+  "household_debt_service": {
+    "source": "fred",
+    "id": "TDSP"
+  },
+  "credit_card_rate": {
+    "source": "fred",
+    "id": "TERMCBCCALLNS"
+  },
+  "corporate_profits": {
+    "source": "fred",
+    "id": "CP"
+  },
+  "productivity": {
+    "source": "fred",
+    "id": "OPHNFB"
+  },
+  "union_rate": {
+    "source": "fred",
+    "id": "LUU0204899600"
+  },
+  "personal_consumption": {
+    "source": "fred",
+    "id": "PCE"
+  },
+  "housing_starts": {
+    "source": "fred",
+    "id": "HOUST"
+  },
+  "months_supply_homes": {
+    "source": "fred",
+    "id": "MSACSR"
+  },
+  "sticky_cpi": {
+    "source": "fred",
+    "id": "CORESTICKM159SFRBATL"
+  },
+  "pce_price": {
+    "source": "fred",
+    "id": "PCEPI"
+  },
+  "real_median_household_income": {
+    "source": "fred",
+    "id": "MEHOINUSA672N"
+  },
+  "minimum_wage": {
+    "source": "fred",
+    "id": "FEDMINNFRWG"
+  },
+  "recession": {
+    "source": "fred",
+    "id": "USREC"
+  },
+  "gdp_per_capita_usa": {
+    "source": "worldbank",
+    "country": "US",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_usa": {
+    "source": "worldbank",
+    "country": "US",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_china": {
+    "source": "worldbank",
+    "country": "CN",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_china": {
+    "source": "worldbank",
+    "country": "CN",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_germany": {
+    "source": "worldbank",
+    "country": "DE",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_germany": {
+    "source": "worldbank",
+    "country": "DE",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_japan": {
+    "source": "worldbank",
+    "country": "JP",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_japan": {
+    "source": "worldbank",
+    "country": "JP",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_uk": {
+    "source": "worldbank",
+    "country": "GB",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_uk": {
+    "source": "worldbank",
+    "country": "GB",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_india": {
+    "source": "worldbank",
+    "country": "IN",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_india": {
+    "source": "worldbank",
+    "country": "IN",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_denmark": {
+    "source": "worldbank",
+    "country": "DK",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_denmark": {
+    "source": "worldbank",
+    "country": "DK",
+    "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "gdp_per_capita_brazil": {
+    "source": "worldbank",
+    "country": "BR",
+    "indicator": "NY.GDP.PCAP.CD"
+  },
+  "inflation_brazil": {
+    "source": "worldbank",
+    "country": "BR",
+    "indicator": "FP.CPI.TOTL.ZG"
+  }
+}

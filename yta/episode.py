@@ -9,8 +9,21 @@ from . import metrics
 from .data import Series, fetch_all
 from .story import StoryError, split_sentences
 
-CHART_TYPES = ("line", "bars", "growth", "card")
+CHART_TYPES = ("line", "bars", "growth", "scatter", "card")
+TRENDS = ("linear", "smooth")
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
+
+
+def in_todays_dollars(s: Series, cpi: Series) -> Series:
+    """Restate every value in the money of the latest price index reading."""
+    latest = cpi.last[1]
+    pts = []
+    for d, v in s.points:
+        try:
+            pts.append((d, v * latest / cpi.at(d.isoformat())[1]))
+        except ValueError:  # before the price index starts
+            continue
+    return Series(s.name, s.label, s.unit, pts)
 
 
 @dataclass
@@ -44,6 +57,9 @@ class Episode:
     def load_data(self, cache_dir: Path) -> None:
         """Download the series, test every claim, and fill every placeholder. Raises MetricError on any problem."""
         self.series = fetch_all(self.data, cache_dir)
+        for name, spec in self.data.items():
+            if spec.get("in_todays_dollars"):
+                self.series[name] = in_todays_dollars(self.series[name], self.series[spec["in_todays_dollars"]])
         for claim in self.raw.get("claims", []):
             if not metrics.evaluate(claim["check"], self.series):
                 raise metrics.MetricError(f"the data no longer supports: \"{claim['says']}\" ({claim['check']} is false)")
@@ -89,6 +105,10 @@ def load_episode(path: Path) -> Episode:
             raise StoryError(f"{path.name}: data name '{name}' must be a single word (letters, digits, _)")
         if spec.get("source") not in ("fred", "worldbank", "inline"):
             raise StoryError(f"{path.name}: data '{name}' needs source fred, worldbank or inline")
+        if spec.get("transform") not in (None, "yoy"):
+            raise StoryError(f"{path.name}: data '{name}' transform must be 'yoy' or left out")
+        if spec.get("in_todays_dollars") and spec["in_todays_dollars"] not in data["data"]:
+            raise StoryError(f"{path.name}: data '{name}' in_todays_dollars must name a price index in data")
         if spec.get("source") == "inline" and not spec.get("citation"):
             raise StoryError(f"{path.name}: inline data '{name}' needs a 'citation' naming where the numbers come from")
 
@@ -97,9 +117,13 @@ def load_episode(path: Path) -> Episode:
         chart = dict(sc.get("chart") or {"type": "card"})
         if chart.get("type") not in CHART_TYPES:
             raise StoryError(f"{path.name}: scene {i} chart type must be one of {', '.join(CHART_TYPES)}")
-        for name in chart.get("series", []):
+        if chart["type"] == "scatter" and not (chart.get("x") and chart.get("y")):
+            raise StoryError(f"{path.name}: scene {i} scatter chart needs 'x' and 'y' data names")
+        for name in list(chart.get("series", [])) + [chart[k] for k in ("x", "y") if chart["type"] == "scatter"]:
             if name not in data["data"]:
                 raise StoryError(f"{path.name}: scene {i} charts unknown data '{name}'")
+        if chart.get("trend") not in (None, *TRENDS):
+            raise StoryError(f"{path.name}: scene {i} trend must be one of {', '.join(TRENDS)}")
         if not sc.get("narration", "").strip():
             raise StoryError(f"{path.name}: scene {i} has no narration")
         scenes.append(Scene(narration=sc["narration"].strip(), chart=chart))

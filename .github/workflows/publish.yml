@@ -13,10 +13,14 @@ on:
       channel:
         description: Channel
         type: choice
-        options: [english-stories, money-charts]
-        default: english-stories
+        options: [money-charts, english-stories]
+        default: money-charts
       upload:
         description: Upload to YouTube (untick for a test render you can download)
+        type: boolean
+        default: false
+      force:
+        description: Upload even if the weekly pacing says it's too soon (manual runs only)
         type: boolean
         default: false
       voice:
@@ -41,8 +45,9 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["english-stories"]') }}
+        channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]') }}
     env:
+      PYTHONUNBUFFERED: "1"   # show render progress live in the Actions log
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
       VOICE: ${{ inputs.voice || 'chatterbox' }}
     steps:
@@ -63,6 +68,13 @@ jobs:
           path: ~/.cache/huggingface
           key: hf-chatterbox-0.1.7
 
+      - name: Restore narration cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ matrix.channel }}-${{ github.run_id }}
+          restore-keys: narration-${{ matrix.channel }}-
+
       - name: Install Python packages
         run: |
           pip install -r requirements.txt
@@ -77,18 +89,37 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
           YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
+        shell: bash
         run: |
+          set -o pipefail
+          {
           if [ "$UPLOAD" = "true" ]; then
-            python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE"
+            python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" ${{ inputs.force && '--force' || '' }}
           else
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" --no-upload --force
           fi
+          } 2>&1 | tee run.log
 
-      - name: Keep the test video
-        if: env.UPLOAD != 'true'
+      - name: Report the error
+        if: failure()
+        shell: bash
+        run: |
+          # Annotations can be read through the API, so the agent can see why a run failed.
+          msg=$(tail -c 3500 run.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
+          echo "::error title=Publish failed::${msg}"
+
+      - name: Save narration cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ matrix.channel }}-${{ github.run_id }}
+
+      - name: Keep the video
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-video-${{ matrix.channel }}
+          name: video-${{ matrix.channel }}
           path: |
             out/**/video.mp4
             out/**/thumbnail.jpg

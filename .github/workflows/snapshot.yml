@@ -1,0 +1,40 @@
+name: Data snapshot
+
+# Saves a copy of every public data series the finance channel uses into data/snapshot,
+# so the writing task can check new episodes even where FRED or the World Bank can't be reached.
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # daily, before the writing task
+  workflow_dispatch:
+  push:
+    paths: ["data/series.json", ".github/workflows/snapshot.yml", "channels/*/queue/*.json"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m yta snapshot
+      - name: Commit the snapshot
+        run: |
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/snapshot
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh data snapshot $(date -u +%F)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi

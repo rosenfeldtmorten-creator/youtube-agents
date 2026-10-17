@@ -1,15 +1,15 @@
-# Money, in charts: finance explainers built on public data. Every number is computed, never typed.
-name: Money, in charts
+# Economics in Charts: finance explainers built on public data. Every number is computed, never typed.
+name: Economics in Charts
 slug: money-charts
 format: episode
-thumbnail_label: MONEY, IN CHARTS
+thumbnail_label: ECONOMICS IN CHARTS
 
 cadence:
   per_week: 2
   min_days_between: 3
 
 youtube:
-  refresh_token_secret: YT_REFRESH_TOKEN_MONEY_CHARTS
+  refresh_token_secret: YT_REFRESH_TOKEN_ENGLISH_STORIES   # the channel first made for Slow English now runs Economics in Charts
   category_id: "27"          # Education
   language: en
   privacy: public
@@ -32,7 +32,7 @@ render:
   scene_pause: 0.8
   chart_frames: 36           # frames R draws to reveal each chart
   chart_reveal_seconds: 6
-  min_minutes: 5
+  min_minutes: 3            # the cloned voice reads ~1000 words in about 4-5 minutes
   max_minutes: 20
   accent: "#F2B33D"
 
@@ -44,5 +44,5 @@ script:
   min_charts: 4
 
 description_footer: |
-  Money, in charts: one question about money each week, answered with public data.
+  Economics in Charts: one question about the economy and your money each week, answered with public data and simple models.
   Narration uses an AI clone of the creator's own voice. Charts are drawn from the data sources listed above.

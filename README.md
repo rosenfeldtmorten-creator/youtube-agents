@@ -5,7 +5,7 @@ Agents that write, narrate, render and upload videos for a set of YouTube channe
 | Channel | Status |
 | --- | --- |
 | Slow English Stories | Pipeline built; waiting for setup |
-| Money, in charts | Pipeline built; waiting for setup |
+| Economics in Charts | Pipeline built; waiting for setup |
 | Deep sleep sounds | Planned |
 
 ## How it works

@@ -3,7 +3,8 @@
 #   Rscript charts/chart.R spec.json data.csv out_dir n_frames width height
 #
 # spec.json  : the scene's chart settings (type, title, y_format, source ...), written by yta/money.py
-# data.csv   : columns x, y, group, label (x is a date for "line", a position for "bars", a year for "growth")
+# data.csv   : columns x, y, group, label (x is a date for "line", a position for "bars", a year for "growth",
+#              the x series' value for "scatter", where label holds the year)
 # Change the house style in the theme_money() function below; every chart uses it.
 
 suppressPackageStartupMessages({
@@ -102,6 +103,12 @@ if (spec$type == "line") {
                          trans = if (isTRUE(spec$log)) "log10" else "identity") +
       labs(title = title_txt, subtitle = subtitle_txt, caption = caption_txt) +
       theme_money()
+    if (!is.null(spec$trend) && i == n_frames) {
+      # Fitted trend (a straight line, or a loess curve for "smooth"), drawn once the data is fully shown.
+      p <- p + geom_smooth(data = d, aes(x, y, group = group), inherit.aes = FALSE,
+                           method = if (spec$trend == "smooth") "loess" else "lm", formula = y ~ x, se = FALSE,
+                           colour = col_text, linetype = "dashed", linewidth = 1.3)
+    }
     if (length(groups) == 1) p <- p + theme(legend.position = "none")
     save_frame(p, i)
   }
@@ -141,6 +148,40 @@ if (spec$type == "line") {
       scale_y_continuous(limits = c(0, y_max), labels = y_labels("usd")) +
       labs(title = title_txt, subtitle = subtitle_txt, caption = caption_txt) +
       theme_money()
+    save_frame(p, i)
+  }
+} else if (spec$type == "scatter") {
+  # One point per year (x against y), revealed in time order, then a fitted model line with its 95% band.
+  d <- d[order(as.integer(d$label)), ]
+  x_fmt   <- if (!is.null(spec$x_format)) spec$x_format else "num"
+  fit     <- if (!is.null(spec$fit)) spec$fit else "linear"
+  n_pts   <- nrow(d)
+  reveal  <- max(1, floor(n_frames * 0.75))
+  xr <- range(d$x); yr <- range(d$y)
+  xpad <- diff(xr) * 0.06; ypad <- diff(yr) * 0.1
+  for (i in seq_len(n_frames)) {
+    k <- min(n_pts, max(1, ceiling(n_pts * ease(min(1, i / reveal)))))
+    shown <- d[seq_len(k), ]
+    newest <- shown[k, , drop = FALSE]
+    p <- ggplot(shown, aes(x, y))
+    if (isTRUE(spec$connect)) p <- p + geom_path(colour = col_muted, linewidth = 0.8, alpha = 0.6)
+    if (i > reveal && fit != "none") {
+      p <- p + geom_smooth(data = d, method = if (fit == "smooth") "loess" else "lm", formula = y ~ x,
+                           se = TRUE, colour = palette[2], fill = palette[2], alpha = 0.15, linewidth = 1.8)
+    }
+    p <- p +
+      geom_point(colour = palette[1], size = 5, alpha = 0.85) +
+      geom_point(data = newest, colour = col_text, size = 8) +
+      geom_text(data = newest, aes(label = label), colour = col_text, size = 9, fontface = "bold", vjust = -1.2) +
+      scale_x_continuous(labels = y_labels(x_fmt)) +
+      scale_y_continuous(labels = y_labels(fmt)) +
+      coord_cartesian(xlim = c(xr[1] - xpad, xr[2] + xpad), ylim = c(yr[1] - ypad, yr[2] + ypad)) +
+      labs(title = title_txt, subtitle = subtitle_txt, caption = caption_txt,
+           x = spec$x_label, y = spec$y_label) +
+      theme_money() +
+      theme(axis.title = element_text(colour = col_muted, size = 24),
+            axis.title.y = element_text(angle = 90, margin = margin(r = 16)),
+            axis.title.x = element_text(margin = margin(t = 16)))
     save_frame(p, i)
   }
 } else {
