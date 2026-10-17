@@ -21,14 +21,12 @@ FRED, Federal Reserve Bank of St. Louis: Consumer prices (CPIAUCSL)
 FRED, Federal Reserve Bank of St. Louis: Average hourly pay (AHETPI)
 FRED, Federal Reserve Bank of St. Louis: House prices (CSUSHPINSA)
 FRED, Federal Reserve Bank of St. Louis: Median house price (MSPUS)
-Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust: consumer prices rose 0.6% in September
-Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust: real average hourly earnings down 0.7% from a year earlier
-Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust: gasoline prices up 9.1% in September
+Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust
 
 PHOTOS (Wikimedia Commons)
-SIGN OF THE PAST IS THIS ABANDONED GASOLINE PUMP WITH A PRICE OF 29.9 CENTS PER GALLON. THE COST OF FUEL HAS MADE... - NARA - 555508.jpg: David Falconer, Public domain, https://commons.wikimedia.org/wiki/File:SIGN_OF_THE_PAST_IS_THIS_ABANDONED_GASOLINE_PUMP_WITH_A_PRICE_OF_29.9_CENTS_PER_GALLON._THE_COST_OF_FUEL_HAS_MADE..._-_NARA_-_555508.jpg
-Self-checkout aisles at Publix.jpg: Nielsoncaetanosalmeron, CC BY 4.0, https://commons.wikimedia.org/wiki/File:Self-checkout_aisles_at_Publix.jpg
-AERIAL OF A NEW HOUSING DEVELOPMENT. SOME 84 PERCENT OF THE RESIDENTS IN THE STATE LIVE WITHIN 30 MILES OF THE COAST... - NARA - 557461.jpg: Charles O'Rear, Public domain, https://commons.wikimedia.org/wiki/File:AERIAL_OF_A_NEW_HOUSING_DEVELOPMENT._SOME_84_PERCENT_OF_THE_RESIDENTS_IN_THE_STATE_LIVE_WITHIN_30_MILES_OF_THE_COAST..._-_NARA_-_557461.jpg
+SIGN OF THE PAST IS THIS ABANDONED GASOLINE PUMP WITH A...: David Falconer, Public domain, https://commons.wikimedia.org/wiki/File:SIGN_OF_THE_PAST_IS_THIS_ABANDONED_GASOLINE_PUMP_WITH_A_PRICE_OF_29.9_CENTS_PER_GALLON._THE_COST_OF_FUEL_HAS_MADE..._-_NARA_-_555508.jpg
+Self-checkout aisles at Publix: Nielsoncaetanosalmeron, CC BY 4.0, https://commons.wikimedia.org/wiki/File:Self-checkout_aisles_at_Publix.jpg
+AERIAL OF A NEW HOUSING DEVELOPMENT. SOME 84 PERCENT OF...: Charles O'Rear, Public domain, https://commons.wikimedia.org/wiki/File:AERIAL_OF_A_NEW_HOUSING_DEVELOPMENT._SOME_84_PERCENT_OF_THE_RESIDENTS_IN_THE_STATE_LIVE_WITHIN_30_MILES_OF_THE_COAST..._-_NARA_-_557461.jpg
 
 All charts and models are our own, drawn in R from the data above.
 
