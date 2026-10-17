@@ -34,8 +34,8 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       CHANNEL: ${{ inputs.channel || 'money-charts' }}
-      VOICE: ${{ inputs.voice || 'espeak' }}
-      CUT: ${{ inputs.seconds || '120' }}
+      VOICE: ${{ inputs.voice || 'chatterbox' }}
+      CUT: ${{ inputs.seconds || '0' }}
     steps:
       - uses: actions/checkout@v4
 
