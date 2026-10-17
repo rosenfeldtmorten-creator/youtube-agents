@@ -6,11 +6,12 @@ We compare a quarter century of consumer prices, average hourly pay and house pr
 
 CHAPTERS
 00:00 What just happened
-01:01 The question
-01:42 Prices
-03:05 Wages
-04:16 Houses
-05:25 My take
+00:51 The question
+01:23 Prices
+02:31 Wages
+03:31 Houses
+04:27 The answer
+04:51 My take
 
 HOW WE DID THE MATHS
 We rebase prices, hourly pay and house prices to 100 in January 2000 so they can share one chart, and compare the median new-home price with hourly pay to count the hours of work a home costs.
@@ -24,9 +25,12 @@ FRED, Federal Reserve Bank of St. Louis: Median house price (MSPUS)
 Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust
 
 PHOTOS (Wikimedia Commons)
+SPAR kolonial mat varehandel hyller (Supermarket...: Wolfmann, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:SPAR_kolonial_mat_varehandel_hyller_(Supermarket_interior_GROCERY_store_aisle_shelves)_Frokostblandinger_gryn_m%C3%BCsli_Axa_frukt_energi_4-korn_bl%C3%A5b%C3%A6r_(cereals_muesli)_etc_Tj%C3%B8me_NORWAY_2023-08-31_IMG_1095.jpg
 Gas station with pricing sign: Moonstruck Exploring, CC BY-SA 4.0, https://commons.wikimedia.org/wiki/File:Gas_station_with_pricing_sign.jpg
+The office (51966195573): Steve Bowbrick from Radlett, United Kingdom, CC BY 2.0, https://commons.wikimedia.org/wiki/File:The_office_(51966195573).jpg
 Self-checkout aisles at Publix: Nielsoncaetanosalmeron, CC BY 4.0, https://commons.wikimedia.org/wiki/File:Self-checkout_aisles_at_Publix.jpg
 Aerial view of Highcombe House and OLOG Church site: Fennec Media Ltd, CC BY 4.0, https://commons.wikimedia.org/wiki/File:Aerial_view_of_Highcombe_House_and_OLOG_Church_site.jpg
+New homes on West Street - geograph.org.uk - 7698862: Neil Owen, CC BY-SA 2.0, https://commons.wikimedia.org/wiki/File:New_homes_on_West_Street_-_geograph.org.uk_-_7698862.jpg
 
 All charts and models are our own, drawn in R from the data above.
 
