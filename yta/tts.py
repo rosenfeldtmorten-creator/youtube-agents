@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 import numpy as np
@@ -101,7 +102,7 @@ class Narrator:
             audio.write_wav(cached, data)
         return data
 
-    def enhance_cached(self, texts: list[str]) -> int:
+    def enhance_cached(self, texts: list[str], batch: int = 8) -> int:
         """Restore every listed sentence that has no restored copy yet, in one run of the enhancer."""
         if self.enhance != "resemble":
             return 0
@@ -109,18 +110,24 @@ class Narrator:
                 if (self.cache_dir / f"{k}.wav").exists() and not self._enhanced(k).exists()]
         if not todo:
             return 0
-        with tempfile.TemporaryDirectory() as tmp:
-            src, dst = Path(tmp) / "in", Path(tmp) / "out"
-            src.mkdir()
-            for k in todo:
-                (src / f"{k}.wav").symlink_to((self.cache_dir / f"{k}.wav").resolve())
-            tool = os.environ.get("RESEMBLE_ENHANCE", "resemble-enhance")
-            subprocess.run([tool, str(src), str(dst), "--device", "cpu"], check=True)
-            self._enhanced(todo[0]).parent.mkdir(parents=True, exist_ok=True)
-            for k in todo:
-                out = dst / f"{k}.wav"
-                if out.exists():
-                    out.replace(self._enhanced(k))
+        tool = os.environ.get("RESEMBLE_ENHANCE", "resemble-enhance")
+        self._enhanced(todo[0]).parent.mkdir(parents=True, exist_ok=True)
+        # Small batches, each saved as it finishes, so a run that times out keeps what it restored.
+        for start in range(0, len(todo), batch):
+            chunk = todo[start:start + batch]
+            began = time.time()
+            with tempfile.TemporaryDirectory() as tmp:
+                src, dst = Path(tmp) / "in", Path(tmp) / "out"
+                src.mkdir()
+                for k in chunk:
+                    (src / f"{k}.wav").symlink_to((self.cache_dir / f"{k}.wav").resolve())
+                subprocess.run([tool, str(src), str(dst), "--device", "cpu"], check=True)
+                for k in chunk:
+                    out = dst / f"{k}.wav"
+                    if out.exists():
+                        out.replace(self._enhanced(k))
+            print(f"  restored {min(start + batch, len(todo))}/{len(todo)} ({time.time() - began:.0f} s for this batch)",
+                  flush=True)
         return len(todo)
 
 

@@ -206,13 +206,19 @@ def cmd_narrate(args) -> int:
         narrator = get_narrator(cfg, args.voice, test=False)
         sentences = [s for sc in obj.scenes for s in split_sentences(sc.filled or sc.narration)]
         sentences += split_sentences(OUTRO) + ([SHORT_OUTRO] if obj.raw.get("short") else [])
+        import time
+
+        began = time.time()
         for k, sentence in enumerate(sentences, 1):
-            print(f"  {k}/{len(sentences)}", flush=True)
             narrator.say(sentence)
-        print(f"Narrated {len(sentences)} sentences of '{obj.title}'")
+            print(f"  {k}/{len(sentences)} ({time.time() - began:.0f} s)", flush=True)
+        spoken = time.time() - began
+        print(f"::notice title=Narration::{len(sentences)} sentences in {spoken / 60:.0f} min")
         if narrator.enhance:
+            began = time.time()
             try:
-                print(f"Restored {narrator.enhance_cached(sentences)} sentences with {narrator.enhance}")
+                done = narrator.enhance_cached(sentences)
+                print(f"::notice title=Voice restoration::{done} sentences restored in {(time.time() - began) / 60:.0f} min")
             except Exception as exc:  # the video still works with the plain voice
                 print(f"::warning title=Voice restoration skipped::{exc}")
         return 0

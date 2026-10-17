@@ -30,7 +30,7 @@ concurrency:
 jobs:
   preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 350
     env:
       PYTHONUNBUFFERED: "1"
       RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance

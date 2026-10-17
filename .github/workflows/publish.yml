@@ -40,7 +40,7 @@ jobs:
   publish:
     if: github.event_name != 'schedule' || vars.AUTOPUBLISH == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 350
     strategy:
       max-parallel: 1
       fail-fast: false
