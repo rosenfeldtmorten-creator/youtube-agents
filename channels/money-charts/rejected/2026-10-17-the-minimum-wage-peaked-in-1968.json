@@ -1,0 +1,207 @@
+{
+  "slug": "the-minimum-wage-peaked-in-1968",
+  "title": "The Minimum Wage Peaked in 1968. Here's the Chart.",
+  "description": "The federal minimum wage has not changed in years, but prices have. We restate the minimum wage in today's dollars using official price data, find the year it was worth the most, and compare it with what the average worker earns.\n\nEverything you see is computed from public data from the US Department of Labor and the Bureau of Labor Statistics, via FRED. The sources are listed below.",
+  "tags": [
+    "minimum wage",
+    "minimum wage explained",
+    "inflation explained",
+    "real wages",
+    "economics explained",
+    "money explained",
+    "cost of living",
+    "data visualization",
+    "wages",
+    "us economy"
+  ],
+  "thumbnail_text": "It peaked in 1968",
+  "data": {
+    "min_wage": {
+      "source": "fred",
+      "id": "FEDMINNFRWG",
+      "label": "Federal minimum wage",
+      "unit": "usd",
+      "short_source": "FRED (US Department of Labor)"
+    },
+    "min_real": {
+      "source": "fred",
+      "id": "FEDMINNFRWG",
+      "label": "Minimum wage, in today's dollars",
+      "unit": "usd",
+      "in_todays_dollars": "cpi",
+      "short_source": "FRED (US Department of Labor; BLS consumer prices)"
+    },
+    "cpi": {
+      "source": "fred",
+      "id": "CPIAUCSL",
+      "label": "Consumer prices",
+      "unit": "index",
+      "short_source": "FRED (BLS consumer price index)"
+    },
+    "wages": {
+      "source": "fred",
+      "id": "AHETPI",
+      "label": "Average hourly pay",
+      "unit": "usd",
+      "short_source": "FRED (BLS average hourly earnings)"
+    }
+  },
+  "claims": [
+    {
+      "says": "The federal minimum wage has not changed since the end of 2009",
+      "check": "highest(min_wage, \"2009-12\", \"latest\") <= lowest(min_wage, \"2009-12\", \"latest\")"
+    },
+    {
+      "says": "In today's dollars, the minimum wage was worth the most in 1968",
+      "check": "year_of_highest(min_real, \"1938\", \"latest\") >= 1968"
+    },
+    {
+      "says": "The real peak came in 1968, not later",
+      "check": "year_of_highest(min_real, \"1938\", \"latest\") <= 1968"
+    },
+    {
+      "says": "Today's minimum wage buys less than the 1968 minimum wage",
+      "check": "latest(min_real) < highest(min_real, \"1968\", \"1968\")"
+    },
+    {
+      "says": "The minimum wage is a smaller share of average pay than in 1968",
+      "check": "latest(min_wage) / latest(wages) < value(min_wage, \"1968-02\") / value(wages, \"1968-02\")"
+    },
+    {
+      "says": "Since 1968, the real minimum wage has trended down",
+      "check": "trend_per_year(min_real, \"1968\", \"latest\") < 0"
+    }
+  ],
+  "scenes": [
+    {
+      "narration": "The federal minimum wage in the United States is {{ latest(min_wage) | usd_cents }} an hour. It has been that number since 2009. Since then, rent, groceries and almost everything else have become more expensive. So here is a question that sounds simple. When was the minimum wage actually worth the most? Not the biggest number on paper, but the most buying power. The answer is a year most people would never guess, and it says a lot about how inflation quietly changes the value of a fixed number.",
+      "chart": {
+        "type": "card",
+        "title": "When was the minimum wage worth the most?",
+        "label": "A QUESTION ABOUT PAY",
+        "chapter": "The question"
+      }
+    },
+    {
+      "narration": "Let's start with the number everyone knows. This is the federal minimum wage, in plain dollars, as written into law. It looks like a staircase. Congress sets a number, and it stays flat until Congress votes again. In 1950 it was {{ value(min_wage, \"1950-06\") | usd_cents }} an hour. By 1968 it was {{ value(min_wage, \"1968-06\") | usd_cents }}. Today it is {{ latest(min_wage) | usd_cents }}. On this chart, the minimum wage is the highest it has ever been. But that is only half of the story.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "min_wage"
+        ],
+        "from": "1950",
+        "y_format": "usd",
+        "title": "The minimum wage, in dollars of the day",
+        "subtitle": "Federal minimum hourly wage",
+        "chapter": "On paper"
+      }
+    },
+    {
+      "narration": "A dollar in 1968 bought much more than a dollar today. To compare fairly, we use the consumer price index, which tracks the price of a large basket of everyday things. Prices today are about {{ ratio(cpi, \"1968-06\", \"latest\") | times }} what they were in 1968. So we take every minimum wage in history and restate it in today's money. This is the same line, but now every point is in today's dollars.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "min_real"
+        ],
+        "from": "1950",
+        "y_format": "usd",
+        "title": "The minimum wage, in today's dollars",
+        "subtitle": "Federal minimum hourly wage, adjusted with consumer prices",
+        "chapter": "In today's dollars"
+      }
+    },
+    {
+      "narration": "And there it is. In today's dollars, the minimum wage peaked in {{ year_of_highest(min_real, \"1938\", \"latest\") | year }}, at about {{ highest(min_real) | usd_cents }} an hour. Every time Congress raised it after that, the raise only caught up partly, and then prices slowly ate it away again. That is why the line looks like a saw blade. A sharp jump when the law changes, then a slow slide down. The last jump was in 2009. Since then, the slide has simply continued.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "min_wage",
+          "min_real"
+        ],
+        "from": "1950",
+        "y_format": "usd",
+        "labels": {
+          "min_wage": "In dollars of the day",
+          "min_real": "In today's dollars"
+        },
+        "title": "Paper value versus real value",
+        "subtitle": "Federal minimum hourly wage"
+      }
+    },
+    {
+      "narration": "Here is the same comparison in two bars. At its peak, the minimum wage was worth about {{ highest(min_real) | usd_cents }} an hour in today's money. Today it is {{ latest(min_wage) | usd_cents }}. That means today's minimum wage buys about {{ 1 - latest(min_real) / highest(min_real) | pct }} less than it did at the peak. Put differently, a full-time year at the minimum wage, forty hours a week, earns about {{ latest(min_wage) * 40 * 52 | usd }} today, compared with about {{ highest(min_real) * 40 * 52 | usd }} at the peak, in the same money.",
+      "chart": {
+        "type": "bars",
+        "bars": [
+          {
+            "label": "Peak, in today's dollars",
+            "value": "highest(min_real)"
+          },
+          {
+            "label": "Today",
+            "value": "latest(min_real)"
+          }
+        ],
+        "y_format": "usd",
+        "title": "What an hour at the minimum wage buys",
+        "subtitle": "Federal minimum hourly wage, today's dollars"
+      }
+    },
+    {
+      "narration": "There is another way to measure it. Instead of comparing the minimum wage with prices, we can compare it with what a typical worker earns. In early 1968, the minimum wage was about {{ value(min_wage, \"1968-02\") / value(wages, \"1968-02\") | pct }} of average hourly pay for production and non-supervisory workers. Today it is about {{ latest(min_wage) / latest(wages) | pct }}. So the people at the very bottom did not just lose ground to prices. They also fell much further behind everyone else's pay.",
+      "chart": {
+        "type": "bars",
+        "bars": [
+          {
+            "label": "Early 1968",
+            "value": "value(min_wage, \"1968-02\") / value(wages, \"1968-02\")"
+          },
+          {
+            "label": "Today",
+            "value": "latest(min_wage) / latest(wages)"
+          }
+        ],
+        "y_format": "pct",
+        "title": "The minimum wage as a share of average pay",
+        "subtitle": "Federal minimum wage divided by average hourly pay",
+        "chapter": "Compared with other workers"
+      }
+    },
+    {
+      "narration": "Now let's add a simple model. This dashed line is a straight-line trend, fitted to the yearly average of the real minimum wage since 1968. The individual jumps come and go, but the trend is clear. On average, the minimum wage has lost about {{ 0 - trend_per_year(min_real, \"1968\", \"latest\") | usd_cents }} of buying power every single year since 1968. That is the quiet cost of a number that only changes when a new law is passed, while prices change every month.",
+      "chart": {
+        "type": "line",
+        "series": [
+          "min_real"
+        ],
+        "from": "1968",
+        "y_format": "usd",
+        "trend": "linear",
+        "title": "The long slide, with a trend line",
+        "subtitle": "Minimum wage in today's dollars, with a fitted linear trend",
+        "chapter": "The trend"
+      }
+    },
+    {
+      "narration": "So, when was the minimum wage worth the most? In 1968. Since then, prices have kept rising every month, while the minimum wage only moved when Congress acted, and it has not acted since 2009. That is why a number that looks higher than ever is, in real terms, far lower than it used to be.",
+      "chart": {
+        "type": "card",
+        "title": "The peak was 1968. Today's minimum buys far less.",
+        "label": "THE ANSWER",
+        "chapter": "The answer"
+      }
+    },
+    {
+      "narration": "One important detail. This is the federal minimum. Many states and cities set their own minimum wage above it, and in those places, workers earn more. Whether the minimum wage should be higher is a political question, with real arguments on both sides about jobs, prices and small businesses. This channel does not take sides. What the data shows is simply what a fixed number is worth when prices keep moving.",
+      "chart": {
+        "type": "card",
+        "title": "Many states set a higher minimum",
+        "label": "ONE IMPORTANT DETAIL"
+      }
+    }
+  ],
+  "_rejected": {
+    "date": "2026-10-17",
+    "reason": "video is 4.3 min; allowed 5-20 min"
+  }
+}
