@@ -56,7 +56,7 @@ Two optional settings on a series:
 ## What makes a good episode
 
 - **One question a normal person asks about money**, answered with data: "Is renting really throwing money away?", "What happened to the price of fuel?", "How much does waiting ten years to invest cost?". Vary topics; never repeat a question already in `published/` or `queue/`.
-- 900-1600 words, 7-12 scenes, at least 4 charts. Where it fits the question, include one model chart (`scatter` or a `trend`): the channel's edge is explaining what the data says, not just showing it. Open with the question on a `card`, end with the answer on a `card`.
+- 1300-1900 words (the cloned voice reads about 230 words a minute, so this is 6-8 minutes), 8-14 scenes, at least 4 charts. Where it fits the question, include one model chart (`scatter` or a `trend`): the channel's edge is explaining what the data says, not just showing it. Open with the question on a `card`, end with the answer on a `card`.
 - Plain spoken English. Explain every term the first time. No hype, no "you should buy", no individual stocks or crypto tips. This channel explains; it never advises.
 - Give the scenes that start a new part a `chapter` name (at least 3 per episode) so YouTube shows chapters.
 
