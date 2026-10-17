@@ -89,12 +89,24 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
           YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
+        shell: bash
         run: |
+          set -o pipefail
+          {
           if [ "$UPLOAD" = "true" ]; then
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" ${{ inputs.force && '--force' || '' }}
           else
             python -m yta run --channel "${{ matrix.channel }}" --voice "$VOICE" --no-upload --force
           fi
+          } 2>&1 | tee run.log
+
+      - name: Report the error
+        if: failure()
+        shell: bash
+        run: |
+          # Annotations can be read through the API, so the agent can see why a run failed.
+          msg=$(tail -c 3500 run.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
+          echo "::error title=Publish failed::${msg}"
 
       - name: Save narration cache
         if: always()
