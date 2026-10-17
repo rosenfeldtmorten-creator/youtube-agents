@@ -106,12 +106,30 @@
  ],
  "scenes": [
   {
-   "narration": "On the fourteenth of October, the government's monthly inflation report landed, and it was not kind to paychecks. Prices rose {{ latest(cpi_month_news) | pct1 }} in September alone. Once you take those higher prices into account, the average worker's pay now buys {{ -latest(real_pay_news) | pct1 }} less than it did a year ago. So is this the moment wages finally fell behind for good? Or is it one bad year in a much longer story? To answer that, we need more than one month of news. We need a quarter of a century of data.",
+   "narration": "On the fourteenth of October, the government's monthly inflation report landed, and it was not kind to paychecks. Prices rose {{ latest(cpi_month_news) | pct1 }} in September alone.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "First Trust Economics",
+      "date": "2026-10-14",
+      "text": "The Consumer Price Index (CPI) Rose 0.6% in September"
+     }
+    ],
+    "photo": "grocery store aisle prices",
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "Once you take those higher prices into account, the average worker's pay now buys {{ -latest(real_pay_news) | pct1 }} less than it did a year ago. So is this the moment wages finally fell behind for good? Or is it one bad year in a much longer story? To answer that, we need more than one month of news. We need a quarter of a century of data.",
    "chart": {
     "type": "card",
     "title": "Real pay fell over the past year",
     "label": "WHAT JUST HAPPENED",
-    "chapter": "What just happened"
+    "photo": {
+     "query": "paycheck cash wallet",
+     "after": 2010
+    }
    }
   },
   {
@@ -129,7 +147,11 @@
     "type": "card",
     "title": "Did your paycheck keep up?",
     "label": "PRICES, WAGES AND HOUSES SINCE 2000",
-    "chapter": "The question"
+    "chapter": "The question",
+    "photo": {
+     "query": "office workers commuting city street",
+     "after": 2015
+    }
    }
   },
   {
@@ -259,12 +281,29 @@
    }
   },
   {
+   "narration": "So, did your paycheck keep up? With everyday prices, yes. On average, and slowly, pay has stayed ahead. With houses, no. Home prices raced ahead of both, and that gap is a big reason so many people feel squeezed, even when their pay is rising. If you already owned a home, the same chart worked in your favour. If you are trying to buy one, it is working against you.",
+   "chart": {
+    "type": "card",
+    "title": "Prices: pay kept up. Houses: it did not.",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": {
+     "query": "new homes construction suburb",
+     "after": 2015
+    }
+   }
+  },
+  {
    "narration": "Here is my take. The latest month is a real warning, because a fuel shock hits people who drive to work hardest, and pay rarely adjusts within a year. But one bad year does not erase twenty-five years of slow gains in what an hour of work buys. The bigger problem is housing. That gap built up over two decades, and no single good month for wages will close it. What would change my mind? If real pay keeps falling for another year after fuel prices calm down, that would point to something deeper than a price spike. These are national averages, so your own city, job and rent can look very different. But next time someone says wages never keep up, you will know where to look.",
    "chart": {
     "type": "card",
     "title": "One bad year, one long housing problem",
     "label": "MY TAKE",
-    "chapter": "My take"
+    "chapter": "My take",
+    "photo": {
+     "query": "family moving boxes house",
+     "after": 2010
+    }
    }
   }
  ],
@@ -286,7 +325,7 @@
  "short": {
   "title": "House prices left paychecks far behind",
   "scenes": [
-   10
+   11
   ]
  }
 }

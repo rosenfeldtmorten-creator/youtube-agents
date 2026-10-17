@@ -98,12 +98,35 @@
  ],
  "scenes": [
   {
-   "narration": "Two reports this month sent the economy two different signals. At the start of October, the jobs report showed unemployment rising to {{ latest(unemp_news) | num }} percent, up from {{ first(unemp_news, \"2026\", \"latest\") | num }} percent the month before. Then, two weeks later, the inflation report showed prices up {{ latest(infl_news) | pct1 }} on a year earlier, and rising faster. Textbook economics says those two should not climb together. A weaker job market is supposed to cool prices down. So which is it? Is the textbook wrong, or is something else going on?",
+   "narration": "Two reports this month sent the economy two different signals. At the start of October, the jobs report showed unemployment rising to {{ latest(unemp_news) | num }} percent, up from {{ first(unemp_news, \"2026\", \"latest\") | num }} percent the month before.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Trading Economics",
+      "date": "2026-10-02",
+      "text": "US Unemployment Rate Rises to 4.2% in September"
+     },
+     {
+      "source": "First Trust Economics",
+      "date": "2026-10-14",
+      "text": "The Consumer Price Index (CPI) Rose 0.6% in September"
+     }
+    ],
+    "photo": "job fair United States",
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "Then, two weeks later, the inflation report showed prices up {{ latest(infl_news) | pct1 }} on a year earlier, and rising faster. Textbook economics says those two should not climb together. A weaker job market is supposed to cool prices down. So which is it? Is the textbook wrong, or is something else going on?",
    "chart": {
     "type": "card",
     "title": "Unemployment and inflation both rose",
     "label": "WHAT JUST HAPPENED",
-    "chapter": "What just happened"
+    "photo": {
+     "query": "job fair hiring",
+     "after": 2015
+    }
    }
   },
   {
@@ -120,7 +143,10 @@
     "type": "card",
     "title": "Does low unemployment cause inflation?",
     "label": "TESTING AN IDEA",
-    "chapter": "The question"
+    "chapter": "The question",
+    "photo": {
+     "query": "Federal Open Market Committee meeting"
+    }
    }
   },
   {
@@ -164,7 +190,11 @@
     "type": "card",
     "title": "The idea: scarce workers push prices up",
     "label": "THE PHILLIPS CURVE",
-    "chapter": "The theory"
+    "chapter": "The theory",
+    "photo": {
+     "query": "factory workers assembly line",
+     "after": 2010
+    }
    }
   },
   {
@@ -248,7 +278,10 @@
     "type": "card",
     "title": "Sometimes. It depends on what people expect.",
     "label": "THE ANSWER",
-    "chapter": "The answer"
+    "chapter": "The answer",
+    "photo": {
+     "query": "Jerome Powell press conference"
+    }
    }
   },
   {
@@ -257,7 +290,10 @@
     "type": "card",
     "title": "A weak trade-off that needs trust",
     "label": "MY TAKE",
-    "chapter": "My take"
+    "chapter": "My take",
+    "photo": {
+     "query": "Marriner S. Eccles Federal Reserve Board Building"
+    }
    }
   }
  ],
@@ -290,7 +326,7 @@
  "short": {
   "title": "The 1970s broke this famous economics idea",
   "scenes": [
-   9
+   10
   ]
  }
 }

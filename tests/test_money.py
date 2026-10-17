@@ -310,3 +310,24 @@ def test_short_field_is_checked(tmp_path):
     path.write_text(json.dumps(data))
     with pytest.raises(StoryError, match="short"):
         load_episode(path)
+
+
+def test_headlines_montage(tmp_path):
+    from PIL import Image
+
+    from yta.headlines import frames
+
+    items = [{"source": "Example News", "date": "2026-10-14", "text": "Prices rose in September"},
+             {"source": "Example Wire", "date": "2026-10-02", "text": "Unemployment rises"}]
+    out = frames(items, (640, 360), 2.0, tmp_path, (242, 179, 61), fps=12)
+    assert len(out) == 24 and Image.open(out[-1][0]).size == (640, 360)
+
+
+def test_long_text_card_needs_a_photo(tmp_path):
+    data = json.loads(SAMPLE.read_text())
+    card = next(s for s in data["scenes"] if s["chart"].get("photo"))
+    del card["chart"]["photo"]
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(checks.CheckFailed, match="photo"):
+        check_script(load_episode(path), CFG["script"])

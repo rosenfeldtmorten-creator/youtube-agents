@@ -98,9 +98,30 @@ def find(chart: dict, cache_dir: Path) -> Photo:
     return Photo(img_path, m["title"], m["artist"], m["licence"], m["page"])
 
 
-def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, out_dir: Path,
-           fps: int = 12) -> list[tuple[Path, float]]:
-    """A slow push-in on the photo, with the caption and the credit on screen."""
+def photo_for(chart: dict, cache_dir: Path) -> Photo:
+    """The photo a card or headlines scene asks for with "photo": a search string, or {"query"/"file", "after"}."""
+    want = chart["photo"]
+    return find(want if isinstance(want, dict) else {"query": want}, cache_dir)
+
+
+def _title_layer(size: tuple[int, int], title: str, label: str, accent: tuple[int, int, int]) -> Image.Image:
+    from .visuals import draw_rich_text
+
+    w, h = size
+    layer = Image.new("RGB", size, (0, 0, 0))
+    if label:
+        draw_rich_text(layer, label, (160, int(h * 0.26), w - 320, 70), 36, accent, weight="bold", color=accent)
+    draw_rich_text(layer, title, (160, int(h * 0.33), w - 320, int(h * 0.4)), 92, accent, weight="bold")
+    return layer
+
+
+def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, out_dir: Path, fps: int = 24,
+           title: str = "", label: str = "", accent: tuple[int, int, int] = (242, 179, 61),
+           title_seconds: float = 3.0) -> list[tuple[Path, float]]:
+    """A slow push-in on the photo, with the caption and the credit on screen.
+
+    With a title, the photo starts dimmed under the title, which fades away after title_seconds,
+    so no screen holds the same text for long."""
     out_dir.mkdir(parents=True, exist_ok=True)
     w, h = size
     base = cover(Image.open(photo.path).convert("RGB"), (int(w * 1.08), int(h * 1.08)))
@@ -111,14 +132,23 @@ def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, ou
     if caption:
         d.text((96, h - 150), caption, font=font(56, "bold"), fill=(232, 237, 245, 255), anchor="ls")
     d.text((w - 48, h - 40), f"Photo: {photo.credit}", font=font(24), fill=(200, 208, 220, 230), anchor="rs")
+    text = _title_layer(size, title, label, accent) if title else None
+    text_mask = text.convert("L").point(lambda v: 255 if v > 8 else 0) if text else None
 
     n = max(2, int(seconds * fps))
     out = []
     for i in range(n):
+        t = i / fps
         z = 1.08 - 0.08 * i / (n - 1)  # crop shrinks from the full 108% image toward the centre
         cw, ch = int(w * z), int(h * z)
         left, top = (base.width - cw) // 2, (base.height - ch) // 2
-        frame = base.crop((left, top, left + cw, top + ch)).resize(size, Image.BILINEAR).convert("RGBA")
+        frame = base.crop((left, top, left + cw, top + ch)).resize(size, Image.BILINEAR)
+        if text is not None:
+            strength = max(0.0, min(1.0, (title_seconds - t) / 0.5))  # full until the last half second, then fade
+            if strength > 0:
+                frame = Image.blend(frame, Image.new("RGB", size, (14, 23, 38)), 0.62 * strength)
+                frame.paste(Image.blend(frame, text, strength), (0, 0), text_mask)
+        frame = frame.convert("RGBA")
         frame.alpha_composite(overlay)
         path = out_dir / f"photo_{i:04d}.png"  # PNG like every other frame: ffmpeg's concat needs one image codec
         frame.convert("RGB").save(path, compress_level=1)

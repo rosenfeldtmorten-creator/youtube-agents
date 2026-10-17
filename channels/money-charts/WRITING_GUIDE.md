@@ -57,7 +57,8 @@ Two optional settings on a series:
 
 Viewers should feel they are watching a sharp news explainer, not a lecture. Every episode follows this shape:
 
-1. **News hook (first scene, chapter "What just happened").** Open on something that happened in the last two weeks: a data release, a central bank decision, a company or government announcement. Search the news before writing and say when and who ("On Thursday the Labor Department said..."). Write dates in words ("the sixteenth of October"), never digits. Any number from the news goes in an `inline` series whose `citation` names the outlet and date, so it is still a placeholder.
+1. **News hook (first scene, chapter "What just happened").** The first scene is a `headlines` montage: 1-3 real headlines about the news, copied word for word with the outlet and date, sliding in one after another over a blurred photo. Keep its narration to one or two sentences, then continue on a photo card.
+    Open on something that happened in the last two weeks: a data release, a central bank decision, a company or government announcement. Search the news before writing and say when and who ("On Thursday the Labor Department said..."). Write dates in words ("the sixteenth of October"), never digits. Any number from the news goes in an `inline` series whose `citation` names the outlet and date, so it is still a placeholder.
 2. **The question.** Turn the news into the question a normal person asks about their money.
 3. **The data and the model.** The charts, with at least one model chart where it fits (see below), and real photos between them.
 4. **My take (last chapter, named "My take").** Two to four honest sentences: what the numbers mean for an ordinary household, and what would change your mind. Opinion, never advice.
@@ -93,7 +94,8 @@ The description is built for you in this order: hashtags, `description`, CHAPTER
 - `scatter`: a simple model. `x` and `y` (data names), `from`, optional `to`, `x_format`, `y_format`, `x_label`, `y_label`, `fit` (`linear`, `smooth` or `none`), `connect: true` to join the years in order. One point per year (yearly averages), revealed in time order, then the fitted line with its 95% band. Explain in plain words what the line means, and back any statement about it with `correlation`, `slope` or `r_squared` in `claims`. Say "moved together", never "caused", unless you explain why.
 - `bars`: `bars` = list of `{"label": "...", "value": "<expression>"}`, `y_format`.
 - `growth`: `monthly`, `rate`, `years` (expressions). Shows money put in versus what it grew to.
-- `card`: `title` and optional `label`, for big statements.
+- `card`: `title` and optional `label`, for big statements. **No text may sit on screen for long:** a card with more than 12 words of narration needs a `photo` (a search string, or `{"query": ..., "after": 2015}`). The title then shows over the dimmed photo for 3 seconds and fades, and the photo keeps moving.
+- `headlines`: `headlines` = 1-5 of `{"source": "Reuters", "date": "2026-10-16", "text": "the exact headline"}` (at most 120 characters each), optional `photo` for the blurred background. Never invent or reword a headline; use only ones you have read.
 - `photo`: a real photo, see Photos above. Photos don't count towards the 4 charts.
 
 Every chart has a short `title` (no typed numbers) and may have a `subtitle` explaining units.

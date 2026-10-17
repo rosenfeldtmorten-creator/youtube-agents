@@ -83,12 +83,30 @@
  ],
  "scenes": [
   {
-   "narration": "At the start of October, the average rate on a thirty-year mortgage in the United States climbed to {{ latest(rate_news) | pct1 }}. That is the highest since late 2023. For anyone trying to buy a home, that number matters more than almost anything else, more even than the price on the listing. Here is why.",
+   "narration": "At the start of October, the average rate on a thirty-year mortgage in the United States climbed to {{ latest(rate_news) | pct1 }}. That is the highest since late 2023.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Trading Economics",
+      "date": "2026-10-01",
+      "text": "US Mortgage Rates Climb Further in October"
+     }
+    ],
+    "photo": "house for sale sign",
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "For anyone trying to buy a home, that number matters more than almost anything else, more even than the price on the listing. Here is why.",
    "chart": {
     "type": "card",
     "title": "Mortgage rates hit a three-year high",
     "label": "WHAT JUST HAPPENED",
-    "chapter": "What just happened"
+    "photo": {
+     "query": "real estate open house",
+     "after": 2015
+    }
    }
   },
   {
@@ -97,7 +115,11 @@
     "type": "card",
     "title": "Why did mortgage payments nearly double?",
     "label": "HOUSING, IN NUMBERS",
-    "chapter": "The question"
+    "chapter": "The question",
+    "photo": {
+     "query": "house for sale sign",
+     "after": 2015
+    }
    }
   },
   {
@@ -257,7 +279,11 @@
     "type": "card",
     "title": "Mostly rates, not prices",
     "label": "THE ANSWER",
-    "chapter": "The answer"
+    "chapter": "The answer",
+    "photo": {
+     "query": "suburban street houses",
+     "after": 2015
+    }
    }
   },
   {
@@ -266,7 +292,11 @@
     "type": "card",
     "title": "Watch the rate, not just the price",
     "label": "MY TAKE",
-    "chapter": "My take"
+    "chapter": "My take",
+    "photo": {
+     "query": "signing mortgage documents",
+     "after": 2010
+    }
    }
   }
  ],
@@ -288,7 +318,7 @@
  "short": {
   "title": "Why mortgage rates matter more than prices",
   "scenes": [
-   10
+   11
   ]
  }
 }

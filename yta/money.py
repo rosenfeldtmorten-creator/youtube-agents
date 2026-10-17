@@ -10,11 +10,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from . import audio, metrics, music, photos
+from . import audio, headlines, metrics, music, photos
 from .episode import Episode
 from .render import RenderResult, _fmt_srt, mux
 from .story import split_sentences
-from .visuals import SlideMaker, dim, draw_rich_text, generated_background, thumbnail
+from .visuals import SlideMaker, dim, draw_rich_text, generated_background, hex_rgb, thumbnail
 
 ROOT = Path(__file__).resolve().parent.parent
 CHART_SCRIPT = ROOT / "charts" / "chart.R"
@@ -112,7 +112,10 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     t = 0.0
     first_chart: Path | None = None
 
-    scenes = [(sc.filled, sc.chart) for sc in ep.scenes] + [(OUTRO, {"type": "card", "title_filled": "Thanks for watching"})]
+    outro = {"type": "card", "title_filled": "Thanks for watching", "label": "ECONOMICS IN CHARTS"}
+    if ep.raw.get("outro_photo"):
+        outro["photo"] = ep.raw["outro_photo"]
+    scenes = [(sc.filled, sc.chart) for sc in ep.scenes] + [(OUTRO, outro)]
     for i, (text, chart) in enumerate(scenes, 1):
         print(f"  scene {i}/{len(scenes)} ({chart['type']})")
         scene_audio = []
@@ -128,7 +131,31 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
         if chart.get("chapter"):
             chapters.append((t, chart["chapter"]))
 
-        if chart["type"] == "card":
+        if chart["type"] == "headlines":
+            background = None
+            if chart.get("photo"):
+                try:
+                    photo = photos.photo_for(chart, cache_dir / "photos")
+                    background = Image.open(photo.path).convert("RGB")
+                    if photo.description_line not in photo_credits:
+                        photo_credits.append(photo.description_line)
+                except Exception as exc:
+                    print(f"  photo: {exc}; plain background behind the headlines")
+            frames += headlines.frames(chart["headlines"], size, seconds, out_dir / f"headlines_{i:02d}",
+                                       hex_rgb(r["accent"]), background)
+        elif chart["type"] == "card" and chart.get("photo"):
+            # The title shows for a few seconds over a dimmed photo, then the photo keeps moving on its own.
+            try:
+                photo = photos.photo_for(chart, cache_dir / "photos")
+                frames += photos.frames(photo, "", size, seconds, out_dir / f"card_{i:02d}",
+                                        title=chart.get("title_filled", ""), label=chart.get("label", ""),
+                                        accent=hex_rgb(r["accent"]))
+                if photo.description_line not in photo_credits:
+                    photo_credits.append(photo.description_line)
+            except Exception as exc:
+                print(f"  photo: {exc}; showing a plain title card instead")
+                frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+        elif chart["type"] == "card":
             frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
         elif chart["type"] == "photo":
             try:

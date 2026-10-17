@@ -10,7 +10,8 @@ from . import metrics
 from .data import Series, fetch_all
 from .story import StoryError, split_sentences
 
-CHART_TYPES = ("line", "bars", "growth", "scatter", "card", "photo")
+CHART_TYPES = ("line", "bars", "growth", "scatter", "card", "photo", "headlines")
+CARD_WORDS_WITHOUT_PHOTO = 12  # a plain text card longer than this would hold the same words on screen too long
 TRENDS = ("linear", "smooth")
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
 
@@ -163,6 +164,15 @@ def load_episode(path: Path) -> Episode:
                 raise StoryError(f"{path.name}: scene {i} charts unknown data '{name}'")
         if chart["type"] == "photo" and not (chart.get("file") or chart.get("query")):
             raise StoryError(f"{path.name}: scene {i} photo needs a Wikimedia Commons 'file' or a search 'query'")
+        if chart["type"] == "headlines":
+            items = chart.get("headlines")
+            if not (isinstance(items, list) and 1 <= len(items) <= 5):
+                raise StoryError(f"{path.name}: scene {i} headlines needs 1-5 'headlines'")
+            for h in items:
+                if not (isinstance(h, dict) and h.get("source") and h.get("text") and len(h["text"]) <= 120
+                        and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(h.get("date", "")))):
+                    raise StoryError(f"{path.name}: scene {i} each headline needs 'source', 'date' (YYYY-MM-DD) "
+                                     "and 'text' (at most 120 characters)")
         if chart.get("trend") not in (None, *TRENDS):
             raise StoryError(f"{path.name}: scene {i} trend must be one of {', '.join(TRENDS)}")
         if not sc.get("narration", "").strip():
@@ -202,5 +212,9 @@ def check_script(ep: Episode, rules: dict) -> None:
         raise CheckFailed(f"episodes need {rules['min_scenes']}-{rules['max_scenes']} scenes")
     if not ep.raw.get("claims"):
         raise CheckFailed("add 'claims': every comparison the script makes in words needs a check against the data")
-    if sum(1 for s in ep.scenes if s.chart["type"] != "card") < rules["min_charts"]:
+    for i, sc in enumerate(ep.scenes, 1):
+        if sc.chart["type"] == "card" and not sc.chart.get("photo") and len(sc.narration.split()) > CARD_WORDS_WITHOUT_PHOTO:
+            raise CheckFailed(f"scene {i} is a text card with {len(sc.narration.split())} words of narration; give it a "
+                              f"'photo' or keep it under {CARD_WORDS_WITHOUT_PHOTO + 1} words so text never sits on screen for long")
+    if sum(1 for s in ep.scenes if s.chart["type"] not in ("card", "photo", "headlines")) < rules["min_charts"]:
         raise CheckFailed(f"episodes need at least {rules['min_charts']} charts")

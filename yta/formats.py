@@ -69,7 +69,7 @@ class EpisodeFormat:
             raise checks.CheckFailed(f"data problem: {exc}") from exc
         except Exception as exc:  # network trouble is not the script's fault; report it plainly
             raise checks.CheckFailed(f"could not download the data ({exc})") from exc
-        charts = sum(1 for s in item.scenes if s.chart["type"] not in ("card", "photo"))
+        charts = sum(1 for s in item.scenes if s.chart["type"] not in ("card", "photo", "headlines"))
         return f"{len(item.scenes)} scenes, {charts} charts"
 
     @staticmethod
