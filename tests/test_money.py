@@ -201,3 +201,153 @@ def test_payment_and_real_dollars():
     cpi = Series("cpi", "", "", [(dt.date(2000, 1, 1), 100.0), (dt.date(2020, 1, 1), 200.0)])
     wage = Series("w", "", "", [(dt.date(2000, 1, 1), 5.0), (dt.date(2020, 1, 1), 7.0)])
     assert [v for _, v in in_todays_dollars(wage, cpi).points] == [10.0, 7.0]
+
+
+def test_description_has_hashtags_chapters_and_sources(tmp_path):
+    from yta import upload
+    from yta.formats import FORMATS
+    from yta.render import RenderResult
+
+    data = json.loads(SAMPLE.read_text())
+    data["hashtags"] = ["Economics", "Wages", "Inflation"]
+    data["method"] = "We restate every wage in today's dollars with the CPI."
+    data["references"] = [{"source": "Reuters", "date": "2026-10-16", "says": "wage growth slowed"}]
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    ep = load_episode(path)
+    fmt = FORMATS["episode"]
+    result = RenderResult(tmp_path / "v.mp4", tmp_path / "t.jpg", tmp_path / "c.srt", 300, ["X.jpg: A, CC0, url"],
+                          [(0, "Intro"), (60, "The chart"), (200, "My take")], ["Kevin MacLeod: Floating Cities"])
+    text = upload.build_description(ep.description, result.chapters, fmt.extra_description(ep, result),
+                                    CFG["description_footer"], fmt.hashtags(ep))
+    assert text.startswith("#Economics #Wages #Inflation\n")
+    assert text.rstrip().endswith("#Economics #Wages #Inflation")
+    assert "CHAPTERS\n00:00 Intro\n01:00 The chart\n03:20 My take" in text
+    assert "HOW WE DID THE MATHS" in text and "Reuters (16 Oct 2026): wage growth slowed" in text
+    assert "PHOTOS" in text and "MUSIC\nKevin MacLeod" in text
+
+
+def test_hashtags_default_from_tags():
+    ep = load_episode(SAMPLE)
+    assert ep.hashtags and all(t.isalnum() for t in ep.hashtags)
+
+
+@pytest.mark.parametrize("bad", [{"hashtags": ["#money"]}, {"references": [{"source": "x", "date": "Oct 16", "says": "y"}]}])
+def test_bad_description_fields_are_rejected(tmp_path, bad):
+    from yta.story import StoryError
+
+    data = {**json.loads(SAMPLE.read_text()), **bad}
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(StoryError):
+        load_episode(path)
+
+
+def test_photo_licences():
+    from yta.photos import is_free
+
+    assert is_free("Public domain") and is_free("CC0") and is_free("CC BY-SA 4.0") and is_free("CC BY 2.0")
+    assert not is_free("CC BY-NC 2.0") and not is_free("CC BY-ND 4.0") and not is_free("Fair use")
+
+
+def test_photo_frames_push_in(tmp_path):
+    from PIL import Image
+
+    from yta.photos import Photo, frames
+
+    src = tmp_path / "p.jpg"
+    Image.new("RGB", (2000, 1200), (90, 120, 160)).save(src)
+    photo = Photo(src, "File:P.jpg", "Jane Doe", "CC BY 4.0", "https://commons.wikimedia.org/wiki/File:P.jpg")
+    out = frames(photo, "Washington, 1968", (640, 360), 2.0, tmp_path / "f", fps=6)
+    assert len(out) == 12 and abs(sum(d for _, d in out) - 2.0) < 1e-6
+    assert Image.open(out[0][0]).size == (640, 360) and out[0][0].suffix == ".jpg"
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
+def test_music_is_mixed_under_the_voice(tmp_path):
+    import subprocess
+
+    import numpy as np
+    from PIL import Image
+
+    from yta import audio
+    from yta.render import mux
+
+    song = tmp_path / "song.mp3"
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-f", "lavfi", "-i", "sine=f=220:d=3", "-ac", "2", str(song)], check=True)
+    img = tmp_path / "f.png"
+    Image.new("RGB", (320, 180)).save(img)
+    voice = np.concatenate([np.sin(np.arange(audio.SR * 2) * 0.05).astype(np.float32) * 0.3, audio.silence(5)])
+    video, seconds = mux([(img, 7.0)], voice, tmp_path, 24, music=song)
+    probe = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(video)],
+                           capture_output=True, text=True).stdout
+    assert abs(float(probe) - 7.0) < 0.3  # looped music must not make the video longer than the voice
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
+def test_short_renders_vertical(tmp_path):
+    import subprocess
+
+    from yta.shorts import render_short
+    from yta.tts import Narrator, SilentVoice
+
+    ep = _with_fake_data(load_episode(SAMPLE))
+    cards = [i for i, s in enumerate(ep.scenes, 1) if s.chart["type"] == "card"][:1]
+    cfg = {**CFG, "render": {**CFG["render"], "music": False}}
+    video, seconds = render_short(ep, {"title": "A test short", "scenes": cards}, cfg, Narrator(SilentVoice()),
+                                  tmp_path / "short", tmp_path)
+    size = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height",
+                           "-of", "csv=p=0", str(video)], capture_output=True, text=True).stdout.strip()
+    assert size == "1080,1920" and seconds <= 58
+
+
+def test_short_field_is_checked(tmp_path):
+    from yta.story import StoryError
+
+    data = json.loads(SAMPLE.read_text())
+    data["short"] = {"title": "Too far", "scenes": [99]}
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(StoryError, match="short"):
+        load_episode(path)
+
+
+def test_headlines_montage(tmp_path):
+    from PIL import Image
+
+    from yta.headlines import frames
+
+    items = [{"source": "Example News", "date": "2026-10-14", "text": "Prices rose in September"},
+             {"source": "Example Wire", "date": "2026-10-02", "text": "Unemployment rises"}]
+    out = frames(items, (640, 360), 2.0, tmp_path, (242, 179, 61), fps=12)
+    assert len(out) == 24 and Image.open(out[-1][0]).size == (640, 360)
+
+
+def test_long_text_card_needs_a_photo(tmp_path):
+    data = json.loads(SAMPLE.read_text())
+    card = next(s for s in data["scenes"] if s["chart"].get("photo"))
+    del card["chart"]["photo"]
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(checks.CheckFailed, match="photo"):
+        check_script(load_episode(path), CFG["script"])
+
+
+def test_narrator_prefers_restored_copy(tmp_path):
+    import numpy as np
+
+    from yta import audio
+    from yta.tts import Narrator, SilentVoice
+
+    n = Narrator(SilentVoice(), cache_dir=tmp_path, enhance="resemble")
+    plain = n.say("one two three four")
+    key = n._key("one two three four")
+    old = tmp_path / f"{key}.wav"
+    audio.write_wav(old, np.zeros(24000, dtype=np.float32), 24000)  # a cache file from the 24 kHz days
+    assert len(n.say("one two three four")) == audio.SR
+    restored = tmp_path / "resemble" / f"{key}.wav"
+    restored.parent.mkdir()
+    audio.write_wav(restored, np.full(44100, 0.1, dtype=np.float32), 44100)
+    out = n.say("one two three four")
+    assert len(out) == audio.SR and abs(float(out.mean()) - 0.1) < 1e-3
+    assert len(plain) > 0

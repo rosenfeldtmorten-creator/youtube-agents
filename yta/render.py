@@ -1,8 +1,10 @@
 """Turns a story into a narrated video: slides + voice + subtitles."""
 from __future__ import annotations
 
+import math
+import shutil
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +34,7 @@ class RenderResult:
     seconds: float
     photo_credits: list[str]
     chapters: list[tuple[float, str]]
+    music_credits: list[str] = field(default_factory=list)
 
 
 def _fmt_srt(t: float) -> str:
@@ -98,8 +101,28 @@ AUDIO_MASTER = (
 )
 
 
-def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int) -> tuple[Path, float]:
-    """Join still frames (each shown for its duration) with an audio track into an MP4."""
+# Background music sits about 14 dB under the voice and dips further while someone is speaking.
+MUSIC_LEVEL = "loudnorm=I=-30:TP=-8"
+MUSIC_DUCK = "sidechaincompress=threshold=0.03:ratio=6:attack=30:release=600"
+
+
+def audio_args(seconds: float, music: Path | None) -> list[str]:
+    if not music:
+        return ["-af", AUDIO_MASTER]
+    fade = max(0.0, seconds - 4)
+    graph = (
+        f"[1:a]{AUDIO_MASTER},aresample=48000,asplit=2[v][sc];"
+        f"[2:a]aformat=channel_layouts=mono,{MUSIC_LEVEL},aresample=48000,"
+        f"afade=t=in:d=2,afade=t=out:st={fade:.2f}:d=4[m0];"
+        f"[m0][sc]{MUSIC_DUCK}[m];"
+        "[v][m]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.9[a]"
+    )
+    return ["-filter_complex", graph, "-map", "0:v", "-map", "[a]"]
+
+
+def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps: int,
+        music: Path | None = None) -> tuple[Path, float]:
+    """Join still frames (each shown for its duration) with an audio track, and optional music, into an MP4."""
     wav = out_dir / "narration.wav"
     audio.write_wav(wav, track)
     seconds = len(track) / audio.SR
@@ -115,8 +138,9 @@ def mux(frames: list[tuple[Path, float]], track: np.ndarray, out_dir: Path, fps:
     subprocess.run([
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(wav),
+        *(["-stream_loop", "-1", "-i", str(music)] if music else []),
         "-vf", f"fps={fps},format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage", "-crf", "20",
-        "-af", AUDIO_MASTER, "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(video),
+        *audio_args(seconds, music), "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(video),
     ], check=True)
     return video, seconds
 
@@ -154,3 +178,49 @@ def render_story(story: Story, cfg: dict, narrator, out_dir: Path, cache_dir: Pa
             chapters.append((t, starts[i]))
         t += s.seconds
     return RenderResult(video, thumb, captions, seconds, bgs.credits, chapters)
+
+
+def encode_segment(frames: list[tuple[Path, float]], path: Path, fps: int, seconds: float) -> Path:
+    """Encode one scene's frames to a silent clip of exactly `seconds`, so the frame files can be deleted."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    listing = path.with_suffix(".txt")
+    lines = []
+    for image, duration in frames:
+        lines += [f"file '{Path(image).resolve()}'", f"duration {duration:.4f}"]
+    lines.append(f"file '{Path(frames[-1][0]).resolve()}'")
+    listing.write_text("\n".join(lines) + "\n")
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing),
+        "-vf", f"fps={fps},format=yuv420p", "-t", f"{seconds:.4f}", "-an",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-g", str(fps * 4), str(path),
+    ], check=True)
+    return path
+
+
+def frame_aligned(track: np.ndarray, fps: int) -> np.ndarray:
+    """Pad a scene's audio to a whole number of video frames, so clips and sound never drift apart."""
+    seconds = len(track) / audio.SR
+    target = math.ceil(round(seconds * fps, 6)) / fps
+    return np.concatenate([track, audio.silence(target - seconds)]) if target > seconds else track
+
+
+def mux_segments(segments: list[Path], track: np.ndarray, out_dir: Path, music: Path | None = None) -> tuple[Path, float]:
+    """Join per-scene clips and the narration (plus optional music) into the final MP4."""
+    wav = out_dir / "narration.wav"
+    audio.write_wav(wav, track)
+    seconds = len(track) / audio.SR
+    listing = out_dir / "segments.txt"
+    listing.write_text("".join(f"file '{p.resolve()}'\n" for p in segments))
+    video = out_dir / "video.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(wav),
+        *(["-stream_loop", "-1", "-i", str(music)] if music else []),
+        "-c:v", "copy", *audio_args(seconds, music), "-ar", "48000", "-c:a", "aac", "-b:a", "192k",
+        "-shortest", "-movflags", "+faststart", str(video),
+    ], check=True)
+    return video, seconds
+
+
+def remove_dirs(paths: list[Path]) -> None:
+    for p in paths:
+        shutil.rmtree(p, ignore_errors=True)

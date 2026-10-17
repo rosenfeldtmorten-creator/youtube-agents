@@ -10,11 +10,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from . import audio, metrics
+from . import audio, headlines, metrics, music, photos
 from .episode import Episode
-from .render import RenderResult, _fmt_srt, mux
+from .render import RenderResult, _fmt_srt, encode_segment, frame_aligned, mux_segments, remove_dirs
 from .story import split_sentences
-from .visuals import SlideMaker, dim, draw_rich_text, generated_background, thumbnail
+from .visuals import SlideMaker, dim, draw_rich_text, generated_background, hex_rgb, thumbnail
 
 ROOT = Path(__file__).resolve().parent.parent
 CHART_SCRIPT = ROOT / "charts" / "chart.R"
@@ -104,14 +104,19 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     size = (r["width"], r["height"])
     out_dir.mkdir(parents=True, exist_ok=True)
     slides = SlideMaker(size, r["accent"], out_dir / "cards")
-    frames: list[tuple[Path, float]] = []
+    segments: list[Path] = []
     voice_parts: list[np.ndarray] = []
     captions: list[tuple[float, float, str]] = []
     chapters: list[tuple[float, str]] = []
+    photo_credits: list[str] = []
+    last_photo = None
     t = 0.0
     first_chart: Path | None = None
 
-    scenes = [(sc.filled, sc.chart) for sc in ep.scenes] + [(OUTRO, {"type": "card", "title_filled": "Thanks for watching"})]
+    outro = {"type": "card", "title_filled": "Thanks for watching", "label": "ECONOMICS IN CHARTS"}
+    if ep.raw.get("outro_photo"):
+        outro["photo"] = ep.raw["outro_photo"]
+    scenes = [(sc.filled, sc.chart) for sc in ep.scenes] + [(OUTRO, outro)]
     for i, (text, chart) in enumerate(scenes, 1):
         print(f"  scene {i}/{len(scenes)} ({chart['type']})")
         scene_audio = []
@@ -121,31 +126,78 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             captions.append((start, start + len(voice) / audio.SR, sentence))
             scene_audio += [voice, audio.silence(r["sentence_pause"])]
         scene_audio.append(audio.silence(r["scene_pause"]))
-        track = np.concatenate(scene_audio)
+        track = frame_aligned(np.concatenate(scene_audio), r["fps"])
+        frames: list[tuple[Path, float]] = []
         seconds = len(track) / audio.SR
         voice_parts.append(track)
         if chart.get("chapter"):
             chapters.append((t, chart["chapter"]))
 
-        if chart["type"] == "card":
+        if chart["type"] == "headlines":
+            background = None
+            if chart.get("photo"):
+                try:
+                    photo = last_photo = photos.photo_for(chart, cache_dir / "photos")
+                    background = Image.open(photo.path).convert("RGB")
+                    if photo.description_line not in photo_credits:
+                        photo_credits.append(photo.description_line)
+                except Exception as exc:
+                    print(f"  photo: {exc}; plain background behind the headlines")
+            frames += headlines.frames(chart["headlines"], size, seconds, out_dir / f"headlines_{i:02d}",
+                                       hex_rgb(r["accent"]), background)
+        elif chart["type"] == "card" and chart.get("photo"):
+            # The title shows for a few seconds over a dimmed photo, then the photo keeps moving on its own.
+            try:
+                photo = last_photo = photos.photo_for(chart, cache_dir / "photos")
+                frames += photos.frames(photo, "", size, seconds, out_dir / f"card_{i:02d}",
+                                        title=chart.get("title_filled", ""), label=chart.get("label", ""),
+                                        accent=hex_rgb(r["accent"]))
+                if photo.description_line not in photo_credits:
+                    photo_credits.append(photo.description_line)
+            except Exception as exc:
+                print(f"  photo: {exc}; " + ("reusing the last photo" if last_photo else "showing a plain title card"))
+                if last_photo:  # a moving photo beats a long still title card
+                    frames += photos.frames(last_photo, "", size, seconds, out_dir / f"card_{i:02d}",
+                                            title=chart.get("title_filled", ""), label=chart.get("label", ""),
+                                            accent=hex_rgb(r["accent"]))
+                else:
+                    frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+        elif chart["type"] == "card":
             frames.append((card(slides, chart.get("title_filled", ""), chart.get("label", "")), seconds))
+        elif chart["type"] == "photo":
+            try:
+                photo = last_photo = photos.find(chart, cache_dir / "photos")
+                frames += photos.frames(photo, chart.get("caption", ""), size, seconds, out_dir / f"photo_{i:02d}")
+                if photo.description_line not in photo_credits:
+                    photo_credits.append(photo.description_line)
+            except Exception as exc:  # a missing photo should never stop a render
+                print(f"  photo: {exc}; showing a title card instead")
+                frames.append((card(slides, chart.get("caption", ""), chart.get("label", "")), seconds))
         else:
             n = r["chart_frames"]
             imgs = draw_chart(ep, chart, out_dir / f"chart_{i:02d}", n, size)
             reveal = min(seconds * 0.6, r["chart_reveal_seconds"])
             frames += [(p, reveal / n) for p in imgs[:-1]]
             frames.append((imgs[-1], seconds - reveal * (n - 1) / n))
-            first_chart = first_chart or imgs[-1]
+            if first_chart is None:
+                first_chart = out_dir / "first_chart.png"
+                shutil.copy(imgs[-1], first_chart)
+        segments.append(encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
+        # Frames are big (24 a second at full HD); drop them once the scene is encoded so the disk never fills.
+        remove_dirs([out_dir / f"{kind}_{i:02d}" for kind in ("chart", "photo", "card", "headlines")])
         t += seconds
 
     if chapters and chapters[0][0] > 0:
         chapters.insert(0, (0.0, "Introduction"))
-    print(f"  encoding {len(frames)} frames")
-    video, seconds = mux(frames, np.concatenate(voice_parts), out_dir, r["fps"])
+    print(f"  joining {len(segments)} scenes")
+    track = music.pick(ep.slug, ep.raw.get("music"))
+    music_file = music.fetch(track, cache_dir / "music") if r.get("music", True) else None
+    video, seconds = mux_segments(segments, np.concatenate(voice_parts), out_dir, music=music_file)
 
     srt = out_dir / "captions.srt"
     srt.write_text("\n".join(f"{n}\n{_fmt_srt(a)} --> {_fmt_srt(b)}\n{txt}\n" for n, (a, b, txt) in enumerate(captions, 1)),
                    encoding="utf-8")
     bg = Image.open(first_chart).convert("RGB") if first_chart else generated_background(ep.slug, size)
     thumb = thumbnail(bg, ep.thumbnail_text, None, r["accent"], out_dir / "thumbnail.jpg", label=cfg["thumbnail_label"])
-    return RenderResult(video, thumb, srt, seconds, [], chapters if len(chapters) >= 3 else [])
+    return RenderResult(video, thumb, srt, seconds, photo_credits, chapters if len(chapters) >= 3 else [],
+                        [music.credit(track)] if music_file else [])

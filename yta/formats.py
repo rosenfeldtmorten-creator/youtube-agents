@@ -38,6 +38,10 @@ class StoryFormat:
         return render_story(item, cfg, narrator, out_dir, cache_dir)
 
     @staticmethod
+    def hashtags(item) -> list[str]:
+        return []
+
+    @staticmethod
     def extra_description(item, result) -> list[str]:
         vocab = "Key words:\n" + "\n".join(f"- {v['word']}: {v['meaning']}" for v in item.vocabulary)
         credits = "Photos: " + "; ".join(result.photo_credits) if result.photo_credits else ""
@@ -65,7 +69,7 @@ class EpisodeFormat:
             raise checks.CheckFailed(f"data problem: {exc}") from exc
         except Exception as exc:  # network trouble is not the script's fault; report it plainly
             raise checks.CheckFailed(f"could not download the data ({exc})") from exc
-        charts = sum(1 for s in item.scenes if s.chart["type"] != "card")
+        charts = sum(1 for s in item.scenes if s.chart["type"] not in ("card", "photo", "headlines"))
         return f"{len(item.scenes)} scenes, {charts} charts"
 
     @staticmethod
@@ -75,9 +79,22 @@ class EpisodeFormat:
         return render_episode(item, cfg, narrator, out_dir, cache_dir)
 
     @staticmethod
+    def hashtags(item) -> list[str]:
+        return item.hashtags
+
+    @staticmethod
     def extra_description(item, result) -> list[str]:
-        return ["Data sources:\n" + "\n".join(f"- {s}" for s in item.sources),
-                "This video is for education only and is not financial advice."]
+        sections = []
+        if item.raw.get("method"):
+            sections.append("HOW WE DID THE MATHS\n" + item.raw["method"].strip())
+        sections.append("SOURCES\n" + "\n".join([*item.references, *(f"{s}" for s in item.sources)]))
+        if result.photo_credits:
+            sections.append("PHOTOS (Wikimedia Commons)\n" + "\n".join(result.photo_credits))
+        sections.append("All charts and models are our own, drawn in R from the data above.")
+        if result.music_credits:
+            sections.append("MUSIC\n" + "\n".join(result.music_credits))
+        sections.append("This video is for education only and is not financial advice.")
+        return sections
 
 
 FORMATS = {"story": StoryFormat(), "episode": EpisodeFormat()}

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-SR = 24000
+SR = 48000  # full band, so the restored voice keeps its detail above 12 kHz
 
 
 def read_wav(path: Path) -> tuple[np.ndarray, int]:

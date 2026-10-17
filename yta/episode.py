@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -9,7 +10,8 @@ from . import metrics
 from .data import Series, fetch_all
 from .story import StoryError, split_sentences
 
-CHART_TYPES = ("line", "bars", "growth", "scatter", "card")
+CHART_TYPES = ("line", "bars", "growth", "scatter", "card", "photo", "headlines")
+CARD_WORDS_WITHOUT_PHOTO = 12  # a plain text card longer than this would hold the same words on screen too long
 TRENDS = ("linear", "smooth")
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
 
@@ -69,6 +71,24 @@ class Episode:
                 scene.chart["title_filled"] = metrics.fill(scene.chart["title"], self.series)
 
     @property
+    def hashtags(self) -> list[str]:
+        if self.raw.get("hashtags"):
+            return [str(t) for t in self.raw["hashtags"]]
+        return ["".join(w[:1].upper() + w[1:] for w in re.findall(r"[A-Za-z0-9]+", t)) for t in self.tags[:3]]
+
+    @property
+    def references(self) -> list[str]:
+        """News and reports the script cites, as 'Outlet (16 Oct 2026): what it says'."""
+        import datetime as dt
+
+        out = []
+        for ref in self.raw.get("references", []):
+            day = dt.date.fromisoformat(ref["date"])
+            line = f"{ref['source']} ({day.day} {day:%b %Y}): {ref['says']}"
+            out.append(f"{line} {ref['url']}" if ref.get("url") else line)
+        return out
+
+    @property
     def sources(self) -> list[str]:
         out = []
         for spec in self.data.values():
@@ -77,7 +97,7 @@ class Episode:
             elif spec.get("source") == "worldbank":
                 out.append(f"World Bank: {spec.get('label', spec['indicator'])} ({spec['country']}, {spec['indicator']})")
             elif spec.get("source") == "inline" and spec.get("citation"):
-                out.append(spec["citation"])
+                out.append(spec["citation"].split(": ")[0])  # one line per report, not one per figure from it
         return list(dict.fromkeys(out))
 
 
@@ -112,6 +132,26 @@ def load_episode(path: Path) -> Episode:
         if spec.get("source") == "inline" and not spec.get("citation"):
             raise StoryError(f"{path.name}: inline data '{name}' needs a 'citation' naming where the numbers come from")
 
+    for tag in data.get("hashtags", []):
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9]{1,29}", str(tag)):
+            raise StoryError(f"{path.name}: hashtag '{tag}' must be one word of letters and digits, without #")
+    if len(data.get("hashtags", [])) > 5:
+        raise StoryError(f"{path.name}: use at most 5 hashtags")
+    for ref in data.get("references", []):
+        if not (isinstance(ref, dict) and ref.get("source") and ref.get("date") and ref.get("says")):
+            raise StoryError(f"{path.name}: each reference needs 'source', 'date' (YYYY-MM-DD) and 'says'")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(ref["date"])):
+            raise StoryError(f"{path.name}: reference date '{ref['date']}' must look like 2026-10-16")
+
+    short = data.get("short")
+    if short is not None:
+        picks = short.get("scenes") if isinstance(short, dict) else None
+        if not (isinstance(short, dict) and 5 <= len(str(short.get("title", ""))) <= 90 and picks
+                and all(isinstance(k, int) and 1 <= k <= len(data["scenes"]) for k in picks)):
+            raise StoryError(f"{path.name}: 'short' needs a 'title' (5-90 characters) and 'scenes' (scene numbers from 1)")
+        if any((data["scenes"][k - 1].get("chart") or {}).get("type") == "photo" for k in picks):
+            raise StoryError(f"{path.name}: a Short can't use photo scenes")
+
     scenes = []
     for i, sc in enumerate(data["scenes"], 1):
         chart = dict(sc.get("chart") or {"type": "card"})
@@ -122,6 +162,17 @@ def load_episode(path: Path) -> Episode:
         for name in list(chart.get("series", [])) + [chart[k] for k in ("x", "y") if chart["type"] == "scatter"]:
             if name not in data["data"]:
                 raise StoryError(f"{path.name}: scene {i} charts unknown data '{name}'")
+        if chart["type"] == "photo" and not (chart.get("file") or chart.get("query")):
+            raise StoryError(f"{path.name}: scene {i} photo needs a Wikimedia Commons 'file' or a search 'query'")
+        if chart["type"] == "headlines":
+            items = chart.get("headlines")
+            if not (isinstance(items, list) and 1 <= len(items) <= 5):
+                raise StoryError(f"{path.name}: scene {i} headlines needs 1-5 'headlines'")
+            for h in items:
+                if not (isinstance(h, dict) and h.get("source") and h.get("text") and len(h["text"]) <= 120
+                        and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(h.get("date", "")))):
+                    raise StoryError(f"{path.name}: scene {i} each headline needs 'source', 'date' (YYYY-MM-DD) "
+                                     "and 'text' (at most 120 characters)")
         if chart.get("trend") not in (None, *TRENDS):
             raise StoryError(f"{path.name}: scene {i} trend must be one of {', '.join(TRENDS)}")
         if not sc.get("narration", "").strip():
@@ -161,5 +212,9 @@ def check_script(ep: Episode, rules: dict) -> None:
         raise CheckFailed(f"episodes need {rules['min_scenes']}-{rules['max_scenes']} scenes")
     if not ep.raw.get("claims"):
         raise CheckFailed("add 'claims': every comparison the script makes in words needs a check against the data")
-    if sum(1 for s in ep.scenes if s.chart["type"] != "card") < rules["min_charts"]:
+    for i, sc in enumerate(ep.scenes, 1):
+        if sc.chart["type"] == "card" and not sc.chart.get("photo") and len(sc.narration.split()) > CARD_WORDS_WITHOUT_PHOTO:
+            raise CheckFailed(f"scene {i} is a text card with {len(sc.narration.split())} words of narration; give it a "
+                              f"'photo' or keep it under {CARD_WORDS_WITHOUT_PHOTO + 1} words so text never sits on screen for long")
+    if sum(1 for s in ep.scenes if s.chart["type"] not in ("card", "photo", "headlines")) < rules["min_charts"]:
         raise CheckFailed(f"episodes need at least {rules['min_charts']} charts")

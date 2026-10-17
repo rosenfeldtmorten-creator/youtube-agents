@@ -40,7 +40,7 @@ jobs:
   publish:
     if: github.event_name != 'schedule' || vars.AUTOPUBLISH == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 350
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -48,10 +48,17 @@ jobs:
         channel: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]') }}
     env:
       PYTHONUNBUFFERED: "1"   # show render progress live in the Actions log
+      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
       VOICE: ${{ inputs.voice || 'chatterbox' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Free disk space   # the voice models, two copies of torch and full-HD frames don't fit in a stock runner
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af > /dev/null || true
+          echo "::notice title=Disk before::$(df -h / | tail -1)"
 
       - uses: actions/setup-python@v5
         with:
@@ -81,6 +88,30 @@ jobs:
           if [ "$VOICE" = "chatterbox" ]; then
             pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
           fi
+
+      - name: Install the voice restoration model
+        if: env.VOICE == 'chatterbox'
+        continue-on-error: true   # without it the video still renders, with the plain cloned voice
+        run: |
+          python -m venv /tmp/re
+          /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Narrate (saved before rendering, so a failed render keeps the voice work)
+        if: env.VOICE == 'chatterbox'
+        run: python -m yta narrate --channel "${{ matrix.channel }}" --voice chatterbox
+
+      - name: Save narration
+        if: always() && env.VOICE == 'chatterbox'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ matrix.channel }}-${{ github.run_id }}-narrated
+
+      - name: Drop the restoration model before rendering
+        if: always() && env.VOICE == 'chatterbox'
+        run: |
+          rm -rf /tmp/re   # keep ~/.cache/pip: setup-python saves it after the job
+          echo "::notice title=Disk before render::$(df -h / | tail -1)"
 
       - name: Render and publish
         env:

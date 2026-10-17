@@ -1,62 +1,332 @@
 {
-  "slug": "does-low-unemployment-cause-inflation",
-  "title": "Does Low Unemployment Cause Inflation? The Phillips Curve, Tested",
-  "description": "For decades, economists believed you could have low unemployment or low inflation, but not both. We test that idea, the Phillips curve, with a simple model on more than sixty years of official US data, decade by decade.\n\nEvery number and every fitted line is computed from public data from the Bureau of Labor Statistics, via FRED. The sources are listed below.",
-  "tags": ["phillips curve", "inflation explained", "unemployment", "economics explained", "macroeconomics", "federal reserve", "regression", "data visualization", "economics in charts", "us economy"],
-  "thumbnail_text": "Low unemployment = inflation?",
-  "data": {
-    "unemp": {"source": "fred", "id": "UNRATE", "label": "Unemployment rate (%)", "unit": "percent", "short_source": "FRED (BLS unemployment rate)"},
-    "infl": {"source": "fred", "id": "CPIAUCSL", "label": "Inflation (yearly change in consumer prices)", "unit": "fraction", "transform": "yoy", "short_source": "FRED (BLS consumer price index)"}
+ "slug": "does-low-unemployment-cause-inflation",
+ "title": "Does Low Unemployment Cause Inflation? The Phillips Curve, Tested",
+ "description": "In autumn 2026 US unemployment and inflation rose at the same time, which textbook economics says should not happen. Is the famous trade-off between jobs and prices broken?\n\nWe test the Phillips curve on more than sixty years of US data with a simple regression, decade by decade, and give our honest take on what it means for the Fed and for your money.",
+ "tags": [
+  "phillips curve",
+  "inflation explained",
+  "unemployment",
+  "economics explained",
+  "macroeconomics",
+  "federal reserve",
+  "regression",
+  "data visualization",
+  "economics in charts",
+  "us economy"
+ ],
+ "thumbnail_text": "Low unemployment = inflation?",
+ "data": {
+  "unemp": {
+   "source": "fred",
+   "id": "UNRATE",
+   "label": "Unemployment rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (BLS unemployment rate)"
   },
-  "claims": [
-    {"says": "In the 1960s, lower unemployment went with higher inflation", "check": "correlation(unemp, infl, \"1960\", \"1969\") < -0.7"},
-    {"says": "In the 1960s a straight line explained most of inflation's ups and downs", "check": "r_squared(unemp, infl, \"1960\", \"1969\") > 0.5"},
-    {"says": "From 1970 to 1985 the line explained almost nothing", "check": "r_squared(unemp, infl, \"1970\", \"1985\") < 0.2"},
-    {"says": "Inflation in the 1970s and early 1980s reached more than double its 1960s peak", "check": "highest(infl, \"1970\", \"1985\") > 2 * highest(infl, \"1960\", \"1969\")"},
-    {"says": "From 1986 to 2019 the relationship was very weak", "check": "r_squared(unemp, infl, \"1986\", \"2019\") < 0.2"},
-    {"says": "Since 2020, low unemployment has again tended to go with higher inflation", "check": "correlation(unemp, infl, \"2020\", \"latest\") < 0"},
-    {"says": "Over the whole period since 1960, there is no clear line", "check": "r_squared(unemp, infl, \"1960\", \"latest\") < 0.2"}
-  ],
-  "scenes": [
-    {
-      "narration": "When unemployment is very low, do prices start to rise faster? It is one of the most important questions in economics, because central banks act on the answer. If low unemployment really pushes up inflation, then a central bank fighting inflation may have to accept more people out of work. Today we will test that idea with more than sixty years of official data and a simple model, decade by decade. The answer turns out to be more interesting than a yes or a no.",
-      "chart": {"type": "card", "title": "Does low unemployment cause inflation?", "label": "TESTING AN IDEA", "chapter": "The question"}
-    },
-    {
-      "narration": "First, the two lines we will compare. This is the unemployment rate, the share of people who want a job and are looking for one, but do not have one. It rises sharply in every recession and falls slowly in good times. The latest reading is {{ latest(unemp) | num }} percent. Since 1960 it has been as low as {{ lowest(unemp, \"1960\", \"latest\") | num }} percent and as high as {{ highest(unemp, \"1960\", \"latest\") | num }} percent.",
-      "chart": {"type": "line", "series": ["unemp"], "from": "1960", "y_format": "num", "title": "The unemployment rate", "subtitle": "Percent of the labor force", "chapter": "The two lines"}
-    },
-    {
-      "narration": "And this is inflation, measured as how much consumer prices rose compared with the same month a year earlier. You can see the great inflation of the 1970s, peaking at {{ highest(infl, \"1970\", \"1985\") | pct1 }} in {{ year_of_highest(infl, \"1970\", \"1985\") | year }}, the long calm period after that, and the sudden jump after the pandemic. The latest reading is {{ latest(infl) | pct1 }}.",
-      "chart": {"type": "line", "series": ["infl"], "from": "1960", "y_format": "pct", "title": "Inflation", "subtitle": "Change in consumer prices on a year earlier"}
-    },
-    {
-      "narration": "In 1958, an economist named Bill Phillips noticed something in old British data. When unemployment was low, wages rose fast. When unemployment was high, wages barely moved. The idea makes sense. When workers are scarce, employers compete for them, pay rises, and businesses pass the cost on in their prices. American economists turned this into a simple trade-off between unemployment and inflation. It became known as the Phillips curve.",
-      "chart": {"type": "card", "title": "The idea: scarce workers push prices up", "label": "THE PHILLIPS CURVE", "chapter": "The theory"}
-    },
-    {
-      "narration": "Here is the 1960s. Each dot is one year. Across is the average unemployment rate that year, and up is inflation. Watch the dots appear in order. Now we fit a straight line through them with a simple regression. The shaded band shows how uncertain that line is. The pattern is striking. Lower unemployment went with higher inflation. Each extra point of unemployment came with about {{ 0 - slope(unemp, infl, \"1960\", \"1969\") * 100 | pts }} less inflation, and the line explains about {{ r_squared(unemp, infl, \"1960\", \"1969\") | pct }} of the ups and downs. No wonder economists believed it.",
-      "chart": {"type": "scatter", "x": "unemp", "y": "infl", "from": "1960", "to": "1969", "x_format": "num", "y_format": "pct", "x_label": "Unemployment rate, %", "y_label": "Inflation", "fit": "linear", "connect": true, "title": "The 1960s: a clean trade-off", "subtitle": "One dot per year, with a fitted straight line", "chapter": "The 1960s"}
-    },
-    {
-      "narration": "Then came the 1970s and early 1980s. Oil shocks hit, and something the theory said should not happen did happen. Unemployment and inflation rose together. Economists called it stagflation. Inflation reached more than double its 1960s peak, while unemployment was high too. Fit the same straight line now, and it explains about {{ r_squared(unemp, infl, \"1970\", \"1985\") | pct }} of the movement. Practically nothing. The neat curve had broken.",
-      "chart": {"type": "scatter", "x": "unemp", "y": "infl", "from": "1970", "to": "1985", "x_format": "num", "y_format": "pct", "x_label": "Unemployment rate, %", "y_label": "Inflation", "fit": "linear", "connect": true, "title": "1970 to 1985: the curve breaks", "subtitle": "One dot per year, with a fitted straight line", "chapter": "Stagflation"}
-    },
-    {
-      "narration": "What went wrong? The best explanation is expectations. Once people expect high inflation, they ask for bigger raises and businesses raise prices in advance, whatever unemployment is doing. After the Federal Reserve crushed inflation in the early 1980s, people came to expect low and steady inflation again. And then the opposite puzzle appeared. From 1986 to 2019, unemployment swung from high to very low, but inflation barely reacted. The fitted line is almost flat, and it explains only {{ r_squared(unemp, infl, \"1986\", \"2019\") | pct }} of the movement.",
-      "chart": {"type": "scatter", "x": "unemp", "y": "infl", "from": "1986", "to": "2019", "x_format": "num", "y_format": "pct", "x_label": "Unemployment rate, %", "y_label": "Inflation", "fit": "linear", "connect": false, "title": "1986 to 2019: a flat line", "subtitle": "One dot per year, with a fitted straight line", "chapter": "The quiet decades"}
-    },
-    {
-      "narration": "Then the pandemic. Unemployment shot up in 2020 and fell back fast. As it fell, and with supply chains broken and lots of spending, inflation jumped to {{ highest(infl, \"2020\", \"latest\") | pct1 }}. Join the years in order and you can see a loop rather than a line. Since 2020, lower unemployment has once again tended to go with higher inflation, but with only a handful of years, it is far too early to say the old curve is back.",
-      "chart": {"type": "scatter", "x": "unemp", "y": "infl", "from": "2019", "x_format": "num", "y_format": "pct", "x_label": "Unemployment rate, %", "y_label": "Inflation", "fit": "none", "connect": true, "title": "Since 2019: a loop", "subtitle": "One dot per year, joined in order", "chapter": "After the pandemic"}
-    },
-    {
-      "narration": "So, does low unemployment cause inflation? Sometimes, a little, but not reliably. Over the whole period since 1960, one straight line explains about {{ r_squared(unemp, infl, \"1960\", \"latest\") | pct }} of the movement. The relationship is real in some decades and almost invisible in others, because what people expect inflation to be matters as much as how many people have a job. That is why central banks watch expectations so closely.",
-      "chart": {"type": "card", "title": "Sometimes. It depends on what people expect.", "label": "THE ANSWER", "chapter": "The answer"}
-    },
-    {
-      "narration": "A note on the model. A fitted line shows that two things moved together. It does not prove that one caused the other, and yearly averages hide a lot of detail. Economists use richer models, with expectations, oil prices and slack in the economy. But even this simple version tells the main story of sixty years of economic history in four pictures.",
-      "chart": {"type": "card", "title": "Moving together is not the same as causing", "label": "A NOTE ON THE MODEL"}
+  "infl": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Inflation (yearly change in consumer prices)",
+   "unit": "fraction",
+   "transform": "yoy",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "unemp_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-08",
+     4.1
+    ],
+    [
+     "2026-09",
+     4.2
+    ]
+   ],
+   "label": "Unemployment rate (news)",
+   "unit": "percent",
+   "short_source": "BLS via Trading Economics",
+   "citation": "Bureau of Labor Statistics, Employment Situation for September 2026 (released 2 Oct 2026), as reported by Trading Economics: unemployment rose to 4.2% from 4.1%"
+  },
+  "infl_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     0.037
+    ]
+   ],
+   "label": "Inflation (news)",
+   "unit": "fraction",
+   "short_source": "BLS via First Trust",
+   "citation": "Bureau of Labor Statistics, Consumer Price Index for September 2026 (released 14 Oct 2026), as reported by First Trust: prices up 3.7% on a year earlier"
+  }
+ },
+ "claims": [
+  {
+   "says": "In the 1960s, lower unemployment went with higher inflation",
+   "check": "correlation(unemp, infl, \"1960\", \"1969\") < -0.7"
+  },
+  {
+   "says": "In the 1960s a straight line explained most of inflation's ups and downs",
+   "check": "r_squared(unemp, infl, \"1960\", \"1969\") > 0.5"
+  },
+  {
+   "says": "From 1970 to 1985 the line explained almost nothing",
+   "check": "r_squared(unemp, infl, \"1970\", \"1985\") < 0.2"
+  },
+  {
+   "says": "Inflation in the 1970s and early 1980s reached more than double its 1960s peak",
+   "check": "highest(infl, \"1970\", \"1985\") > 2 * highest(infl, \"1960\", \"1969\")"
+  },
+  {
+   "says": "From 1986 to 2019 the relationship was very weak",
+   "check": "r_squared(unemp, infl, \"1986\", \"2019\") < 0.2"
+  },
+  {
+   "says": "Since 2020, low unemployment has again tended to go with higher inflation",
+   "check": "correlation(unemp, infl, \"2020\", \"latest\") < 0"
+  },
+  {
+   "says": "Over the whole period since 1960, there is no clear line",
+   "check": "r_squared(unemp, infl, \"1960\", \"latest\") < 0.2"
+  },
+  {
+   "says": "Unemployment rose in September 2026",
+   "check": "latest(unemp_news) > first(unemp_news, \"2026\", \"latest\")"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "Two reports this month sent the economy two different signals. At the start of October, the jobs report showed unemployment rising to {{ latest(unemp_news) | num }} percent, up from {{ first(unemp_news, \"2026\", \"latest\") | num }} percent the month before.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Trading Economics",
+      "date": "2026-10-02",
+      "text": "US Unemployment Rate Rises to 4.2% in September"
+     },
+     {
+      "source": "First Trust Economics",
+      "date": "2026-10-14",
+      "text": "The Consumer Price Index (CPI) Rose 0.6% in September"
+     }
+    ],
+    "photo": "job fair United States",
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "Then, two weeks later, the inflation report showed prices up {{ latest(infl_news) | pct1 }} on a year earlier, and rising faster. Textbook economics says those two should not climb together. A weaker job market is supposed to cool prices down. So which is it? Is the textbook wrong, or is something else going on?",
+   "chart": {
+    "type": "card",
+    "title": "Unemployment and inflation both rose",
+    "label": "WHAT JUST HAPPENED",
+    "photo": {
+     "query": "job fair hiring",
+     "after": 2015
     }
+   }
+  },
+  {
+   "narration": "This matters most to one building in Washington. The Federal Reserve has to decide whether to fight inflation or protect jobs, and its answer depends on how these two numbers move together.",
+   "chart": {
+    "type": "photo",
+    "query": "Marriner S. Eccles Federal Reserve Board Building",
+    "caption": "The Federal Reserve, Washington"
+   }
+  },
+  {
+   "narration": "When unemployment is very low, do prices start to rise faster? It is one of the most important questions in economics, because central banks act on the answer. If low unemployment really pushes up inflation, then a central bank fighting inflation may have to accept more people out of work. Today we will test that idea with more than sixty years of official data and a simple model, decade by decade. The answer turns out to be more interesting than a yes or a no.",
+   "chart": {
+    "type": "card",
+    "title": "Does low unemployment cause inflation?",
+    "label": "TESTING AN IDEA",
+    "chapter": "The question",
+    "photo": {
+     "query": "Federal Open Market Committee meeting"
+    }
+   }
+  },
+  {
+   "narration": "First, the two lines we will compare. This is the unemployment rate, the share of people who want a job and are looking for one, but do not have one. It rises sharply in every recession and falls slowly in good times. The latest reading is {{ latest(unemp) | num }} percent. Since 1960 it has been as low as {{ lowest(unemp, \"1960\", \"latest\") | num }} percent and as high as {{ highest(unemp, \"1960\", \"latest\") | num }} percent.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "unemp"
+    ],
+    "from": "1960",
+    "y_format": "num",
+    "title": "The unemployment rate",
+    "subtitle": "Percent of the labor force",
+    "chapter": "The two lines"
+   }
+  },
+  {
+   "narration": "And this is inflation, measured as how much consumer prices rose compared with the same month a year earlier. You can see the great inflation of the 1970s, peaking at {{ highest(infl, \"1970\", \"1985\") | pct1 }} in {{ year_of_highest(infl, \"1970\", \"1985\") | year }}, the long calm period after that, and the sudden jump after the pandemic. The latest reading is {{ latest(infl) | pct1 }}.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "infl"
+    ],
+    "from": "1960",
+    "y_format": "pct",
+    "title": "Inflation",
+    "subtitle": "Change in consumer prices on a year earlier"
+   }
+  },
+  {
+   "narration": "The idea goes back to one economist and a few decades of British wage data.",
+   "chart": {
+    "type": "photo",
+    "query": "London School of Economics",
+    "caption": "Where the idea was born"
+   }
+  },
+  {
+   "narration": "In 1958, an economist named Bill Phillips noticed something in old British data. When unemployment was low, wages rose fast. When unemployment was high, wages barely moved. The idea makes sense. When workers are scarce, employers compete for them, pay rises, and businesses pass the cost on in their prices. American economists turned this into a simple trade-off between unemployment and inflation. It became known as the Phillips curve.",
+   "chart": {
+    "type": "card",
+    "title": "The idea: scarce workers push prices up",
+    "label": "THE PHILLIPS CURVE",
+    "chapter": "The theory",
+    "photo": {
+     "query": "factory workers assembly line",
+     "after": 2010
+    }
+   }
+  },
+  {
+   "narration": "Here is the 1960s. Each dot is one year. Across is the average unemployment rate that year, and up is inflation. Watch the dots appear in order. Now we fit a straight line through them with a simple regression. The shaded band shows how uncertain that line is. The pattern is striking. Lower unemployment went with higher inflation. Each extra point of unemployment came with about {{ 0 - slope(unemp, infl, \"1960\", \"1969\") * 100 | pts }} less inflation, and the line explains about {{ r_squared(unemp, infl, \"1960\", \"1969\") | pct }} of the ups and downs. No wonder economists believed it.",
+   "chart": {
+    "type": "scatter",
+    "x": "unemp",
+    "y": "infl",
+    "from": "1960",
+    "to": "1969",
+    "x_format": "num",
+    "y_format": "pct",
+    "x_label": "Unemployment rate, %",
+    "y_label": "Inflation",
+    "fit": "linear",
+    "connect": true,
+    "title": "The 1960s: a clean trade-off",
+    "subtitle": "One dot per year, with a fitted straight line",
+    "chapter": "The 1960s"
+   }
+  },
+  {
+   "narration": "Then came the 1970s and early 1980s. Oil shocks hit, and something the theory said should not happen did happen. Unemployment and inflation rose together. Economists called it stagflation. Inflation reached more than double its 1960s peak, while unemployment was high too. Fit the same straight line now, and it explains about {{ r_squared(unemp, infl, \"1970\", \"1985\") | pct }} of the movement. Practically nothing. The neat curve had broken.",
+   "chart": {
+    "type": "scatter",
+    "x": "unemp",
+    "y": "infl",
+    "from": "1970",
+    "to": "1985",
+    "x_format": "num",
+    "y_format": "pct",
+    "x_label": "Unemployment rate, %",
+    "y_label": "Inflation",
+    "fit": "linear",
+    "connect": true,
+    "title": "1970 to 1985: the curve breaks",
+    "subtitle": "One dot per year, with a fitted straight line",
+    "chapter": "Stagflation"
+   }
+  },
+  {
+   "narration": "What went wrong? The best explanation is expectations. Once people expect high inflation, they ask for bigger raises and businesses raise prices in advance, whatever unemployment is doing. After the Federal Reserve crushed inflation in the early 1980s, people came to expect low and steady inflation again. And then the opposite puzzle appeared. From 1986 to 2019, unemployment swung from high to very low, but inflation barely reacted. The fitted line is almost flat, and it explains only {{ r_squared(unemp, infl, \"1986\", \"2019\") | pct }} of the movement.",
+   "chart": {
+    "type": "scatter",
+    "x": "unemp",
+    "y": "infl",
+    "from": "1986",
+    "to": "2019",
+    "x_format": "num",
+    "y_format": "pct",
+    "x_label": "Unemployment rate, %",
+    "y_label": "Inflation",
+    "fit": "linear",
+    "connect": false,
+    "title": "1986 to 2019: a flat line",
+    "subtitle": "One dot per year, with a fitted straight line",
+    "chapter": "The quiet decades"
+   }
+  },
+  {
+   "narration": "Then the pandemic. Unemployment shot up in 2020 and fell back fast. As it fell, and with supply chains broken and lots of spending, inflation jumped to {{ highest(infl, \"2020\", \"latest\") | pct1 }}. Join the years in order and you can see a loop rather than a line. Since 2020, lower unemployment has once again tended to go with higher inflation, but with only a handful of years, it is far too early to say the old curve is back.",
+   "chart": {
+    "type": "scatter",
+    "x": "unemp",
+    "y": "infl",
+    "from": "2019",
+    "x_format": "num",
+    "y_format": "pct",
+    "x_label": "Unemployment rate, %",
+    "y_label": "Inflation",
+    "fit": "none",
+    "connect": true,
+    "title": "Since 2019: a loop",
+    "subtitle": "One dot per year, joined in order",
+    "chapter": "After the pandemic"
+   }
+  },
+  {
+   "narration": "So, does low unemployment cause inflation? Sometimes, a little, but not reliably. Over the whole period since 1960, one straight line explains about {{ r_squared(unemp, infl, \"1960\", \"latest\") | pct }} of the movement. The relationship is real in some decades and almost invisible in others, because what people expect inflation to be matters as much as how many people have a job. That is why central banks watch expectations so closely.",
+   "chart": {
+    "type": "card",
+    "title": "Sometimes. It depends on what people expect.",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": {
+     "query": "Jerome Powell press conference"
+    }
+   }
+  },
+  {
+   "narration": "Here is my take. The old trade-off is not dead, but it is weak, and it only works when people trust that inflation will come back down. That is why this autumn's mix of rising unemployment and rising prices is uncomfortable. It looks a little like the 1970s, when the curve broke. One month is not a trend, though. What would worry me is if inflation keeps rising for several more months while the job market softens, because that would suggest expectations are slipping. And a fitted line shows that two things moved together. It does not prove that one causes the other.",
+   "chart": {
+    "type": "card",
+    "title": "A weak trade-off that needs trust",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": {
+     "query": "Marriner S. Eccles Federal Reserve Board Building"
+    }
+   }
+  }
+ ],
+ "hashtags": [
+  "Economics",
+  "Inflation",
+  "Unemployment",
+  "FederalReserve"
+ ],
+ "method": "Each dot is one year: the average unemployment rate against inflation, measured as the change in consumer prices on a year earlier. The lines are ordinary least-squares fits, one per period, with a 95% confidence band.",
+ "references": [
+  {
+   "source": "Trading Economics",
+   "date": "2026-10-02",
+   "says": "US unemployment rate rose to 4.2% in September 2026 from 4.1% in August",
+   "url": "https://tradingeconomics.com/united-states/unemployment-rate/news/589164"
+  },
+  {
+   "source": "First Trust Economics",
+   "date": "2026-10-14",
+   "says": "September CPI up 3.7% on a year earlier",
+   "url": "https://www.ftportfolios.com/blogs/EconBlog/2026/10/14/the-consumer-price-index-cpi-rose-0.6percent-in-september"
+  },
+  {
+   "source": "A. W. Phillips, Economica",
+   "date": "1958-11-01",
+   "says": "The relation between unemployment and the rate of change of money wage rates in the United Kingdom, 1861-1957"
+  }
+ ],
+ "short": {
+  "title": "The 1970s broke this famous economics idea",
+  "scenes": [
+   10
   ]
+ }
 }

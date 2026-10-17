@@ -1,0 +1,65 @@
+name: Voice lab
+
+# Compares free ways to clean up the cloned voice and commits short clips and scores to voice/lab/.
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/voice-studio]
+    paths: [tools/voice_lab.py, .github/workflows/voice-lab.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONUNBUFFERED: "1"
+      DEEP_FILTER: /tmp/deep-filter
+      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
+      DNSMOS_MODEL: /tmp/sig_bak_ovr.onnx
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-chatterbox-0.1.7
+
+      - name: Install Python packages
+        run: |
+          pip install -r requirements.txt onnxruntime soundfile
+          pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Get DeepFilterNet and DNSMOS
+        run: |
+          curl -sSL -o /tmp/deep-filter https://github.com/Rikorose/DeepFilterNet/releases/download/v0.5.6/deep-filter-0.5.6-x86_64-unknown-linux-musl
+          chmod +x /tmp/deep-filter
+          curl -sSL -o /tmp/sig_bak_ovr.onnx https://github.com/microsoft/DNS-Challenge/raw/master/DNSMOS/DNSMOS/sig_bak_ovr.onnx
+
+      - name: Get Resemble Enhance
+        continue-on-error: true
+        run: |
+          python -m venv /tmp/re
+          /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Run the lab
+        run: python tools/voice_lab.py
+
+      - name: Commit clips and scores
+        run: |
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add voice/lab
+          git commit -m "Voice lab results $(date -u +%F)" || exit 0
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

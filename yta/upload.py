@@ -41,12 +41,15 @@ def format_timestamp(seconds: float) -> str:
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
 
 
-def build_description(intro: str, chapters, extra_sections: list[str], footer: str) -> str:
-    parts = [intro.strip()]
+def build_description(intro: str, chapters, extra_sections: list[str], footer: str, hashtags: list[str] = ()) -> str:
+    tags = " ".join(f"#{t}" for t in hashtags)
+    parts = [p for p in (tags, intro.strip()) if p]
     if len(chapters) >= 3:
-        parts.append("\n".join(f"{format_timestamp(t)} {name}" for t, name in chapters))
+        parts.append("CHAPTERS\n" + "\n".join(f"{format_timestamp(t)} {name}" for t, name in chapters))
     parts += [s.strip() for s in extra_sections if s.strip()]
     parts.append(footer.strip())
+    if tags:
+        parts.append(tags)
     text = "\n\n".join(parts).replace("<", "").replace(">", "")
     return text[:4900]
 

@@ -68,7 +68,8 @@
         "type": "card",
         "title": "Did your paycheck keep up?",
         "label": "PRICES, WAGES AND HOUSES SINCE 2000",
-        "chapter": "The question"
+        "chapter": "The question",
+        "photo": "supermarket checkout"
       }
     },
     {
@@ -185,7 +186,8 @@
         "type": "card",
         "title": "Prices: pay kept up. Houses: it did not.",
         "label": "THE ANSWER",
-        "chapter": "The answer"
+        "chapter": "The answer",
+        "photo": "supermarket checkout"
       }
     },
     {
@@ -193,7 +195,8 @@
       "chart": {
         "type": "card",
         "title": "Averages hide a lot of local detail",
-        "label": "ONE LAST THING"
+        "label": "ONE LAST THING",
+        "photo": "supermarket checkout"
       }
     }
   ]
