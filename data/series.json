@@ -270,5 +270,13 @@
   "wealth_bottom50": {
     "source": "fred",
     "id": "WFRBLB50107"
+  },
+  "median_household_income_nominal": {
+    "source": "fred",
+    "id": "MEHOINUSA646N"
+  },
+  "median_home_existing": {
+    "source": "fred",
+    "id": "MSPUS"
   }
 }
