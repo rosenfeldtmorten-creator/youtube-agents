@@ -102,6 +102,15 @@ class Narrator:
             audio.write_wav(cached, data)
         return data
 
+    def ready(self, texts: list[str]) -> bool:
+        """True if every sentence is already spoken (and restored, when restoration is on)."""
+        if not self.cache_dir:
+            return False
+        keys = [self._key(t) for t in texts]
+        if self.enhance:
+            return all(self._enhanced(k).exists() for k in keys)
+        return all((self.cache_dir / f"{k}.wav").exists() for k in keys)
+
     def enhance_cached(self, texts: list[str], batch: int = 8) -> int:
         """Restore every listed sentence that has no restored copy yet, in one run of the enhancer."""
         if self.enhance != "resemble":
