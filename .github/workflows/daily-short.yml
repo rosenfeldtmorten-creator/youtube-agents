@@ -107,6 +107,19 @@ jobs:
           path: out/**/short-*/video.mp4
           retention-days: 7
 
+      - name: Share the test render   # artifacts can't be fetched from the agent's sandbox, a branch can
+        if: env.UPLOAD != 'true'
+        run: |
+          src=$(ls -t out/*/*/short-*/video.mp4 | head -1)
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan short-preview
+          git rm -rq --cached .
+          mkdir -p preview && cp "$src" preview/short.mp4 && echo "$src" > preview/source.txt
+          git add -f preview
+          git commit -qm "Short test render $(date -u +%F)"
+          git push -f origin HEAD:short-preview
+
       - name: Record what was posted
         if: env.UPLOAD == 'true'
         run: |

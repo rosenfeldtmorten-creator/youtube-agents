@@ -114,3 +114,7 @@ The channel posts one Short a day, cut from videos that are already up, so each 
 ## Comment
 
 `comment` is the channel's first comment under the video: one question viewers can answer in a few words about their own life ("What year were you born?"), at most 300 characters. It is posted automatically; without it the channel's `default_comment` is used.
+
+## Callouts
+
+A line chart can mark moments on the line itself: `"annotations": [{"date": "2008-09", "text": "Lehman collapses"}]` (optional `"series"` names which line; the first by default). Each callout appears as the line reaches it. Use two or three per chart at most, for events the narration mentions, with at most four words each.
