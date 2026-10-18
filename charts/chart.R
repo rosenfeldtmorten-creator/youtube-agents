@@ -75,6 +75,8 @@ end_label <- function(y) {
 }
 
 title_txt    <- if (!is.null(spec$title_filled)) spec$title_filled else ""
+# Wrap a title too long for the frame (a square Short chart is about 26 characters wide at this size).
+title_txt    <- paste(strwrap(title_txt, width = max(20, floor((width_px - 160) / 34))), collapse = "\n")
 subtitle_txt <- if (!is.null(spec$subtitle)) spec$subtitle else NULL
 caption_txt  <- if (!is.null(spec$source_note)) paste("Source:", spec$source_note) else NULL
 fmt          <- if (!is.null(spec$y_format)) spec$y_format else "num"
