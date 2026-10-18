@@ -242,5 +242,33 @@
     "source": "worldbank",
     "country": "BR",
     "indicator": "FP.CPI.TOTL.ZG"
+  },
+  "wealth_share_top1": {
+    "source": "fred",
+    "id": "WFRBST01134"
+  },
+  "wealth_share_next9": {
+    "source": "fred",
+    "id": "WFRBSN09161"
+  },
+  "wealth_share_middle40": {
+    "source": "fred",
+    "id": "WFRBSN40188"
+  },
+  "wealth_share_bottom50": {
+    "source": "fred",
+    "id": "WFRBSB50215"
+  },
+  "wealth_top1": {
+    "source": "fred",
+    "id": "WFRBLT01026"
+  },
+  "wealth_middle40": {
+    "source": "fred",
+    "id": "WFRBLN40080"
+  },
+  "wealth_bottom50": {
+    "source": "fred",
+    "id": "WFRBLB50107"
   }
 }
