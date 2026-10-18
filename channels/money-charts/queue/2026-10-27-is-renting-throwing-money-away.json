@@ -1,0 +1,528 @@
+{
+ "slug": "is-renting-throwing-money-away",
+ "title": "Is Renting Really Throwing Money Away? The Maths of Rent vs Buy",
+ "description": "In mid-October 2026 US asking rents fell on a year earlier for the thirty-eighth month in a row, while the thirty-year mortgage rate held at its highest level in nearly three years. So is renting still throwing money away?\n\nWe add up the money an owner never gets back (interest, property tax, upkeep and the lost return on the down payment), compare it with rent, and show how sharply the break-even moved when rates rose. Our honest take is at the end.",
+ "tags": [
+  "rent vs buy",
+  "is renting a waste of money",
+  "renting vs owning",
+  "housing market",
+  "mortgage rates",
+  "rent prices",
+  "personal finance",
+  "economics explained",
+  "economics in charts",
+  "data visualization"
+ ],
+ "thumbnail_text": "Is rent wasted money?",
+ "data": {
+  "rent": {
+   "source": "fred",
+   "id": "CUUR0000SEHA",
+   "label": "Rent paid by tenants",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index, rent of primary residence)"
+  },
+  "homes": {
+   "source": "fred",
+   "id": "CSUSHPINSA",
+   "label": "House prices",
+   "unit": "index",
+   "short_source": "FRED (S&P CoreLogic Case-Shiller)"
+  },
+  "cpi": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "All consumer prices",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "price": {
+   "source": "fred",
+   "id": "MSPUS",
+   "label": "Median sales price of new homes",
+   "unit": "usd",
+   "short_source": "FRED (Census Bureau, HUD)"
+  },
+  "rate": {
+   "source": "fred",
+   "id": "MORTGAGE30US",
+   "label": "30-year fixed mortgage rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (Freddie Mac)"
+  },
+  "bond": {
+   "source": "fred",
+   "id": "DGS10",
+   "label": "10-year Treasury yield (%)",
+   "unit": "percent",
+   "short_source": "FRED (US Treasury)"
+  },
+  "rent_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     1694
+    ]
+   ],
+   "label": "Median asking rent, 50 largest metros",
+   "unit": "usd",
+   "short_source": "Realtor.com",
+   "citation": "Realtor.com September 2026 Rent Report (15 Oct 2026): median asking rent $1,694 for studio to two-bedroom units in the 50 largest US metros"
+  },
+  "rent_news_yoy": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     -0.004
+    ]
+   ],
+   "label": "Median asking rent, change on a year earlier",
+   "unit": "fraction",
+   "short_source": "Realtor.com",
+   "citation": "Realtor.com September 2026 Rent Report (15 Oct 2026): asking rents down 0.4% on a year earlier"
+  },
+  "rent_news_months": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     38
+    ]
+   ],
+   "label": "Months in a row of yearly rent declines",
+   "unit": "num",
+   "short_source": "Realtor.com",
+   "citation": "Realtor.com September 2026 Rent Report (15 Oct 2026): the 38th consecutive month of annual declines"
+  },
+  "rate_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2025-10-16",
+     6.27
+    ],
+    [
+     "2026-10-15",
+     7.4
+    ]
+   ],
+   "label": "30-year mortgage rate (news)",
+   "unit": "percent",
+   "short_source": "Freddie Mac via Associated Press",
+   "citation": "Associated Press (15 Oct 2026), citing Freddie Mac: the 30-year rate held at 7.40%, up from 6.27% a year earlier, the highest since November 2023"
+  }
+ },
+ "claims": [
+  {
+   "says": "Asking rents were lower than a year earlier (news report)",
+   "check": "latest(rent_news_yoy) < 0"
+  },
+  {
+   "says": "The mortgage rate is higher than a year ago (news report)",
+   "check": "latest(rate_news) > first(rate_news, \"2025\", \"latest\")"
+  },
+  {
+   "says": "Rents paid by tenants are still rising on a year earlier in the official index",
+   "check": "pct_change(rent, \"2025-09\", \"latest\") > 0"
+  },
+  {
+   "says": "Rents rose faster than prices in general since 2000",
+   "check": "ratio(rent, \"2000-01\", \"latest\") > ratio(cpi, \"2000-01\", \"latest\")"
+  },
+  {
+   "says": "House prices rose faster than rents since 2000",
+   "check": "ratio(homes, \"2000-01\", \"latest\") > ratio(rent, \"2000-01\", \"latest\")"
+  },
+  {
+   "says": "From mid-2006 to early 2012 house prices fell by more than a fifth while rents kept rising",
+   "check": "pct_change(homes, \"2006-07\", \"2012-02\") < -0.2"
+  },
+  {
+   "says": "Rents kept rising during the housing crash",
+   "check": "ratio(rent, \"2006-07\", \"2012-02\") > 1"
+  },
+  {
+   "says": "Interest is the biggest cost an owner never gets back",
+   "check": "latest(price) * 0.8 * latest(rate) / 1200 > latest(price) * 0.2 * latest(bond) / 1200 + 3 * latest(price) * 0.01 / 12"
+  },
+  {
+   "says": "The unrecoverable cost of owning, as a share of the price, more than doubled since early 2021",
+   "check": "(0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 > 2 * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100"
+  },
+  {
+   "says": "The break-even rent more than doubled since early 2021",
+   "check": "latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12 > 2 * value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12"
+  },
+  {
+   "says": "The break-even rent in early 2021 was about the same as in 2000",
+   "check": "value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12 < 1.1 * value(price, \"2000-03\") * (0.8 * value(rate, \"2000-03\") + 0.2 * value(bond, \"2000-03\") + 2) / 100 / 12"
+  },
+  {
+   "says": "The break-even rent in early 2021 was about the same as in 2000 (lower bound)",
+   "check": "value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12 > 0.9 * value(price, \"2000-03\") * (0.8 * value(rate, \"2000-03\") + 0.2 * value(bond, \"2000-03\") + 2) / 100 / 12"
+  },
+  {
+   "says": "Mortgage rates more than doubled since early 2021",
+   "check": "latest(rate) > 2 * value(rate, \"2021-01\")"
+  },
+  {
+   "says": "Today's break-even in years of rent is less than half that of early 2021",
+   "check": "1 / ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100) < 0.5 / ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100)"
+  },
+  {
+   "says": "House prices grew faster than rents on average since 1987",
+   "check": "cagr(homes, \"1987-01\", \"latest\") > cagr(rent, \"1987-01\", \"latest\")"
+  },
+  {
+   "says": "Early 2021 rates were close to the lowest on record",
+   "check": "value(rate, \"2021-01\") < 1.1 * lowest(rate, \"1971\", \"latest\")"
+  },
+  {
+   "says": "In early 2021, if prices kept rising at their long-run pace, owning cost very little beyond the mortgage principal",
+   "check": "value(price, \"2021-01\") * ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 < 200"
+  },
+  {
+   "says": "Today, even with long-run price gains, owning still costs something real each month",
+   "check": "latest(price) * ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 > 1000"
+  },
+  {
+   "says": "Today's break-even with price gains is in the same range as the typical asking rent",
+   "check": "latest(price) * ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 > 0.75 * latest(rent_news)"
+  },
+  {
+   "says": "Today's break-even with price gains is in the same range as the typical asking rent (upper bound)",
+   "check": "latest(price) * ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 < 1.25 * latest(rent_news)"
+  },
+  {
+   "says": "The mortgage payment is larger than the interest part, because part of it is repayment",
+   "check": "payment(0.8 * latest(price), latest(rate), 30) > latest(price) * 0.8 * latest(rate) / 1200"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "On the fifteenth of October, two housing reports landed on the same day. Realtor.com said the typical asking rent in America's biggest cities was {{ latest(rent_news) | usd }} a month, down {{ -latest(rent_news_yoy) | pct1 }} on a year earlier. And Freddie Mac said the thirty-year mortgage rate was stuck at {{ latest(rate_news) | num }} percent, the highest in nearly three years.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Realtor.com",
+      "date": "2026-10-15",
+      "text": "Rents Rebound in AI Hubs and Affordable Alternatives: Realtor.com® September Rent Report"
+     },
+     {
+      "source": "Associated Press",
+      "date": "2026-10-15",
+      "text": "Average long-term US mortgage rate holds at 7.4%, remaining at highest level in nearly 3 years"
+     }
+    ],
+    "photo": [
+     {
+      "query": "apartment building for rent sign",
+      "after": 2015
+     },
+     {
+      "query": "apartment buildings Brooklyn street",
+      "after": 2015
+     },
+     {
+      "query": "residential apartment building United States",
+      "after": 2015
+     }
+    ],
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "That is the {{ latest(rent_news_months) | num }}th month in a row that asking rents were lower than a year before. Meanwhile, a year ago the same mortgage cost {{ first(rate_news, \"2025\", \"latest\") | num }} percent. Renting got a little cheaper, and borrowing to buy got a lot more expensive.",
+   "chart": {
+    "type": "card",
+    "title": "Rents slipping, mortgage rates at a three-year high",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "for rent sign window",
+      "after": 2015
+     },
+     {
+      "query": "apartment for rent sign",
+      "after": 2015
+     },
+     {
+      "query": "townhouses street United States",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Which brings back the oldest argument at the family dinner table. Somebody always says that renting is throwing money away, because every month the rent is gone and you have nothing to show for it. Is that true? Today we will answer it the way an economist would. We will add up the money a renter never gets back, and the money an owner never gets back, using official data and a simple model. The answer depends mostly on one number, and it is the number that just hit a three-year high.",
+   "chart": {
+    "type": "card",
+    "title": "Is renting really throwing money away?",
+    "label": "RENT VERSUS BUY, IN NUMBERS",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "family dinner table",
+      "after": 2010
+     },
+     {
+      "query": "suburban house front porch",
+      "after": 2015
+     },
+     {
+      "query": "apartment balcony city",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is the key idea. A renter loses the rent. But an owner also loses money every month, it just goes to different places: the bank, the tax office and the repair shop. The question is not who pays money they never see again. Both do. The question is who pays more.",
+   "chart": {
+    "type": "photo",
+    "query": "apartment building balconies",
+    "after": 2015,
+    "caption": "Both renters and owners pay costs they never get back"
+   }
+  },
+  {
+   "narration": "First, the long view. These three lines all start at one hundred in January 2000. The bottom one is all consumer prices, which rose {{ pct_change(cpi, \"2000-01\", \"latest\") | pct }}. The middle one is the rent that tenants actually pay, from the government's price index. It rose {{ pct_change(rent, \"2000-01\", \"latest\") | pct }}, faster than prices in general. And the top line is house prices from the Case-Shiller index, which follows the same homes as they sell again and again. They rose {{ pct_change(homes, \"2000-01\", \"latest\") | pct }}. So over a quarter of a century, owners did better than renters. That is where the dinner-table argument comes from.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "cpi",
+     "rent",
+     "homes"
+    ],
+    "from": "2000-01",
+    "index": "2000-01",
+    "y_format": "index",
+    "labels": {
+     "cpi": "All prices",
+     "rent": "Rent",
+     "homes": "House prices"
+    },
+    "title": "Rents, house prices and everything else",
+    "subtitle": "Index, January 2000 = 100",
+    "chapter": "Rents and prices"
+   }
+  },
+  {
+   "narration": "But look at the shape of the lines. Rent climbs slowly and almost never falls. In the official index, it is still up {{ pct_change(rent, \"2025-09\", \"latest\") | pct1 }} on a year ago, even while asking rents for new leases slip, because the index covers every tenant, including those on old leases. House prices are much bumpier. From the peak in mid-2006 to early 2012, they fell {{ -pct_change(homes, \"2006-07\", \"2012-02\") | pct }}. Over the same years, rents rose {{ pct_change(rent, \"2006-07\", \"2012-02\") | pct }}. Anyone who bought at the top and had to sell at the bottom lost far more than a renter ever did. That is the first lesson of the data. A home is not only a place to live, it is also a big bet on one asset, in one town, usually made with borrowed money. Renting carries no such bet. When prices rise, owners win it. When they fall, renters are glad they never placed it.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "rent",
+     "homes"
+    ],
+    "from": "2004-01",
+    "to": "2014-12",
+    "index": "2006-07",
+    "y_format": "index",
+    "labels": {
+     "rent": "Rent",
+     "homes": "House prices"
+    },
+    "title": "When house prices fell, rents kept rising",
+    "subtitle": "Index, July 2006 = 100"
+   }
+  },
+  {
+   "narration": "So the honest comparison is not rent against nothing. It is rent against the costs of owning that you never get back.",
+   "chart": {
+    "type": "photo",
+    "query": "roofer repairing roof",
+    "after": 2010,
+    "caption": "Owners pay too: interest, tax and repairs"
+   }
+  },
+  {
+   "narration": "Let's build that model with the median new home, which sells for {{ latest(price) | usd }} in the latest data. Assume a buyer puts twenty percent down and borrows the rest at today's rate. Four costs never come back. The first is interest on the loan, about {{ latest(price) * 0.8 * latest(rate) / 1200 | usd }} a month in the first year. The second is property tax, which we set at {{ 0.01 | pct }} of the price a year, about {{ latest(price) * 0.01 / 12 | usd }} a month. The third is upkeep, roofs, boilers and paint, also {{ 0.01 | pct }} a year. The fourth is easy to forget. The down payment could have earned interest instead. At the ten-year government bond yield of {{ latest(bond) | num }} percent, that lost return is about {{ latest(price) * 0.2 * latest(bond) / 1200 | usd }} a month. Add them up and owning this home throws away about {{ latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12 | usd }} a month, before any rise in its price.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Interest",
+      "value": "latest(price) * 0.8 * latest(rate) / 1200"
+     },
+     {
+      "label": "Lost return on deposit",
+      "value": "latest(price) * 0.2 * latest(bond) / 1200"
+     },
+     {
+      "label": "Property tax",
+      "value": "latest(price) * 0.01 / 12"
+     },
+     {
+      "label": "Upkeep",
+      "value": "latest(price) * 0.01 / 12"
+     }
+    ],
+    "y_format": "usd",
+    "title": "What owning throws away each month",
+    "subtitle": "Median new home, twenty percent down, first year, before any price gain",
+    "chapter": "The model"
+   }
+  },
+  {
+   "narration": "Notice what is not on that list. The mortgage payment itself is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }} a month, but part of it pays down the loan. That part is saving, not spending, because it builds up the share of the house you own. Interest is the part that is gone. In the early years of a thirty-year loan, interest is most of the payment, and only later does the balance start to shrink quickly. And interest is driven by one number, the mortgage rate. In January 2021 it was {{ value(rate, \"2021-01\") | num }} percent, close to the lowest ever recorded. Today it is {{ latest(rate) | num }} percent.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "rate"
+    ],
+    "from": "2019-01",
+    "y_format": "num",
+    "title": "The thirty-year mortgage rate",
+    "subtitle": "Percent per year",
+    "chapter": "The rate"
+   }
+  },
+  {
+   "narration": "Now we can turn the model into a single break-even rent. If a similar home rents for less than this, renting is cheaper. If it rents for more, owning is cheaper. With the prices and rates of early 2000, the break-even was about {{ value(price, \"2000-03\") * (0.8 * value(rate, \"2000-03\") + 0.2 * value(bond, \"2000-03\") + 2) / 100 / 12 | usd }} a month. In early 2021, with higher prices but much lower rates, it was almost the same, about {{ value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12 | usd }}. Today it is about {{ latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12 | usd }}. That is {{ latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12 / (value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12) | times }} as much in a little over five years. Rents rose only {{ pct_change(rent, \"2021-01\", \"latest\") | pct }} over the same time. The break-even ran far ahead of rents.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2000",
+      "value": "value(price, \"2000-03\") * (0.8 * value(rate, \"2000-03\") + 0.2 * value(bond, \"2000-03\") + 2) / 100 / 12"
+     },
+     {
+      "label": "Early 2021",
+      "value": "value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12"
+     },
+     {
+      "label": "Latest",
+      "value": "latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12"
+     }
+    ],
+    "y_format": "usd",
+    "title": "The break-even rent for the median new home",
+    "subtitle": "Monthly cost of owning that never comes back, before price gains",
+    "chapter": "The break-even"
+   }
+  },
+  {
+   "narration": "There is one more piece, and it is the part owners love. If the house rises in value, that gain offsets the costs. On a log chart, where equal steps mean equal percentage growth, a straight line means a steady growth rate. Since 1987, house prices have grown about {{ cagr(homes, \"1987-01\", \"latest\") | pct1 }} a year on average. Rents, by comparison, grew about {{ cagr(rent, \"1987-01\", \"latest\") | pct1 }} a year. But the line is a trend, not a promise. Prices raced up before 2006, then fell hard for more than five years. A buyer only gets the average if they hold on through the bad years, and nobody knows in advance which years those will be.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "homes"
+    ],
+    "from": "1987-01",
+    "log": true,
+    "trend": "linear",
+    "y_format": "index",
+    "title": "House prices and their long-run trend",
+    "subtitle": "Case-Shiller index, log scale, with a fitted growth line",
+    "chapter": "Price gains"
+   }
+  },
+  {
+   "narration": "So let's give owners the benefit of the doubt and assume prices keep rising at that long-run pace. In early 2021, the costs of owning were then almost fully covered by the expected price gain, leaving about {{ value(price, \"2021-01\") * ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 | usd }} a month. That is why buying looked like a no-brainer back then. Today, even with the same price gain, owning the median new home still throws away about {{ latest(price) * ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12 | usd }} a month. That is in the same range as the typical asking rent of {{ latest(rent_news) | usd }}, although that figure is mostly for apartments of up to two bedrooms, not new family houses. And the price gain is the shakiest part of the sum. Every one point of yearly price growth, more or less, moves the break-even by about {{ latest(price) * 0.01 / 12 | usd }} a month on this home.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2021",
+      "value": "value(price, \"2021-01\") * ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12"
+     },
+     {
+      "label": "Latest",
+      "value": "latest(price) * ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 - cagr(homes, \"1987-01\", \"latest\")) / 12"
+     },
+     {
+      "label": "Typical asking rent",
+      "value": "latest(rent_news)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Break-even rent if prices keep rising",
+    "subtitle": "Unrecoverable cost of owning, minus the long-run yearly price gain"
+   }
+  },
+  {
+   "narration": "So, is renting throwing money away? Not really. Renting throws away the rent. Owning throws away interest, tax, upkeep and the return your down payment could have earned. When rates were near record lows, the owner's losses were small and rising prices covered them, so buying usually won. Before price gains, a home was worth buying in early 2021 if it cost less than about {{ 1 / ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100) | num }} years of its own rent. Today, that line sits at about {{ 1 / ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100) | num }} years. Now that rates have more than doubled, the cost of owning has roughly doubled too, while asking rents for new leases have slipped over the past year. The same home, at the same rent, can flip from a good buy to a poor one just because the rate moved. Today, for many homes, renting is not the wasteful choice. It can be the cheaper one.",
+   "chart": {
+    "type": "card",
+    "title": "Both throw money away. The rate decides who throws more.",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "suburban street houses",
+      "after": 2015
+     },
+     {
+      "query": "apartment buildings city street",
+      "after": 2015
+     },
+     {
+      "query": "row houses street",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take. The phrase throwing money away is wrong in both directions, and it pushes people into buying at the worst moments, when rates are high and they feel left behind. At today's rates, I think renting and investing the difference is a perfectly respectable choice, as long as the difference really does get invested. What would change my mind? A big drop in mortgage rates, or rents starting to climb fast again. And a caveat. These are national averages, and the model leaves out moving costs, insurance and tax breaks, so your own city and your own plans can tip the answer either way.",
+   "chart": {
+    "type": "card",
+    "title": "Watch the rate, not the slogan",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "moving boxes apartment",
+      "after": 2010
+     },
+     {
+      "query": "house keys hand",
+      "after": 2010
+     },
+     {
+      "query": "for sale sign house United States",
+      "after": 2015
+     }
+    ]
+   }
+  }
+ ],
+ "hashtags": [
+  "Renting",
+  "HousingMarket",
+  "MortgageRates",
+  "Economics"
+ ],
+ "method": "For the median new home with twenty percent down, we add first-year interest at the average thirty-year rate, the ten-year Treasury yield on the down payment, and one percent a year each for property tax and upkeep. We then subtract the average yearly rise in the Case-Shiller index since 1987 to show the case where prices keep growing.",
+ "references": [
+  {
+   "source": "Realtor.com",
+   "date": "2026-10-15",
+   "says": "September 2026 Rent Report: median asking rent in the 50 largest metros $1,694, down 0.4% on a year earlier, the 38th consecutive month of annual declines",
+   "url": "https://www.prnewswire.com/news-releases/rents-rebound-in-ai-hubs-and-affordable-alternatives-realtorcom-september-rent-report-302909224.html"
+  },
+  {
+   "source": "Associated Press",
+   "date": "2026-10-15",
+   "says": "Freddie Mac's average 30-year mortgage rate held at 7.40%, up from 6.27% a year earlier and the highest since November 2023",
+   "url": "https://www.kiro7.com/news/average-long-term-us/7ZSJDYPDPU22XMNOUT62PCJZBM/"
+  },
+  {
+   "source": "Freddie Mac",
+   "date": "2026-10-15",
+   "says": "Primary Mortgage Market Survey: 30-year fixed-rate mortgage averaged 7.40%, unchanged from the prior week",
+   "url": "https://www.globenewswire.com/news-release/2026/10/15/3381991/0/en/mortgage-rates-hold-steady-at-7-40.html"
+  }
+ ],
+ "short": {
+  "title": "Is renting really throwing money away?",
+  "scenes": [
+   10
+  ]
+ }
+}

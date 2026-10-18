@@ -1,0 +1,553 @@
+{
+ "slug": "what-is-a-dollar-from-your-birth-year-worth",
+ "title": "What Is a Dollar From Your Birth Year Worth Today?",
+ "description": "On the fourteenth of October 2026, Social Security announced its biggest benefit rise in four years, to keep up with rising prices. It is a yearly reminder that a dollar slowly loses its value.\n\nWe show what a dollar from every decade since 1950 is worth in today's money, how fast prices doubled in each decade using the rule of 72, why the Federal Reserve watches a different price index, and whether pay kept up. Find your birth year, and tell us in the comments.",
+ "tags": [
+  "inflation explained",
+  "value of a dollar",
+  "purchasing power",
+  "rule of 72",
+  "social security cola",
+  "consumer price index",
+  "economics explained",
+  "economics in charts",
+  "personal finance",
+  "data visualization"
+ ],
+ "thumbnail_text": "Your birth-year dollar today",
+ "data": {
+  "cpi": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Consumer prices (CPI)",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "infl": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Inflation (yearly change in consumer prices)",
+   "unit": "fraction",
+   "transform": "yoy",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "pce": {
+   "source": "fred",
+   "id": "PCEPI",
+   "label": "PCE price index (the Fed's measure)",
+   "unit": "index",
+   "short_source": "FRED (BEA PCE price index)"
+  },
+  "wages": {
+   "source": "fred",
+   "id": "AHETPI",
+   "label": "Average hourly pay",
+   "unit": "usd",
+   "short_source": "FRED (BLS average hourly earnings)"
+  },
+  "cola_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2027-01",
+     0.036
+    ]
+   ],
+   "label": "Social Security cost-of-living adjustment for 2027",
+   "unit": "fraction",
+   "short_source": "Social Security Administration",
+   "citation": "Social Security Administration press release (14 Oct 2026): benefits rise 3.6 percent in January 2027"
+  },
+  "cola_dollars_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2027-01",
+     75
+    ]
+   ],
+   "label": "Average monthly rise in retirement benefits",
+   "unit": "usd",
+   "short_source": "Social Security Administration",
+   "citation": "Social Security Administration press release (14 Oct 2026): retirement benefits rise by $75 a month on average"
+  },
+  "people_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2027-01",
+     72000000
+    ]
+   ],
+   "label": "Social Security beneficiaries",
+   "unit": "num",
+   "short_source": "Social Security Administration",
+   "citation": "Social Security Administration press release (14 Oct 2026): nearly 72 million Social Security beneficiaries"
+  }
+ },
+ "claims": [
+  {
+   "says": "A dollar from 1950 is worth more than ten dollars today",
+   "check": "in_todays_money(1, cpi, \"1950-01\") > 10"
+  },
+  {
+   "says": "Each later decade's dollar is worth less today than the decade before",
+   "check": "in_todays_money(1, cpi, \"1950-01\") > in_todays_money(1, cpi, \"1960-01\") > in_todays_money(1, cpi, \"1970-01\") > in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"1990-01\") > in_todays_money(1, cpi, \"2000-01\") > in_todays_money(1, cpi, \"2010-01\") > in_todays_money(1, cpi, \"2020-01\") > 1"
+  },
+  {
+   "says": "The 1970s were the biggest single drop in the dollar's value of any decade",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"1950-01\") / in_todays_money(1, cpi, \"1960-01\")"
+  },
+  {
+   "says": "The 1970s lost more than the 1960s",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"1960-01\") / in_todays_money(1, cpi, \"1970-01\")"
+  },
+  {
+   "says": "The 1970s lost more than the 1990s",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"1990-01\") / in_todays_money(1, cpi, \"2000-01\")"
+  },
+  {
+   "says": "The 1970s lost more than the 2000s",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"2000-01\") / in_todays_money(1, cpi, \"2010-01\")"
+  },
+  {
+   "says": "The 1970s lost more than the 2010s",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"2010-01\") / in_todays_money(1, cpi, \"2020-01\")"
+  },
+  {
+   "says": "The 1970s lost more than the years since 2020",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"2020-01\")"
+  },
+  {
+   "says": "Prices doubled from January 1973 to January 1981",
+   "check": "ratio(cpi, \"1973-01\", \"1981-01\") > 2"
+  },
+  {
+   "says": "Inflation in the 1970s ran above the long-run pace",
+   "check": "cagr(cpi, \"1970-01\", \"1980-01\") > cagr(cpi, \"1947-01\", \"latest\")"
+  },
+  {
+   "says": "Inflation in the 2010s ran below the long-run pace",
+   "check": "cagr(cpi, \"2010-01\", \"2020-01\") < cagr(cpi, \"1947-01\", \"latest\")"
+  },
+  {
+   "says": "The 1970s lost more than the 1980s",
+   "check": "in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") > in_todays_money(1, cpi, \"1980-01\") / in_todays_money(1, cpi, \"1990-01\")"
+  },
+  {
+   "says": "Inflation peaked in 1980",
+   "check": "1980 <= year_of_highest(infl, \"1948\", \"latest\") <= 1980"
+  },
+  {
+   "says": "Inflation was above ten percent at its peak",
+   "check": "highest(infl, \"1948\", \"latest\") > 0.1"
+  },
+  {
+   "says": "Prices fell in 1949 (deflation)",
+   "check": "lowest(infl, \"1948\", \"1950\") < 0"
+  },
+  {
+   "says": "The 2022 peak was the highest inflation since the early 1980s",
+   "check": "highest(infl, \"2020\", \"latest\") > highest(infl, \"1983\", \"2019\")"
+  },
+  {
+   "says": "Over the whole period, the rule of 72 says prices double roughly every twenty years",
+   "check": "0.72 / cagr(cpi, \"1947-01\", \"latest\") > 18"
+  },
+  {
+   "says": "Over the whole period, the rule of 72 says prices double roughly every twenty years (upper bound)",
+   "check": "0.72 / cagr(cpi, \"1947-01\", \"latest\") < 23"
+  },
+  {
+   "says": "Prices doubled about four times since 1947",
+   "check": "ratio(cpi, \"1947-01\", \"latest\") > 12"
+  },
+  {
+   "says": "Prices doubled about four times since 1947 (upper bound)",
+   "check": "ratio(cpi, \"1947-01\", \"latest\") < 20"
+  },
+  {
+   "says": "In the 1970s the rule of 72 gives about ten years, and prices really did double within the decade",
+   "check": "0.72 / cagr(cpi, \"1970-01\", \"1980-01\") < 10.5"
+  },
+  {
+   "says": "Prices more than doubled during the 1970s",
+   "check": "ratio(cpi, \"1970-01\", \"1980-01\") > 2"
+  },
+  {
+   "says": "The 2010s had the slowest doubling time of any decade",
+   "check": "0.72 / cagr(cpi, \"2010-01\", \"2020-01\") > 0.72 / cagr(cpi, \"2000-01\", \"2010-01\")"
+  },
+  {
+   "says": "The 2010s were slower than the 1950s and 1960s too",
+   "check": "0.72 / cagr(cpi, \"2010-01\", \"2020-01\") > 0.72 / cagr(cpi, \"1950-01\", \"1960-01\")"
+  },
+  {
+   "says": "The 2010s slower than the 1960s",
+   "check": "0.72 / cagr(cpi, \"2010-01\", \"2020-01\") > 0.72 / cagr(cpi, \"1960-01\", \"1970-01\")"
+  },
+  {
+   "says": "Since 2020 prices have been doubling faster than in the 2010s",
+   "check": "0.72 / cagr(cpi, \"2020-01\", \"latest\") < 0.72 / cagr(cpi, \"2010-01\", \"2020-01\") / 2"
+  },
+  {
+   "says": "The CPI rose more than the Fed's PCE measure since 1960",
+   "check": "ratio(cpi, \"1960-01\", \"latest\") > ratio(pce, \"1960-01\", \"latest\")"
+  },
+  {
+   "says": "Since 2000 PCE inflation averaged less than CPI inflation",
+   "check": "cagr(pce, \"2000-01\", \"latest\") < cagr(cpi, \"2000-01\", \"latest\")"
+  },
+  {
+   "says": "An hour of pay buys more today than in 1964",
+   "check": "latest(wages) > in_todays_money(value(wages, \"1964-01\"), cpi, \"1964-01\")"
+  },
+  {
+   "says": "Pay rose more than prices since 1964",
+   "check": "ratio(wages, \"1964-01\", \"latest\") > ratio(cpi, \"1964-01\", \"latest\")"
+  },
+  {
+   "says": "The 2027 COLA is close to the latest yearly inflation rate",
+   "check": "latest(cola_news) > latest(infl) - 0.005"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "On the fourteenth of October, the Social Security Administration announced that benefits for nearly {{ latest(people_news) | num }} Americans will rise {{ latest(cola_news) | pct1 }} in January. The average retirement check goes up by about {{ latest(cola_dollars_news) | usd }} a month.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Social Security Administration",
+      "date": "2026-10-14",
+      "text": "Social Security Announces 3.6 Percent Benefit Increase for 2027"
+     },
+     {
+      "source": "Yahoo Finance",
+      "date": "2026-10-14",
+      "text": "Social Security announces 3.6% COLA for 2027, the highest in 4 years"
+     }
+    ],
+    "photo": [
+     {
+      "query": "Social Security Administration office",
+      "after": 2010
+     },
+     {
+      "query": "Social Security card"
+     },
+     {
+      "query": "retired couple walking park",
+      "after": 2010
+     }
+    ],
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "That rise is called a cost-of-living adjustment, and it is not a gift. It exists because prices keep rising, and a check that stayed the same would buy less every year. The formula is simple. Social Security compares average prices from July to September with the same months a year earlier, using a version of the price index for wage earners, and raises checks by that much. The same week, the government said consumer prices were {{ latest(infl) | pct1 }} higher than a year earlier. In other words, a dollar today buys noticeably less than a dollar did last autumn. Retirees get a raise to make up for it. Cash in a wallet, and most fixed pensions, do not.",
+   "chart": {
+    "type": "card",
+    "title": "Benefits rise because the dollar buys less",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "United States dollar banknotes",
+      "after": 2010
+     },
+     {
+      "query": "cash register supermarket",
+      "after": 2010
+     },
+     {
+      "query": "wallet dollar bills",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "And if one year makes a difference, a lifetime makes a huge one. So here is today's question, and it is a personal one. What is a dollar from the year you were born worth in today's money? We will answer it decade by decade with the official price data, then use a simple rule that lets you work out the answer for any rate of inflation in your head. Then we will look at the bit that people usually forget, which is what happened to pay.",
+   "chart": {
+    "type": "card",
+    "title": "What is a dollar from your birth year worth today?",
+    "label": "THE VALUE OF A DOLLAR",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "old family photographs",
+      "after": 2010
+     },
+     {
+      "query": "birthday cake candles",
+      "after": 2010
+     },
+     {
+      "query": "United States one dollar bill"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is the answer for every decade since 1950. A dollar from 1950 buys what {{ in_todays_money(1, cpi, \"1950-01\") | usd_cents }} buys today. From 1960, {{ in_todays_money(1, cpi, \"1960-01\") | usd_cents }}. From 1970, {{ in_todays_money(1, cpi, \"1970-01\") | usd_cents }}. From 1980, {{ in_todays_money(1, cpi, \"1980-01\") | usd_cents }}. From 1990, {{ in_todays_money(1, cpi, \"1990-01\") | usd_cents }}. From 2000, {{ in_todays_money(1, cpi, \"2000-01\") | usd_cents }}. From 2010, {{ in_todays_money(1, cpi, \"2010-01\") | usd_cents }}. And even a dollar from 2020 is worth {{ in_todays_money(1, cpi, \"2020-01\") | usd_cents }} now. Find your year and tell us in the comments.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "1950",
+      "value": "in_todays_money(1, cpi, \"1950-01\")"
+     },
+     {
+      "label": "1960",
+      "value": "in_todays_money(1, cpi, \"1960-01\")"
+     },
+     {
+      "label": "1970",
+      "value": "in_todays_money(1, cpi, \"1970-01\")"
+     },
+     {
+      "label": "1980",
+      "value": "in_todays_money(1, cpi, \"1980-01\")"
+     },
+     {
+      "label": "1990",
+      "value": "in_todays_money(1, cpi, \"1990-01\")"
+     },
+     {
+      "label": "2000",
+      "value": "in_todays_money(1, cpi, \"2000-01\")"
+     },
+     {
+      "label": "2010",
+      "value": "in_todays_money(1, cpi, \"2010-01\")"
+     },
+     {
+      "label": "2020",
+      "value": "in_todays_money(1, cpi, \"2020-01\")"
+     }
+    ],
+    "y_format": "usd",
+    "title": "One dollar from each decade, in today's money",
+    "subtitle": "January of each year, restated with the consumer price index",
+    "chapter": "Your birth-year dollar"
+   }
+  },
+  {
+   "narration": "Look at the gaps between the bars. They are not even. The biggest single drop is between 1970 and 1980. A dollar from 1970 is worth {{ in_todays_money(1, cpi, \"1970-01\") / in_todays_money(1, cpi, \"1980-01\") | times }} as much as a dollar from 1980, because prices more than doubled in that one decade. Where do these numbers come from? Every month, the Bureau of Labor Statistics collects prices for a huge basket of goods and services, from rent and petrol to haircuts and bread, and combines them into the consumer price index. Since 1947 it has risen {{ ratio(cpi, \"1947-01\", \"latest\") | times }}. The level of the line has no meaning on its own. What matters is how much it moves between two dates, and that is exactly how the bars were calculated: today's index divided by the index in your year.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "cpi"
+    ],
+    "from": "1947-01",
+    "y_format": "index",
+    "title": "Consumer prices since 1947",
+    "subtitle": "Consumer price index, 1982 to 1984 = 100",
+    "chapter": "Prices since 1947"
+   }
+  },
+  {
+   "narration": "That basket changes over time. In the fifties it held more food and clothing. Today it holds more phones, streaming and doctor visits. The statisticians update the weights regularly, so the index follows what people actually buy.",
+   "chart": {
+    "type": "photo",
+    "query": "1950s supermarket",
+    "caption": "The price basket, then and now"
+   }
+  },
+  {
+   "narration": "The level of prices hides how bumpy the ride was, so here is the yearly change, which is what people mean by inflation. In 1949 prices actually fell, by {{ -lowest(infl, \"1948\", \"1950\") | pct1 }}. That is called deflation, and it was the tail end of the price swings after the Second World War. In the 1970s inflation took off, pushed by two oil shocks and by a central bank that let money stay cheap for too long. It peaked at {{ highest(infl, \"1948\", \"latest\") | pct1 }} in {{ year_of_highest(infl, \"1948\", \"latest\") | year }}. Then came four decades of mostly calm, until 2022, when inflation hit {{ highest(infl, \"2020\", \"latest\") | pct1 }}, the highest since the early 1980s, after pandemic supply problems, large government support payments and an energy shock all hit at once. The latest reading is {{ latest(infl) | pct1 }}.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "infl"
+    ],
+    "from": "1948-01",
+    "y_format": "pct",
+    "title": "Inflation, year by year",
+    "subtitle": "Change in consumer prices on a year earlier",
+    "chapter": "Inflation, year by year"
+   }
+  },
+  {
+   "narration": "Now for the model. This is the same price index, but on a log scale. On a log chart, each step up the axis is the same percentage rise, so steady inflation draws a straight line. The fitted line shows that, over the long run, prices compounded like money in a savings account, except that this compounding works against you. Since 1947 they rose about {{ cagr(cpi, \"1947-01\", \"latest\") | pct1 }} a year on average. The steep part in the seventies, and the flat stretch in the 2010s, are the years when inflation ran above or below that pace.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "cpi"
+    ],
+    "from": "1947-01",
+    "log": true,
+    "trend": "linear",
+    "y_format": "index",
+    "title": "A steady climb, on a log scale",
+    "subtitle": "Consumer price index, log scale, with a fitted growth line",
+    "chapter": "The model"
+   }
+  },
+  {
+   "narration": "That average leads to a handy shortcut called the rule of {{ 72 | num }}. Divide {{ 72 | num }} by the yearly inflation rate in percent, and you get roughly how many years it takes for prices to double. At the long-run average, that is about {{ 0.72 / cagr(cpi, \"1947-01\", \"latest\") | years }}. So prices have doubled about four times since 1947. Decade by decade, it changes a lot. In the 1970s, the rule gives about {{ 0.72 / cagr(cpi, \"1970-01\", \"1980-01\") | years }}, and prices really did double within the decade. In fact, from January 1973 to January 1981 they doubled in just eight years. In the 2010s, it gives about {{ 0.72 / cagr(cpi, \"2010-01\", \"2020-01\") | years }}. Since 2020, the pace has jumped back to about {{ 0.72 / cagr(cpi, \"2020-01\", \"latest\") | years }}.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "1950s",
+      "value": "0.72 / cagr(cpi, \"1950-01\", \"1960-01\")"
+     },
+     {
+      "label": "1960s",
+      "value": "0.72 / cagr(cpi, \"1960-01\", \"1970-01\")"
+     },
+     {
+      "label": "1970s",
+      "value": "0.72 / cagr(cpi, \"1970-01\", \"1980-01\")"
+     },
+     {
+      "label": "1980s",
+      "value": "0.72 / cagr(cpi, \"1980-01\", \"1990-01\")"
+     },
+     {
+      "label": "1990s",
+      "value": "0.72 / cagr(cpi, \"1990-01\", \"2000-01\")"
+     },
+     {
+      "label": "2000s",
+      "value": "0.72 / cagr(cpi, \"2000-01\", \"2010-01\")"
+     },
+     {
+      "label": "2010s",
+      "value": "0.72 / cagr(cpi, \"2010-01\", \"2020-01\")"
+     },
+     {
+      "label": "Since 2020",
+      "value": "0.72 / cagr(cpi, \"2020-01\", \"latest\")"
+     }
+    ],
+    "y_format": "num",
+    "title": "Years for prices to double, by decade",
+    "subtitle": "Rule of 72: seventy-two divided by each decade's yearly inflation rate",
+    "chapter": "The rule of 72"
+   }
+  },
+  {
+   "narration": "There is a twist, though. The Federal Reserve, which is in charge of keeping inflation in check, does not target this index at all.",
+   "chart": {
+    "type": "photo",
+    "query": "Marriner S. Eccles Federal Reserve Board Building",
+    "caption": "The Federal Reserve, Washington"
+   }
+  },
+  {
+   "narration": "The Fed aims for {{ 0.02 | pct }} inflation on a different measure, the price index for personal consumption expenditures, or PCE for short. It covers more spending, including health care that employers and the government pay for you, and it updates its weights quickly when people switch from pricier goods to cheaper ones. Housing also counts for less. The result is that PCE usually runs a little lower. Since 1960, consumer prices have risen {{ ratio(cpi, \"1960-01\", \"latest\") | times }}, while the PCE measure rose {{ ratio(pce, \"1960-01\", \"latest\") | times }}. Social Security uses yet another version of the consumer price index, one for wage earners. So your birth-year dollar is worth a slightly different amount depending on who you ask.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "cpi",
+     "pce"
+    ],
+    "from": "1960-01",
+    "index": "1960-01",
+    "y_format": "index",
+    "labels": {
+     "cpi": "Consumer price index",
+     "pce": "PCE price index"
+    },
+    "title": "Two ways to measure prices",
+    "subtitle": "Index, January 1960 = 100",
+    "chapter": "Which price index?"
+   }
+  },
+  {
+   "narration": "Now for the part that people usually forget. Prices are only half the story. In January 1964, the average production worker earned {{ value(wages, \"1964-01\") | usd_cents }} an hour. In today's money, that is {{ in_todays_money(value(wages, \"1964-01\"), cpi, \"1964-01\") | usd_cents }}. Today the same kind of worker earns {{ latest(wages) | usd_cents }} an hour. So while a dollar lost most of its value, an hour of work gained some. Since 1964, pay rose {{ ratio(wages, \"1964-01\", \"latest\") | times }}, a little more than prices, which rose {{ ratio(cpi, \"1964-01\", \"latest\") | times }}. That is why a starting salary from decades ago sounds tiny. Before you compare any old price or wage with today's, restate it in today's money first, exactly the way these bars do. Otherwise you are comparing two different currencies that just happen to share a name.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Hourly pay in 1964, in today's money",
+      "value": "in_todays_money(value(wages, \"1964-01\"), cpi, \"1964-01\")"
+     },
+     {
+      "label": "Hourly pay today",
+      "value": "latest(wages)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "An hour of work, then and now",
+    "subtitle": "Average hourly pay of production workers, restated in today's dollars",
+    "chapter": "And your pay?"
+   }
+  },
+  {
+   "narration": "So, what is a dollar from your birth year worth today? If you were born in 1950, it is worth about {{ in_todays_money(1, cpi, \"1950-01\") | usd }}. If you were born in 1990, about {{ in_todays_money(1, cpi, \"1990-01\") | usd_cents }}. For most people watching, it is somewhere in between, and the rule of {{ 72 | num }} tells you why: at the long-run pace, prices double about every {{ 0.72 / cagr(cpi, \"1947-01\", \"latest\") | years }}. The dollar losing value is not a disaster in itself, because pay has risen with prices and a little more. The damage comes from money that does not grow, like cash in a drawer or a pension that never adjusts. The rule of {{ 72 | num }} works in that direction too. At the long-run pace, a pile of cash loses half of what it can buy in about {{ 0.72 / cagr(cpi, \"1947-01\", \"latest\") | years }}. At the pace since 2020, it would take only about {{ 0.72 / cagr(cpi, \"2020-01\", \"latest\") | years }}.",
+   "chart": {
+    "type": "card",
+    "title": "Prices double about every twenty years",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "coins jar savings",
+      "after": 2010
+     },
+     {
+      "query": "United States coins",
+      "after": 2010
+     },
+     {
+      "query": "piggy bank coins",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take. Slow, steady inflation is something most households can live with, because wages and benefits catch up, as this month's Social Security rise shows. What hurts is a burst like the 1970s or 2022, when prices jump faster than pay can adjust, and people on fixed incomes fall behind first. That is why this yearly Social Security adjustment matters so much. For millions of retirees, it is the one part of their income that keeps pace with prices automatically. What would change my mind? If inflation stayed well above the Fed's target for years, the doubling time would shrink toward the 1970s again, and that would be a real problem. And a caveat. These are national averages. Your own basket, your own city and your own pay can make your birth-year dollar look very different.",
+   "chart": {
+    "type": "card",
+    "title": "Steady is fine. Bursts hurt.",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "grocery shopping cart supermarket",
+      "after": 2015
+     },
+     {
+      "query": "farmers market United States",
+      "after": 2015
+     },
+     {
+      "query": "senior couple grocery shopping",
+      "after": 2010
+     }
+    ]
+   }
+  }
+ ],
+ "hashtags": [
+  "Inflation",
+  "PersonalFinance",
+  "SocialSecurity",
+  "Economics"
+ ],
+ "method": "We restate one dollar from January of each year in today's money with the consumer price index (all urban consumers). Doubling times use the rule of 72: seventy-two divided by each period's average yearly inflation rate, compared with the actual rise in prices.",
+ "references": [
+  {
+   "source": "Social Security Administration",
+   "date": "2026-10-14",
+   "says": "Social Security and SSI benefits rise 3.6 percent in January 2027 for nearly 72 million beneficiaries; retirement benefits rise by $75 a month on average",
+   "url": "https://www.ssa.gov/news/en/press/releases/2026-10-14.html"
+  },
+  {
+   "source": "Yahoo Finance",
+   "date": "2026-10-14",
+   "says": "The 3.6% COLA for 2027 is the highest in four years; it is calculated from the CPI for wage earners (CPI-W), and inflation reached 3.7% in September",
+   "url": "https://finance.yahoo.com/economy/article/social-security-announces-36-cola-for-2027-the-highest-in-4-years-135447865.html"
+  }
+ ],
+ "short": {
+  "title": "What is a dollar from your birth year worth today?",
+  "scenes": [
+   4
+  ]
+ }
+}
