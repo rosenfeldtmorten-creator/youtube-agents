@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 import csv
+import datetime as dt
 import json
 import shutil
 import subprocess
@@ -63,6 +64,18 @@ def chart_rows(ep: Episode, chart: dict) -> list[dict]:
     raise ValueError(f"no rows for chart type {kind}")
 
 
+def annotation_points(ep: Episode, chart: dict, rows: list[dict]) -> list[dict]:
+    """Place each callout {"date", "text", optional "series"} on its line, at the nearest data point."""
+    points = []
+    for a in chart["annotations"]:
+        name = a.get("series") or chart["series"][0]
+        group = chart.get("labels", {}).get(name, ep.series[name].label)
+        line = [r for r in rows if r["group"] == group]
+        when = dt.date.fromisoformat(a["date"] if len(a["date"]) > 7 else a["date"] + "-01")
+        near = min(line, key=lambda r: abs((dt.date.fromisoformat(r["x"]) - when).days))
+        points.append({"x": near["x"], "y": near["y"], "text": a["text"]})
+    return points
+
 def shown_numbers(ep: Episode, chart: dict) -> list[tuple[float, bool]]:
     """The numbers a chart prints on screen (line ends, bar values), each with whether it reads as a percent,
     matching what charts/chart.R draws."""
@@ -115,6 +128,8 @@ def draw_chart(ep: Episode, chart: dict, out_dir: Path, n_frames: int, size: tup
         ep.data[n].get("short_source", "FRED" if ep.data[n]["source"] == "fred" else ep.data[n]["source"])
         for n in (chart.get("series") or [chart[k] for k in ("x", "y") if k in chart] or ep.data.keys())
     )
+    if chart["type"] == "line" and chart.get("annotations"):
+        spec["annotation_points"] = annotation_points(ep, chart, rows)
     if chart["type"] == "scatter":
         spec["x_label"] = chart.get("x_label") or ep.series[chart["x"]].label
         spec["y_label"] = chart.get("y_label") or ep.series[chart["y"]].label

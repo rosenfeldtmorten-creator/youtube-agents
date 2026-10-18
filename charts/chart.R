@@ -109,6 +109,18 @@ if (spec$type == "line") {
                          trans = if (isTRUE(spec$log)) "log10" else "identity") +
       labs(title = title_txt, subtitle = subtitle_txt, caption = caption_txt) +
       theme_money()
+    if (!is.null(spec$annotation_points)) {
+      # Callouts on the line ("Housing bubble bursts"), each appearing once the line has reached it.
+      a <- spec$annotation_points
+      a$x <- as.Date(a$x)
+      a <- a[a$x <= cutoff, ]
+      if (nrow(a) > 0) {
+        p <- p +
+          geom_point(data = a, aes(x, y), inherit.aes = FALSE, size = 26, colour = col_muted, alpha = 0.35) +
+          geom_label(data = a, aes(x, y, label = text), inherit.aes = FALSE, vjust = -0.9, size = 7.5,
+                     lineheight = 0.95, colour = col_text, fill = col_bg, label.size = 0, fontface = "bold")
+      }
+    }
     if (!is.null(spec$trend) && i == n_frames) {
       # Fitted trend (a straight line, or a loess curve for "smooth"), drawn once the data is fully shown.
       p <- p + geom_smooth(data = d, aes(x, y, group = group), inherit.aes = FALSE,
