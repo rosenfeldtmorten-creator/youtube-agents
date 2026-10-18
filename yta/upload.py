@@ -108,3 +108,48 @@ def upload_captions(client, video_id: str, srt: Path, language: str = "en") -> N
         ).execute()
     except Exception as exc:
         print(f"  captions not uploaded ({exc}); subtitles are still burned into the video")
+
+
+def post_comment(client, video_id: str, text: str) -> None:
+    """A first comment from the channel with a question for viewers. The API can't pin it; pinning is one click in Studio."""
+    try:
+        client.commentThreads().insert(
+            part="snippet",
+            body={"snippet": {"videoId": video_id, "topLevelComment": {"snippet": {"textOriginal": text}}}},
+        ).execute()
+    except Exception as exc:
+        print(f"  comment not posted ({exc})")
+
+
+def add_to_playlist(client, video_id: str, title: str, description: str = "") -> None:
+    """Add the video to the channel's playlist with this title, making the playlist the first time."""
+    try:
+        playlist_id, token = None, None
+        while playlist_id is None:
+            page = client.playlists().list(part="snippet", mine=True, maxResults=50, pageToken=token).execute()
+            playlist_id = next((p["id"] for p in page.get("items", []) if p["snippet"]["title"] == title), None)
+            token = page.get("nextPageToken")
+            if not token:
+                break
+        if playlist_id is None:
+            playlist_id = client.playlists().insert(
+                part="snippet,status",
+                body={"snippet": {"title": title, "description": description}, "status": {"privacyStatus": "public"}},
+            ).execute()["id"]
+        client.playlistItems().insert(
+            part="snippet",
+            body={"snippet": {"playlistId": playlist_id, "resourceId": {"kind": "youtube#video", "videoId": video_id}}},
+        ).execute()
+    except Exception as exc:
+        print(f"  not added to playlist '{title}' ({exc})")
+
+
+def engage(client, video_id: str, cfg: dict, question: str = "", short: bool = False) -> None:
+    """The steps a person would otherwise do by hand after each upload, driven by the channel's 'engagement' settings."""
+    eng = cfg.get("engagement") or {}
+    playlist = eng.get("shorts_playlist" if short else "playlist")
+    if playlist:
+        add_to_playlist(client, video_id, playlist, eng.get("playlist_description", ""))
+    text = question or ("" if short else eng.get("default_comment", ""))
+    if text:
+        post_comment(client, video_id, text)

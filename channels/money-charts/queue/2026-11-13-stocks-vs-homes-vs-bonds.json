@@ -1,0 +1,563 @@
+{
+ "slug": "stocks-vs-homes-vs-bonds",
+ "title": "Stocks vs Homes vs Bonds: What Really Grew Most Since 1987?",
+ "description": "On 14 October 2026 US stocks had their worst day since July, barely a week after the Nasdaq composite closed at a record. So over the long run, what has grown more: the stock market, the family home, or government bonds?\n\nWe start the Nasdaq, the Case-Shiller home price index and consumer prices at the same point in 1987, model a chain of ten-year Treasury bonds, and show the crashes along the way. Stocks are shown without dividends, so they did even better than the chart shows. We explain the data; we do not give advice.",
+ "comment": "Which do you think grew more where you live over the last twenty years, home prices or the stock market?",
+ "tags": [
+  "stocks vs real estate",
+  "stocks vs bonds",
+  "home prices",
+  "nasdaq history",
+  "case shiller",
+  "treasury yield",
+  "long term returns",
+  "economics explained",
+  "economics in charts",
+  "data visualization"
+ ],
+ "hashtags": [
+  "Stocks",
+  "HousingMarket",
+  "Bonds",
+  "Economics"
+ ],
+ "thumbnail_text": "Stocks, homes or bonds?",
+ "method": "Stocks, homes and consumer prices are each rebased to 100 in January 1987; stocks are the Nasdaq price index without dividends, homes the Case-Shiller index without rent or costs. For bonds we buy a ten-year Treasury at the January 1987 yield, hold it to maturity, roll into a new one each decade at that month's yield, and reinvest interest at the same yield.",
+ "references": [
+  {
+   "source": "Associated Press",
+   "date": "2026-10-14",
+   "says": "US stocks dropped to their worst day since July as inflation worsened; the S&P 500 fell 1.1% and the Nasdaq composite 1.9%",
+   "url": "https://www.opb.org/article/2026/10/14/us-stocks-drop-to-their-worst-day-since-july-as-inflation-worsens/"
+  }
+ ],
+ "data": {
+  "nasdaq": {
+   "source": "fred",
+   "id": "NASDAQCOM",
+   "label": "Nasdaq Composite (price only)",
+   "unit": "index",
+   "short_source": "FRED (Nasdaq OMX Group)"
+  },
+  "homes": {
+   "source": "fred",
+   "id": "CSUSHPINSA",
+   "label": "Home prices (Case-Shiller)",
+   "unit": "index",
+   "short_source": "FRED (S&P Cotality Case-Shiller)"
+  },
+  "cpi": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Consumer prices (CPI)",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "ten": {
+   "source": "fred",
+   "id": "GS10",
+   "label": "10-year Treasury yield (%)",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve)"
+  },
+  "nasdaq_real": {
+   "source": "fred",
+   "id": "NASDAQCOM",
+   "label": "Nasdaq Composite, adjusted for inflation",
+   "unit": "index",
+   "in_todays_dollars": "cpi",
+   "short_source": "FRED (Nasdaq OMX Group; BLS CPI)"
+  },
+  "sp": {
+   "source": "fred",
+   "id": "SP500",
+   "label": "S&P 500 (price only)",
+   "unit": "index",
+   "short_source": "FRED (S&P Dow Jones Indices)"
+  }
+ },
+ "claims": [
+  {
+   "says": "The Nasdaq fell sharply on 14 October",
+   "check": "pct_change(nasdaq, \"2026-10-13\", \"2026-10-14\") < -0.015"
+  },
+  {
+   "says": "It had closed at a record high earlier in October",
+   "check": "highest(nasdaq, \"2026-10\", \"latest\") >= highest(nasdaq, \"1971\", \"latest\")"
+  },
+  {
+   "says": "Stocks grew far more than homes since 1987",
+   "check": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) > 5 * (100 * ratio(homes, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "Homes beat consumer prices since 1987",
+   "check": "(100 * ratio(homes, \"1987-01\", \"2026-07\")) > (100 * ratio(cpi, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "But only modestly",
+   "check": "(100 * ratio(homes, \"1987-01\", \"2026-07\")) < 2 * (100 * ratio(cpi, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "The bond ladder beat home prices",
+   "check": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) > (100 * ratio(homes, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "The bond ladder beat consumer prices",
+   "check": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) > 2 * (100 * ratio(cpi, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "Stocks beat the bond ladder by a wide margin",
+   "check": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) > 5 * (100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5))"
+  },
+  {
+   "says": "The dot-com crash wiped out most of the index",
+   "check": "pct_change(nasdaq, \"2000-03-10\", \"2002-10-09\") < -0.7"
+  },
+  {
+   "says": "Home prices fell by more than a fifth after 2006",
+   "check": "pct_change(homes, \"2006-07\", \"2012-02\") < -0.2"
+  },
+  {
+   "says": "Stocks fell much further than homes in their crashes",
+   "check": "pct_change(nasdaq, \"2000-03-10\", \"2002-10-09\") < 2 * pct_change(homes, \"2006-07\", \"2012-02\")"
+  },
+  {
+   "says": "The Nasdaq took about fifteen years to regain the 2000 peak",
+   "check": "highest(nasdaq, \"2000-04\", \"2014-12\") < value(nasdaq, \"2000-03-10\")"
+  },
+  {
+   "says": "It regained the peak in 2015",
+   "check": "highest(nasdaq, \"2015\", \"2015\") > value(nasdaq, \"2000-03-10\")"
+  },
+  {
+   "says": "The financial crisis low was in 2009",
+   "check": "2009 <= year_of_lowest(nasdaq, \"2007\", \"2010\") <= 2009"
+  },
+  {
+   "says": "Homes held up better in 2008 than stocks",
+   "check": "pct_change(nasdaq, \"2007-10-31\", \"2009-03-09\") < pct_change(homes, \"2007-10\", \"2009-03\") * 2"
+  },
+  {
+   "says": "10-year yield was high in 1987",
+   "check": "value(ten, \"1987-01\") > 6.5"
+  },
+  {
+   "says": "10-year yield fell over the following decades",
+   "check": "value(ten, \"2017-01\") < value(ten, \"1987-01\") / 2"
+  },
+  {
+   "says": "10-year yield peaked in 1981",
+   "check": "1981 <= year_of_highest(ten, \"1953\", \"latest\") <= 1981"
+  },
+  {
+   "says": "10-year yield hit a record low in 2020",
+   "check": "2020 <= year_of_lowest(ten, \"1953\", \"latest\") <= 2020"
+  },
+  {
+   "says": "Today's yield is higher than in 2017",
+   "check": "latest(ten) > value(ten, \"2017-01\") + 1.5"
+  },
+  {
+   "says": "Nasdaq grew faster than inflation since 1971",
+   "check": "cagr(nasdaq_real, \"1971-02\", \"latest\") > 0.05"
+  },
+  {
+   "says": "Stocks grew faster per year than homes",
+   "check": "cagr(nasdaq, \"1987-01\", \"2026-07\") > 2 * cagr(homes, \"1987-01\", \"2026-07\")"
+  },
+  {
+   "says": "Homes grew faster per year than prices",
+   "check": "cagr(homes, \"1987-01\", \"2026-07\") > cagr(cpi, \"1987-01\", \"2026-07\")"
+  },
+  {
+   "says": "After inflation, home prices did not double",
+   "check": "(100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) < 2"
+  },
+  {
+   "says": "After inflation, bonds did better than homes",
+   "check": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) > (100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\"))"
+  },
+  {
+   "says": "After inflation, stocks multiplied many times",
+   "check": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) > 10"
+  },
+  {
+   "says": "S&P 500 ahead of home prices over ten years",
+   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(homes, \"2016-10\", \"latest\")"
+  },
+  {
+   "says": "S&P 500 ahead of consumer prices over ten years",
+   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(cpi, \"2016-10\", \"latest\")"
+  },
+  {
+   "says": "Real Nasdaq fell far below its 2000 level",
+   "check": "lowest(nasdaq_real, \"2001\", \"2003\") < value(nasdaq_real, \"2000-03-10\") / 3"
+  },
+  {
+   "says": "Home prices recovered after the crash",
+   "check": "latest(homes) > value(homes, \"2006-07\")"
+  },
+  {
+   "says": "Stocks recovered after the crash",
+   "check": "latest(nasdaq) > value(nasdaq, \"2000-03-10\")"
+  },
+  {
+   "says": "Real Nasdaq took over a decade to regain the 2000 peak",
+   "check": "highest(nasdaq_real, \"2000-04\", \"2012-12\") < value(nasdaq_real, \"2000-03-10\")"
+  },
+  {
+   "says": "The Nasdaq started at one hundred",
+   "check": "99 < first(nasdaq, \"1971\", \"1971\") < 101"
+  },
+  {
+   "says": "The S&P 500 rose less than the Nasdaq over the last ten years",
+   "check": "ratio(sp, \"2016-10-17\", \"latest\") < ratio(nasdaq, \"2016-10-17\", \"latest\")"
+  },
+  {
+   "says": "But the S&P 500 still more than tripled",
+   "check": "ratio(sp, \"2016-10-17\", \"latest\") > 3"
+  },
+  {
+   "says": "The log chart is close to a straight line (real Nasdaq grew steadily on trend)",
+   "check": "cagr(nasdaq_real, \"1971-02\", \"latest\") < cagr(nasdaq, \"1971-02\", \"latest\")"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "On Wednesday the fourteenth of October, American stocks had their worst day since July, after a report showed inflation getting worse. The Nasdaq composite, the index packed with technology companies, fell {{ -pct_change(nasdaq, \"2026-10-13\", \"2026-10-14\") | pct1 }} in a single day.",
+   "chart": {
+    "type": "headlines",
+    "chapter": "What just happened",
+    "headlines": [
+     {
+      "source": "Associated Press",
+      "date": "2026-10-14",
+      "text": "US stocks drop to their worst day since July as inflation worsens"
+     }
+    ],
+    "photo": [
+     {
+      "query": "New York Stock Exchange facade",
+      "after": 2010
+     },
+     {
+      "query": "Wall Street New York",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "That came barely a week after the same index closed at the highest level in its history, {{ highest(nasdaq, \"2026-10\", \"latest\") | num }} points. The index started at {{ first(nasdaq, \"1971\", \"1971\") | num }} points in February 1971, so it has multiplied about {{ ratio(nasdaq, \"1971-02\", \"latest\") | num }} times since then, even after this fall. Still, days like this make people nervous, and they bring back an old question.",
+   "chart": {
+    "type": "card",
+    "title": "A record, then a bad day",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "Nasdaq MarketSite Times Square",
+      "after": 2010
+     },
+     {
+      "query": "Times Square New York",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Over the long run, which has grown more: the stock market, the family home, or safe government bonds? Many people put most of their wealth into their house and think of shares as a gamble. Others think the opposite, and see property as the one safe investment, because you can live in it. Today we put all three on one chart, starting from the same point, using official data, and we will be careful to say exactly what each line includes and what it leaves out. For homes we use the Case-Shiller index, which follows the same houses each time they are sold again, so it measures price changes, not a shift towards bigger or smaller homes.",
+   "chart": {
+    "type": "card",
+    "title": "Stocks, homes or bonds: what grew most?",
+    "label": "WEALTH, IN NUMBERS",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "suburban house front yard",
+      "after": 2015
+     },
+     {
+      "query": "stock market ticker board",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "First, the fine print. For stocks we use the Nasdaq composite, the longest stock index in our public data. It measures prices only. Companies also pay dividends, which this line leaves out, so the real return for shareholders was even higher than what you will see. And this index leans heavily on technology, so it is not the whole market.",
+   "chart": {
+    "type": "photo",
+    "query": "Nasdaq MarketSite Times Square",
+    "caption": "The Nasdaq: prices only, no dividends"
+   }
+  },
+  {
+   "narration": "Here are three lines, all starting at one hundred in January 1987, when the Case-Shiller home price index begins. The chart uses a log scale, where each step up means the same percentage rise, so a big line and a small line can share one picture. Consumer prices rose {{ pct_change(cpi, \"1987-01\", \"latest\") | pct }}. Home prices rose {{ pct_change(homes, \"1987-01\", \"latest\") | pct }}. And stock prices rose {{ pct_change(nasdaq, \"1987-01\", \"latest\") | pct }}. Look at the bumps too. The dot-com bubble peaked in March 2000. Home prices peaked in the middle of 2006. And both were hit in the financial crisis, when stocks hit bottom in March 2009.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "nasdaq",
+     "homes",
+     "cpi"
+    ],
+    "from": "1987-01",
+    "index": "1987-01",
+    "log": true,
+    "y_format": "index",
+    "labels": {
+     "nasdaq": "Stocks (Nasdaq, no dividends)",
+     "homes": "Home prices",
+     "cpi": "Consumer prices"
+    },
+    "title": "Stocks, homes and prices since 1987",
+    "subtitle": "Index, January 1987 = 100, log scale",
+    "chapter": "The race",
+    "annotations": [
+     {
+      "date": "2000-03",
+      "series": "nasdaq",
+      "text": "Dot-com peak"
+     },
+     {
+      "date": "2006-07",
+      "series": "homes",
+      "text": "Housing peak"
+     },
+     {
+      "date": "2009-03",
+      "series": "nasdaq",
+      "text": "Financial crisis"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "What about bonds? A bond is simply a loan. When you buy a ten-year government bond, you lend money to the United States government, which pays you a fixed rate of interest every year, called the yield, and gives the money back after ten years. That is why it has no price line like the others. Here is that yield since 1953. It rose to a record {{ highest(ten, \"1953\", \"latest\") / 100 | pct1 }} in 1981, then fell for almost forty years to a record low of {{ lowest(ten, \"1953\", \"latest\") / 100 | pct1 }} in 2020. Today it is back at {{ latest(ten) | num }} percent. For someone who buys a bond and holds it to the end, the yield on the day they buy is roughly what they earn each year. So we can build a simple model. Put money into a ten-year bond in January 1987, when the yield was {{ value(ten, \"1987-01\") | num }} percent. When it matures, buy another at the new yield, and so on, reinvesting the interest at the same yield. This is a cautious model. When yields fall, older bonds with higher yields also rise in price, and our chain ignores that extra gain.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "ten"
+    ],
+    "from": "1953-04",
+    "y_format": "num",
+    "title": "The ten-year Treasury yield",
+    "subtitle": "Percent per year",
+    "chapter": "Bonds",
+    "annotations": [
+     {
+      "date": "1981-09",
+      "text": "Record high"
+     },
+     {
+      "date": "2020-07",
+      "text": "Record low"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Now we can compare all four, from January 1987 to July 2026. One hundred dollars of the things in the shopping basket would cost about {{ (100 * ratio(cpi, \"1987-01\", \"2026-07\")) | usd }} by July 2026. One hundred dollars of house became about {{ (100 * ratio(homes, \"1987-01\", \"2026-07\")) | usd }}. One hundred dollars in our chain of bonds became about {{ (100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) | usd }}. And one hundred dollars of the stock index, before dividends, became about {{ (100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) | usd }}. Stocks won by so much that the other bars look tiny next to them. And here is a surprise: by this measure, safe government bonds beat home prices. That is mostly because bond yields were so high when our chain started in 1987.",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "What one hundred dollars became",
+    "subtitle": "January 1987 to July 2026. Stocks without dividends; homes without rent; bonds held to maturity",
+    "chapter": "The scoreboard",
+    "bars": [
+     {
+      "label": "Prices (CPI)",
+      "value": "(100 * ratio(cpi, \"1987-01\", \"2026-07\"))"
+     },
+     {
+      "label": "Home prices",
+      "value": "(100 * ratio(homes, \"1987-01\", \"2026-07\"))"
+     },
+     {
+      "label": "Bonds",
+      "value": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5))"
+     },
+     {
+      "label": "Stocks",
+      "value": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\"))"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "But that comparison is unfair to homes in one big way. A house is also somewhere to live. An owner saves the rent, or a landlord collects it, and none of that is in a price index. Owners also pay for repairs and tax, which are not in it either.",
+   "chart": {
+    "type": "photo",
+    "query": "suburban house front porch",
+    "after": 2015,
+    "caption": "A home is also a place to live"
+   }
+  },
+  {
+   "narration": "Now take inflation out, because a dollar in 2026 buys far less than a dollar in 1987. In the money of July 2026, a hundred dollars of house from 1987 grew to about {{ (100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }}. The chain of bonds grew to about {{ (100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }}. And the stock index grew to about {{ (100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }}, still without dividends. So after inflation, the home price did not even double in almost forty years. Bonds did better, and stocks multiplied many times over. These are the numbers that matter for what the money can actually buy.",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "What one hundred dollars became, after inflation",
+    "subtitle": "January 1987 to July 2026, in July 2026 dollars",
+    "chapter": "After inflation",
+    "bars": [
+     {
+      "label": "Home prices",
+      "value": "(100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     },
+     {
+      "label": "Bonds",
+      "value": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     },
+     {
+      "label": "Stocks",
+      "value": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So why doesn't everyone hold only stocks? Because of the ride. Here are stocks and homes from 1999 to 2012, starting at one hundred. From the peak in March 2000 to the bottom in October 2002, the Nasdaq lost {{ -pct_change(nasdaq, \"2000-03-10\", \"2002-10-09\") | pct }} of its value. It did not get back to its old peak until 2015, fifteen years later. Home prices fell too, by {{ -pct_change(homes, \"2006-07\", \"2012-02\") | pct }} from the middle of 2006 to early 2012, but that was slower and smaller. And remember that most families buy a home with a mortgage, so a fall of that size could wipe out their whole deposit.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "nasdaq",
+     "homes"
+    ],
+    "from": "1999-01",
+    "to": "2012-12",
+    "index": "1999-01",
+    "y_format": "index",
+    "labels": {
+     "nasdaq": "Stocks (Nasdaq, no dividends)",
+     "homes": "Home prices"
+    },
+    "title": "The crashes up close",
+    "subtitle": "Index, January 1999 = 100",
+    "chapter": "The ride",
+    "annotations": [
+     {
+      "date": "2002-10",
+      "series": "nasdaq",
+      "text": "Dot-com bottom"
+     },
+     {
+      "date": "2012-02",
+      "series": "homes",
+      "text": "Housing bottom"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Now the longest view we have, back to 1971, with the stock index adjusted for inflation and a fitted growth line. On a log scale, a straight line means steady growth. Before inflation, the index grew about {{ cagr(nasdaq, \"1971-02\", \"latest\") | pct1 }} a year. After inflation, about {{ cagr(nasdaq_real, \"1971-02\", \"latest\") | pct1 }} a year, again without dividends. But the real line wanders far from its trend for years at a time, most of all around the bubble of 2000, when it shot far above the line and then crashed back below it. The trend is a description of the past, not a promise about the future. Anyone who bought at the top in 2000 waited well over a decade just to see their money back in real terms.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "nasdaq_real"
+    ],
+    "from": "1971-02",
+    "log": true,
+    "trend": "linear",
+    "y_format": "index",
+    "title": "Stocks since 1971, after inflation",
+    "subtitle": "Nasdaq Composite in today's dollars, log scale, with a fitted growth line",
+    "chapter": "The trend"
+   }
+  },
+  {
+   "narration": "Put the growth rates side by side, from 1987 to July 2026. Consumer prices rose about {{ cagr(cpi, \"1987-01\", \"2026-07\") | pct1 }} a year. Home prices about {{ cagr(homes, \"1987-01\", \"2026-07\") | pct1 }} a year, a little more than inflation. Stocks about {{ cagr(nasdaq, \"1987-01\", \"2026-07\") | pct1 }} a year, before dividends. A gap of several points a year may not sound dramatic, but over almost forty years it compounds into the huge difference you saw in the bars. Growth on growth is the whole story here. Each year's gain is added to the pile, and the next year's gain is earned on the bigger pile.",
+   "chart": {
+    "type": "bars",
+    "y_format": "pct",
+    "title": "Growth per year since 1987",
+    "subtitle": "Average yearly rise, January 1987 to July 2026. Stocks without dividends",
+    "bars": [
+     {
+      "label": "Prices (CPI)",
+      "value": "cagr(cpi, \"1987-01\", \"2026-07\")"
+     },
+     {
+      "label": "Home prices",
+      "value": "cagr(homes, \"1987-01\", \"2026-07\")"
+     },
+     {
+      "label": "Stocks",
+      "value": "cagr(nasdaq, \"1987-01\", \"2026-07\")"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So what grew most? Over almost four decades, stock prices, by a wide margin, and even more once dividends are counted. Government bonds came next, helped by the high yields of the 1980s. Home prices only beat inflation by a little, although a home also gives you somewhere to live, and most owners bought with borrowed money, which magnifies both gains and losses. One more check, since the Nasdaq leans on technology. Over the last ten years, the broader S&P five hundred index of large companies multiplied {{ ratio(sp, \"2016-10-17\", \"latest\") | times }}, against {{ ratio(nasdaq, \"2016-10-17\", \"latest\") | times }} for the Nasdaq. Less, but still far ahead of homes and prices.",
+   "chart": {
+    "type": "card",
+    "title": "Stocks grew most, with the roughest ride",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "New York Stock Exchange facade",
+      "after": 2010
+     },
+     {
+      "query": "Wall Street New York",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take. The data says the long run has rewarded owning a share of companies far more than owning bricks or lending to the government, but only for people who could sit through falls of more than half without selling. A home is a different thing: shelter first, an investment second. Bonds earned what they promised: in our chain, every bond was paid back in full with its interest, with no crash along the way. What would change my mind? Starting points matter. Bonds bought at today's higher yields promise more than those bought in 2020, and history shows that stocks bought just before a crash, as in March 2000, took many years to get back to even. Nothing here says what any one person should own.",
+   "chart": {
+    "type": "card",
+    "title": "The best grower was the bumpiest",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "family home garden",
+      "after": 2010
+     },
+     {
+      "query": "suburban street houses",
+      "after": 2015
+     }
+    ]
+   }
+  }
+ ],
+ "short": {
+  "title": "Bonds beat house prices? The long-run scoreboard",
+  "scenes": [
+   7
+  ]
+ },
+ "shorts": [
+  {
+   "title": "Stocks, homes and prices from the same starting line",
+   "scenes": [
+    5
+   ]
+  },
+  {
+   "title": "The crash that took stocks fifteen years to recover",
+   "scenes": [
+    10
+   ]
+  },
+  {
+   "title": "Why a few points a year make a huge difference",
+   "scenes": [
+    12
+   ]
+  },
+  {
+   "title": "After inflation, did house prices even double?",
+   "scenes": [
+    9
+   ]
+  }
+ ]
+}

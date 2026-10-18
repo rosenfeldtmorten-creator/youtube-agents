@@ -68,7 +68,15 @@ value_label <- function(v, fmt) {
   )
 }
 
+# On a chart rebased to 100 the narration talks about rises ("up 237 percent"), so the line ends are
+# labelled with the same change ("+237%") rather than the index level (337), which reads like another number.
+end_label <- function(y) {
+  if (!is.null(spec$index)) sprintf("%+.0f%%", y - 100) else vapply(y, value_label, "", fmt = fmt)
+}
+
 title_txt    <- if (!is.null(spec$title_filled)) spec$title_filled else ""
+# Wrap a title too long for the frame (a square Short chart is about 26 characters wide at this size).
+title_txt    <- paste(strwrap(title_txt, width = max(20, floor((width_px - 160) / 34))), collapse = "\n")
 subtitle_txt <- if (!is.null(spec$subtitle)) spec$subtitle else NULL
 caption_txt  <- if (!is.null(spec$source_note)) paste("Source:", spec$source_note) else NULL
 fmt          <- if (!is.null(spec$y_format)) spec$y_format else "num"
@@ -95,7 +103,7 @@ if (spec$type == "line") {
     p <- ggplot(shown, aes(x, y, colour = group)) +
       geom_line(linewidth = 2.2) +
       geom_point(data = ends, size = 6) +
-      geom_text(data = ends, aes(label = vapply(y, value_label, "", fmt = fmt)),
+      geom_text(data = ends, aes(label = end_label(y)),
                 hjust = -0.25, size = 9, fontface = "bold", show.legend = FALSE) +
       scale_colour_manual(values = colours) +
       scale_x_date(limits = c(x_rng[1], x_rng[2] + x_pad), date_labels = "%Y") +
@@ -103,6 +111,18 @@ if (spec$type == "line") {
                          trans = if (isTRUE(spec$log)) "log10" else "identity") +
       labs(title = title_txt, subtitle = subtitle_txt, caption = caption_txt) +
       theme_money()
+    if (!is.null(spec$annotation_points)) {
+      # Callouts on the line ("Housing bubble bursts"), each appearing once the line has reached it.
+      a <- spec$annotation_points
+      a$x <- as.Date(a$x)
+      a <- a[a$x <= cutoff, ]
+      if (nrow(a) > 0) {
+        p <- p +
+          geom_point(data = a, aes(x, y), inherit.aes = FALSE, size = 26, colour = col_muted, alpha = 0.35) +
+          geom_label(data = a, aes(x, y, label = text), inherit.aes = FALSE, vjust = -0.9, size = 7.5,
+                     lineheight = 0.95, colour = col_text, fill = col_bg, label.size = 0, fontface = "bold")
+      }
+    }
     if (!is.null(spec$trend) && i == n_frames) {
       # Fitted trend (a straight line, or a loess curve for "smooth"), drawn once the data is fully shown.
       p <- p + geom_smooth(data = d, aes(x, y, group = group), inherit.aes = FALSE,
