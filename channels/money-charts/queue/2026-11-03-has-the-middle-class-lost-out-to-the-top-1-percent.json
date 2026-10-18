@@ -1,0 +1,799 @@
+{
+ "slug": "has-the-middle-class-lost-out-to-the-top-1-percent",
+ "title": "Has the Middle Class Lost Out to the Top 1%? Wealth vs Pay in Charts",
+ "description": "In early October 2026, new Federal Reserve figures showed the richest 1% of American households holding a record share of the country's wealth, while the Census Bureau reported that the typical household's income hit a record in 2025.\n\nWe separate wealth from pay, show how the slices of America's wealth have shifted since 1989, put a dollar figure on what the middle class lost compared with the top 1%, and check whether pay tells the same story. Our honest take is at the end.",
+ "comment": "Do you feel better or worse off than your parents were at your age? Tell us your age bracket and why.",
+ "tags": [
+  "wealth inequality",
+  "top 1 percent",
+  "middle class",
+  "income inequality",
+  "net worth",
+  "federal reserve",
+  "median household income",
+  "economics explained",
+  "economics in charts",
+  "data visualization"
+ ],
+ "thumbnail_text": "Middle class vs top 1%",
+ "data": {
+  "top1": {
+   "source": "fred",
+   "id": "WFRBST01134",
+   "label": "Top 1%",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "next9": {
+   "source": "fred",
+   "id": "WFRBSN09161",
+   "label": "Next 9% (90th to 99th percentile)",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "mid40": {
+   "source": "fred",
+   "id": "WFRBSN40188",
+   "label": "Middle 40% (50th to 90th percentile)",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "bot50": {
+   "source": "fred",
+   "id": "WFRBSB50215",
+   "label": "Bottom 50%",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "top1n": {
+   "source": "fred",
+   "id": "WFRBLT01026",
+   "label": "Net worth of the top 1% (millions of dollars)",
+   "unit": "usd",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "bot50n": {
+   "source": "fred",
+   "id": "WFRBLB50107",
+   "label": "Net worth of the bottom 50% (millions of dollars)",
+   "unit": "usd",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)"
+  },
+  "top1w": {
+   "source": "fred",
+   "id": "WFRBLT01026",
+   "label": "Top 1%",
+   "unit": "usd",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)",
+   "in_todays_dollars": "cpi"
+  },
+  "mid40w": {
+   "source": "fred",
+   "id": "WFRBLN40080",
+   "label": "Middle 40%",
+   "unit": "usd",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)",
+   "in_todays_dollars": "cpi"
+  },
+  "bot50w": {
+   "source": "fred",
+   "id": "WFRBLB50107",
+   "label": "Bottom 50%",
+   "unit": "usd",
+   "short_source": "FRED (Federal Reserve Distributional Financial Accounts)",
+   "in_todays_dollars": "cpi"
+  },
+  "income": {
+   "source": "fred",
+   "id": "MEHOINUSA672N",
+   "label": "Real median household income",
+   "unit": "usd",
+   "short_source": "FRED (Census Bureau)"
+  },
+  "cpi": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Consumer prices (CPI)",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "top01_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-04",
+     0.15
+    ]
+   ],
+   "label": "Share of household wealth held by the top 0.1%",
+   "unit": "fraction",
+   "short_source": "Fortune, from Federal Reserve data",
+   "citation": "Fortune (7 Oct 2026), from Federal Reserve data: the top 0.1% holds 15% of the nation's household wealth in the second quarter of 2026"
+  },
+  "households_top01_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-04",
+     136779
+    ]
+   ],
+   "label": "Households in the top 0.1%",
+   "unit": "num",
+   "short_source": "Fortune, from Federal Reserve data",
+   "citation": "Fortune (7 Oct 2026): the Fed counts 136,779 households in the top 0.1%"
+  },
+  "stocks01_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-04",
+     16200000000000
+    ]
+   ],
+   "label": "Stocks and mutual funds held by the top 0.1%",
+   "unit": "usd",
+   "short_source": "Fortune, from Federal Reserve data",
+   "citation": "Fortune (7 Oct 2026), from Federal Reserve data: $16.2 trillion in stocks and mutual funds for the top 0.1%"
+  },
+  "wealth01_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-04",
+     28000000000000
+    ]
+   ],
+   "label": "Net worth of the top 0.1%",
+   "unit": "usd",
+   "short_source": "Fortune, from Federal Reserve data",
+   "citation": "Fortune (7 Oct 2026), from Federal Reserve data: top 0.1% wealth more than doubled since late 2019 to nearly $28 trillion in Q2 2026"
+  },
+  "ratio_news": {
+   "source": "inline",
+   "points": [
+    [
+     "1967",
+     9.23
+    ],
+    [
+     "2025",
+     13.06
+    ]
+   ],
+   "label": "Income at the 90th percentile divided by income at the 10th",
+   "unit": "num",
+   "short_source": "Census Bureau",
+   "citation": "Census Bureau, 'Median Household Income in 2025 Surpassed Previous Highs' (15 Sep 2026): the 90th-to-10th percentile income ratio widened from 9.23 in 1967 to 13.06 in 2025"
+  },
+  "p90_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2025",
+     1.21
+    ]
+   ],
+   "label": "Rise in real income at the 90th percentile since 1967",
+   "unit": "fraction",
+   "short_source": "Census Bureau",
+   "citation": "Census Bureau (15 Sep 2026): pre-tax household income rose by about 121% at the 90th percentile from 1967 to 2025"
+  },
+  "p50_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2025",
+     0.56
+    ]
+   ],
+   "label": "Rise in real income at the 10th and 50th percentiles since 1967",
+   "unit": "fraction",
+   "short_source": "Census Bureau",
+   "citation": "Census Bureau (15 Sep 2026): pre-tax household income at the 10th and 50th percentiles increased by about 56% from 1967 to 2025"
+  },
+  "income_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2025",
+     0.026
+    ]
+   ],
+   "label": "Change in real median household income, 2024 to 2025",
+   "unit": "fraction",
+   "short_source": "Census Bureau",
+   "citation": "Census Bureau (15 Sep 2026): real median household income was $87,460 in 2025, up 2.6% from the previous year"
+  }
+ },
+ "claims": [
+  {
+   "says": "The top 1% share of net worth is a record high",
+   "check": "highest(top1, \"1989\", \"latest\") <= latest(top1)"
+  },
+  {
+   "says": "The top 1% share is about a third (news reports 32.5%)",
+   "check": "32 < latest(top1) < 33"
+  },
+  {
+   "says": "The top 1% holds more than ten times the wealth of the whole bottom half",
+   "check": "latest(top1n) / latest(bot50n) > 10"
+  },
+  {
+   "says": "The four groups add up to all household wealth",
+   "check": "99.5 < latest(top1) + latest(next9) + latest(mid40) + latest(bot50) < 100.5"
+  },
+  {
+   "says": "The top 1% share rose since 1989",
+   "check": "latest(top1) > value(top1, \"1989-07\")"
+  },
+  {
+   "says": "The middle 40% share fell since 1989",
+   "check": "latest(mid40) < value(mid40, \"1989-07\")"
+  },
+  {
+   "says": "The bottom half's share fell since 1989",
+   "check": "latest(bot50) < value(bot50, \"1989-07\")"
+  },
+  {
+   "says": "The next 9% share barely changed since 1989 (within two points)",
+   "check": "value(next9, \"1989-07\") - 2 < latest(next9) < value(next9, \"1989-07\") + 2"
+  },
+  {
+   "says": "The bottom half's share hit its low after the housing crash, around 2010",
+   "check": "2010 <= year_of_lowest(bot50, \"1989\", \"latest\") <= 2011"
+  },
+  {
+   "says": "The bottom half held under one percent of wealth at the low",
+   "check": "lowest(bot50, \"1989\", \"latest\") < 1"
+  },
+  {
+   "says": "In 1989 the middle 40% held far more wealth than the top 1%",
+   "check": "value(mid40, \"1989-07\") > value(top1, \"1989-07\") + 10"
+  },
+  {
+   "says": "The top 1% first overtook the middle 40% in early 2014",
+   "check": "value(top1, \"2014-01\") > value(mid40, \"2014-01\")"
+  },
+  {
+   "says": "Before 2014 the middle 40% was always ahead",
+   "check": "lowest(mid40, \"1989\", \"2013-12\") > highest(top1, \"1989\", \"2013-12\") - 0.5"
+  },
+  {
+   "says": "Before 2014 the middle 40% was ahead at the end of 2013",
+   "check": "value(mid40, \"2013-10\") > value(top1, \"2013-10\")"
+  },
+  {
+   "says": "The middle 40% drew level or ahead in early 2020",
+   "check": "value(mid40, \"2020-01\") >= value(top1, \"2020-01\")"
+  },
+  {
+   "says": "The middle 40% drew level or ahead from 2022 to 2024",
+   "check": "value(mid40, \"2022-07\") >= value(top1, \"2022-07\")"
+  },
+  {
+   "says": "The middle 40% drew level or ahead in 2024",
+   "check": "value(mid40, \"2024-01\") >= value(top1, \"2024-01\")"
+  },
+  {
+   "says": "The top share came back above its 2000 and 2007 levels",
+   "check": "latest(top1) > value(top1, \"2007-07\") > value(top1, \"2000-01\")"
+  },
+  {
+   "says": "Per household, the top-to-middle wealth multiple grew since 1989",
+   "check": "latest(top1w) / latest(mid40w) > value(top1w, \"1989-07\") / value(mid40w, \"1989-07\")"
+  },
+  {
+   "says": "The top 1% is ahead of the middle 40% today",
+   "check": "latest(top1) > latest(mid40) + 3"
+  },
+  {
+   "says": "The middle 40% share is close to its record low",
+   "check": "latest(mid40) < lowest(mid40, \"1989\", \"latest\") + 1"
+  },
+  {
+   "says": "In today's money, top 1% wealth grew faster than middle 40% wealth",
+   "check": "ratio(top1w, \"1989-07\", \"latest\") > ratio(mid40w, \"1989-07\", \"latest\")"
+  },
+  {
+   "says": "Middle 40% wealth grew faster than bottom half wealth",
+   "check": "ratio(mid40w, \"1989-07\", \"latest\") > ratio(bot50w, \"1989-07\", \"latest\")"
+  },
+  {
+   "says": "Middle-class wealth more than doubled in today's money",
+   "check": "ratio(mid40w, \"1989-07\", \"latest\") > 2"
+  },
+  {
+   "says": "Bottom half wealth more than doubled in today's money",
+   "check": "ratio(bot50w, \"1989-07\", \"latest\") > 2"
+  },
+  {
+   "says": "The top 1% held less than the middle 40% in 1989 in today's money, and more today",
+   "check": "value(top1w, \"1989-07\") < value(mid40w, \"1989-07\")"
+  },
+  {
+   "says": "Today the top 1% holds more than the middle 40%, in dollars",
+   "check": "latest(top1w) > latest(mid40w)"
+  },
+  {
+   "says": "The middle 40% would hold more than ten trillion dollars more at its 1989 share",
+   "check": "latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1) > 10000000000000"
+  },
+  {
+   "says": "The top 1% holds more than fifteen trillion dollars more than at its 1989 share",
+   "check": "latest(top1w) * 1000000 * (1 - value(top1, \"1989-07\") / latest(top1)) > 15000000000000"
+  },
+  {
+   "says": "The top 1% gain is larger than the middle class shortfall (it also came from the bottom half and next 9%)",
+   "check": "latest(top1w) * 1000000 * (1 - value(top1, \"1989-07\") / latest(top1)) > latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1)"
+  },
+  {
+   "says": "Per middle-class household, the share shift is worth roughly two hundred thousand dollars or more",
+   "check": "latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1) / (latest(households_top01_news) * 1000 * 0.4) > 150000"
+  },
+  {
+   "says": "Real median household income is a record high",
+   "check": "highest(income, \"1984\", \"latest\") <= latest(income)"
+  },
+  {
+   "says": "Real median household income rose since 1989",
+   "check": "latest(income) > value(income, \"1989\")"
+  },
+  {
+   "says": "Median household income fell after 2007 and again after 2019",
+   "check": "value(income, \"2012\") < value(income, \"2007\")"
+  },
+  {
+   "says": "Median household income fell from 2019 to 2022",
+   "check": "value(income, \"2022\") < value(income, \"2019\")"
+  },
+  {
+   "says": "Median income first beat its 2007 level in 2016",
+   "check": "value(income, \"2015\") < value(income, \"2007\") < value(income, \"2016\")"
+  },
+  {
+   "says": "Income grew faster in the last decade than the one before",
+   "check": "ratio(income, \"2015\", \"latest\") > ratio(income, \"2005\", \"2015\")"
+  },
+  {
+   "says": "The top 1% share fell after the dot-com bust",
+   "check": "value(top1, \"2002-07\") < value(top1, \"2000-01\") - 2"
+  },
+  {
+   "says": "The top 1% share fell in the financial crisis",
+   "check": "value(top1, \"2009-01\") < value(top1, \"2007-07\") - 1"
+  },
+  {
+   "says": "The gap between the top 1% and middle 40% shares has widened since 1989 (from minus to plus)",
+   "check": "latest(top1) - latest(mid40) > value(top1, \"1989-07\") - value(mid40, \"1989-07\")"
+  },
+  {
+   "says": "More than half of the top 0.1% wealth is in stocks and mutual funds (Fortune)",
+   "check": "latest(stocks01_news) / latest(wealth01_news) > 0.5"
+  },
+  {
+   "says": "The bottom half share has risen since its 2019 level",
+   "check": "latest(bot50) > value(bot50, \"2019-01\")"
+  },
+  {
+   "says": "Middle-class wealth grew faster than median income since 1989",
+   "check": "ratio(mid40w, \"1989-07\", \"latest\") > ratio(income, \"1989\", \"latest\")"
+  },
+  {
+   "says": "Census: income at the 90th percentile grew faster than at the middle",
+   "check": "latest(p90_news) > latest(p50_news)"
+  },
+  {
+   "says": "Census: the 90/10 income ratio widened",
+   "check": "latest(ratio_news) > first(ratio_news, \"1967\", \"latest\")"
+  },
+  {
+   "says": "Census reported a rise in median income in 2025",
+   "check": "latest(income_news) > 0"
+  },
+  {
+   "says": "On trend the top 1% share rose every year on average",
+   "check": "trend_per_year(top1, \"1989\", \"latest\") > 0"
+  },
+  {
+   "says": "On trend the middle 40% share fell every year on average",
+   "check": "trend_per_year(mid40, \"1989\", \"latest\") < 0"
+  },
+  {
+   "says": "The two trends are similar in size (top 1% gain roughly mirrors middle 40% loss)",
+   "check": "trend_per_year(top1, \"1989\", \"latest\") / -trend_per_year(mid40, \"1989\", \"latest\") > 0.7"
+  },
+  {
+   "says": "The two trends are similar in size (upper bound)",
+   "check": "trend_per_year(top1, \"1989\", \"latest\") / -trend_per_year(mid40, \"1989\", \"latest\") < 1.4"
+  },
+  {
+   "says": "The top 0.1% alone holds more than the bottom half",
+   "check": "latest(top01_news) * 100 > latest(bot50)"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "In early October, the Federal Reserve's newest wealth figures made headlines: the richest Americans now own a bigger slice of the country than ever. And a few weeks before that, the Census Bureau said a typical household's income hit a record.",
+   "chart": {
+    "type": "headlines",
+    "headlines": [
+     {
+      "source": "Fortune",
+      "date": "2026-10-07",
+      "text": "The new K-shaped economy splits the rich from the ultra-rich"
+     },
+     {
+      "source": "Benzinga",
+      "date": "2026-10-05",
+      "text": "Top 1% Hold $60.3 Trillion, Bottom 50% Just $4.3 Trillion: Market Commentator Says 'the Middle Class Is Gone'"
+     },
+     {
+      "source": "US Census Bureau",
+      "date": "2026-09-15",
+      "text": "Median Household Income in 2025 Surpassed Previous Highs Before and After the COVID-19 Pandemic"
+     }
+    ],
+    "photo": [
+     {
+      "query": "Manhattan skyline",
+      "after": 2018
+     },
+     {
+      "query": "Wall Street New York",
+      "after": 2015
+     },
+     {
+      "query": "New York Stock Exchange",
+      "after": 2015
+     }
+    ],
+    "chapter": "What just happened"
+   }
+  },
+  {
+   "narration": "Here are the numbers behind those headlines. In the spring of this year, the top {{ 0.01 | pct }} of American households held {{ latest(top1n) * 1000000 | usd }} of wealth. That is {{ latest(top1) / 100 | pct1 }} of everything households own, the highest share since the Fed's records begin in 1989. Fortune worked out that the top {{ 0.001 | pct }} alone, about {{ latest(households_top01_news) | num }} households, holds {{ latest(top01_news) | pct }}. The whole bottom half of the country, tens of millions of families, held {{ latest(bot50n) * 1000000 | usd }} between them. Meanwhile, the Census Bureau said real median household income rose {{ latest(income_news) | pct1 }} in 2025, to {{ latest(income) | usd }}, a record. One commentator quoted by Benzinga put it bluntly: the middle class is gone. Is that true?",
+   "chart": {
+    "type": "card",
+    "title": "A record share at the very top",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "luxury yacht marina",
+      "after": 2015
+     },
+     {
+      "query": "mansion estate United States",
+      "after": 2010
+     },
+     {
+      "query": "Manhattan penthouse skyline",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So here is today's question. How much has the middle class lost compared with the top {{ 0.01 | pct }}? To answer it honestly, we need to separate two things that often get mixed up. Pay is what you earn each year. Wealth, or net worth, is what you own minus what you owe: your home, savings, pension pot and shares, minus the mortgage and other debts. The Fed's figures are about wealth. For pay, we will use the Census Bureau's income survey. They tell quite different stories.",
+   "chart": {
+    "type": "card",
+    "title": "Has the middle class lost out to the top?",
+    "label": "WEALTH VS PAY",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "suburban houses street United States",
+      "after": 2015
+     },
+     {
+      "query": "family home front porch",
+      "after": 2015
+     },
+     {
+      "query": "residential neighborhood aerial",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Every quarter since 1989, the Federal Reserve splits all household wealth into four groups, ranked by how much they own. The top {{ 0.01 | pct }}. The next {{ 0.09 | pct }}, the comfortably well off. The middle {{ 0.4 | pct }}, everyone from the median household up to the top tenth, which is what we will call the middle class. And the bottom half.",
+   "chart": {
+    "type": "photo",
+    "file": "File:Marriner S. Eccles Federal Reserve Board Building.jpg",
+    "caption": "The Federal Reserve, Washington"
+   }
+  },
+  {
+   "narration": "Here is how the pie has been sliced. In 1989, the top {{ 0.01 | pct }} held {{ value(top1, \"1989-07\") / 100 | pct }} of all wealth. Today it is {{ latest(top1) / 100 | pct }}. The middle {{ 0.4 | pct }} went the other way, from {{ value(mid40, \"1989-07\") / 100 | pct }} to {{ latest(mid40) / 100 | pct }}, close to its lowest on record. The next {{ 0.09 | pct }} barely moved, from {{ value(next9, \"1989-07\") / 100 | pct }} to {{ latest(next9) / 100 | pct }}. And the bottom half, which never owned much, slipped from {{ value(bot50, \"1989-07\") / 100 | pct1 }} to {{ latest(bot50) / 100 | pct1 }}. After the housing crash its share fell to just {{ lowest(bot50, \"1989\", \"latest\") / 100 | pct1 }} in {{ year_of_lowest(bot50, \"1989\", \"latest\") | year }}, because many families' homes were worth less than their mortgages.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "top1",
+     "next9",
+     "mid40",
+     "bot50"
+    ],
+    "from": "1989-07",
+    "y_format": "num",
+    "title": "Who owns America's wealth",
+    "subtitle": "Share of all household net worth, percent",
+    "annotations": [
+     {
+      "date": "2010-10",
+      "text": "Housing crash low",
+      "series": "bot50"
+     }
+    ],
+    "chapter": "Who owns what"
+   }
+  },
+  {
+   "narration": "Now look at just two lines: the top {{ 0.01 | pct }} and the middle {{ 0.4 | pct }}. In 1989, the middle class owned far more of the country's wealth than the richest households. Early in 2014, the lines crossed for the first time. The middle class drew level or edged ahead again at times, in early 2020 and from 2022 to 2024, but today the top {{ 0.01 | pct }} owns {{ latest(top1) / 100 | pct }} of all wealth, while the far larger middle class owns {{ latest(mid40) / 100 | pct }}.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "top1",
+     "mid40"
+    ],
+    "from": "1989-07",
+    "y_format": "num",
+    "title": "The richest overtook the middle class",
+    "subtitle": "Share of all household net worth, percent",
+    "annotations": [
+     {
+      "date": "2014-01",
+      "text": "Lines cross",
+      "series": "top1"
+     }
+    ],
+    "chapter": "The crossing"
+   }
+  },
+  {
+   "narration": "Why did this happen? Mostly because of what each group owns. A middle-class family's wealth is mainly its home and a retirement account. The richest hold far more of theirs in company shares and private businesses. Fortune's analysis of the Fed data found that the top {{ 0.001 | pct }} hold {{ latest(stocks01_news) | usd }} in stocks and mutual funds alone, out of nearly {{ latest(wealth01_news) | usd }}. So when the stock market booms, as it has for most of the time since the financial crisis, wealth at the top jumps the most. When house prices rise, the middle class gains, but a home is one asset, often bought with a large mortgage.",
+   "chart": {
+    "type": "photo",
+    "query": "New York Stock Exchange trading floor",
+    "after": 2010,
+    "caption": "Shares at the top, homes in the middle"
+   }
+  },
+  {
+   "narration": "But a smaller slice is not the same as losing money, because the whole pie grew. Here is each group's total wealth in today's dollars, adjusted for inflation. Since 1989, the top {{ 0.01 | pct }}'s wealth rose {{ pct_change(top1w, \"1989-07\", \"latest\") | pct }}. The middle {{ 0.4 | pct }}'s rose {{ pct_change(mid40w, \"1989-07\", \"latest\") | pct }}. The bottom half's rose {{ pct_change(bot50w, \"1989-07\", \"latest\") | pct }}. So the middle class did not lose wealth in dollars. It more than doubled. It just grew far more slowly than wealth at the top.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "top1w",
+     "mid40w",
+     "bot50w"
+    ],
+    "from": "1989-07",
+    "index": "1989-07",
+    "y_format": "index",
+    "title": "Everyone gained, the top gained most",
+    "subtitle": "Total net worth in today's dollars, index 1989 = 100",
+    "chapter": "Lost, or just less?"
+   }
+  },
+  {
+   "narration": "Here are the same totals as plain dollar amounts. In 1989, in today's money, the top {{ 0.01 | pct }} owned {{ value(top1w, \"1989-07\") * 1000000 | usd }}, and the middle {{ 0.4 | pct }} owned {{ value(mid40w, \"1989-07\") * 1000000 | usd }}, much more. Today the top {{ 0.01 | pct }} owns {{ latest(top1w) * 1000000 | usd }}, and the middle class owns {{ latest(mid40w) * 1000000 | usd }}. Remember that the middle group has {{ 40 | num }} times as many households as the top group. So per household, a family in the top {{ 0.01 | pct }} owned about {{ 40 * value(top1w, \"1989-07\") / value(mid40w, \"1989-07\") | times }} as much as a middle-class family in 1989. Today it is about {{ 40 * latest(top1w) / latest(mid40w) | times }} as much.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Top 1%, 1989",
+      "value": "value(top1w, \"1989-07\") * 1000000"
+     },
+     {
+      "label": "Middle 40%, 1989",
+      "value": "value(mid40w, \"1989-07\") * 1000000"
+     },
+     {
+      "label": "Top 1%, today",
+      "value": "latest(top1w) * 1000000"
+     },
+     {
+      "label": "Middle 40%, today",
+      "value": "latest(mid40w) * 1000000"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Total wealth, then and now",
+    "subtitle": "Net worth in today's dollars"
+   }
+  },
+  {
+   "narration": "So how much did the middle class lose compared with the top? If the middle {{ 0.4 | pct }} still had its 1989 share of today's wealth, it would own about {{ latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1) | usd }} more than it does. Going by the Fed's count of the very richest households, that group is about {{ latest(households_top01_news) * 1000 * 0.4 | num }} households, so that is roughly {{ latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1) / (latest(households_top01_news) * 1000 * 0.4) / 1000 | num }} thousand dollars per middle-class household. The top {{ 0.01 | pct }}, at its 1989 share, would hold about {{ latest(top1w) * 1000000 * (1 - value(top1, \"1989-07\") / latest(top1)) | usd }} less than it does. That is more than the middle lost, because the top also gained share from the other groups. This is an accounting what-if, not a refund anyone is owed.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Middle 40%: missing vs its 1989 share",
+      "value": "latest(mid40w) * 1000000 * (value(mid40, \"1989-07\") / latest(mid40) - 1)"
+     },
+     {
+      "label": "Top 1%: extra vs its 1989 share",
+      "value": "latest(top1w) * 1000000 * (1 - value(top1, \"1989-07\") / latest(top1))"
+     }
+    ],
+    "y_format": "usd",
+    "title": "What the shift in shares is worth today",
+    "subtitle": "Today's wealth, re-split at each group's 1989 share",
+    "chapter": "The what-if"
+   }
+  },
+  {
+   "narration": "Now to pay. This is the income of the typical household, the one exactly in the middle, in today's dollars. In 1989 it was {{ value(income, \"1989\") | usd }}. In 2025 it was {{ latest(income) | usd }}, the highest on record and {{ pct_change(income, \"1989\", \"latest\") | pct }} more. It was a bumpy ride. After the financial crisis it fell for years, and only beat its 2007 level in 2016. It dipped again after the pandemic, when prices jumped faster than pay, before reaching this new high. Notice that middle-class wealth grew much faster than middle-class pay, thanks to rising home values and retirement savings.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "income"
+    ],
+    "from": "1984",
+    "y_format": "usd",
+    "title": "The typical household's income",
+    "subtitle": "Real median household income, today's dollars",
+    "annotations": [
+     {
+      "date": "2009",
+      "text": "Financial crisis"
+     },
+     {
+      "date": "2020",
+      "text": "Pandemic"
+     }
+    ],
+    "chapter": "And pay?"
+   }
+  },
+  {
+   "narration": "But the middle is not the top. The Census Bureau also tracks households near the top and bottom of the income ladder. Since 1967, income at the ninetieth percentile, the household that earns more than nine in ten others, rose {{ latest(p90_news) | pct }} after inflation. Income in the middle, and near the bottom, rose about {{ latest(p50_news) | pct }}. In 1967 a household at the ninetieth percentile earned {{ first(ratio_news, \"1967\", \"latest\") | times }} as much as one at the tenth. In 2025 it was {{ latest(ratio_news) | times }}. So pay has grown for everyone, but faster at the top.",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Near the top (90th percentile)",
+      "value": "latest(p90_news)"
+     },
+     {
+      "label": "Middle and near the bottom",
+      "value": "latest(p50_news)"
+     }
+    ],
+    "y_format": "pct",
+    "title": "Pay rose fastest near the top",
+    "subtitle": "Rise in real household income since 1967, Census Bureau",
+    "chapter": "Top and bottom pay"
+   }
+  },
+  {
+   "narration": "Now for the model. These are straight trend lines through the yearly averages of the two wealth shares. On trend, the top {{ 0.01 | pct }}'s share has risen about {{ trend_per_year(top1, \"1989\", \"latest\") | pts }} a year since 1989, and the middle {{ 0.4 | pct }}'s has fallen about {{ -trend_per_year(mid40, \"1989\", \"latest\") | pts }} a year. Those two numbers are close, so as a rough rule, what the middle class lost in share, the very top gained. A trend is not a forecast. Look at the dips. After the dot-com bust, the top share fell from {{ value(top1, \"2000-01\") / 100 | pct }} early in 2000 to {{ value(top1, \"2002-07\") / 100 | pct }} in mid-2002. In the financial crisis it fell from {{ value(top1, \"2007-07\") / 100 | pct }} to {{ value(top1, \"2009-01\") / 100 | pct }}. So a long stock market slump can pull the top share down fast. But each time, the trend came back.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "top1",
+     "mid40"
+    ],
+    "from": "1989-07",
+    "yearly": true,
+    "trend": "linear",
+    "y_format": "num",
+    "title": "A slow, steady shift",
+    "subtitle": "Share of household net worth, percent, yearly averages with fitted trend",
+    "chapter": "The model"
+   }
+  },
+  {
+   "narration": "So, has the middle class lost out to the top {{ 0.01 | pct }}? In share, yes, clearly. The middle {{ 0.4 | pct }} owns a much smaller slice of the country's wealth than in 1989, and the top {{ 0.01 | pct }} now owns more than the whole middle class. In dollars, no. Middle-class wealth more than doubled after inflation, and median household income is at a record. The middle class is not gone. It is a smaller slice of a much bigger pie, and the gap between it and the very top has widened over these decades.",
+   "chart": {
+    "type": "card",
+    "title": "A smaller slice of a bigger pie",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "pie slices table",
+      "after": 2010
+     },
+     {
+      "query": "suburban houses street United States",
+      "after": 2015
+     },
+     {
+      "query": "family dinner table",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take, and it is an opinion. For an ordinary household, the share matters less day to day than whether its own income and savings grow, and on that score the last decade has been better than the one before. But shares still matter, because wealth brings security, the ability to help children and a louder voice in public life, and that is now concentrated further than at any time in these records. Much of the gap comes from owning shares versus not owning them. What would change my mind? A long fall in share prices, or several years of faster pay growth in the middle, would show the trend reversing.",
+   "chart": {
+    "type": "card",
+    "title": "Growing, but falling behind",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "commuters walking city street",
+      "after": 2018
+     },
+     {
+      "query": "office workers city",
+      "after": 2018
+     },
+     {
+      "query": "people crossing street New York",
+      "after": 2018
+     }
+    ]
+   }
+  }
+ ],
+ "hashtags": [
+  "Economics",
+  "WealthInequality",
+  "MiddleClass",
+  "Income"
+ ],
+ "method": "Wealth shares and totals come from the Federal Reserve's Distributional Financial Accounts; totals are restated in today's dollars with the consumer price index. The what-if re-splits today's total wealth at each group's 1989 share; households per group are estimated from the Fed's count of the top 0.1% as reported by Fortune. The model fits a straight line through the yearly average shares.",
+ "references": [
+  {
+   "source": "Federal Reserve Board",
+   "date": "2026-09-18",
+   "says": "Distributional Financial Accounts (page last updated 18 September 2026), data through the second quarter of 2026: shares and levels of household net worth by wealth group",
+   "url": "https://www.federalreserve.gov/releases/z1/dataviz/dfa/"
+  },
+  {
+   "source": "Fortune",
+   "date": "2026-10-07",
+   "says": "From Federal Reserve data, the top 0.1% holds 15% of the nation's household wealth; the Fed counts 136,779 households in the top 0.1%",
+   "url": "https://fortune.com/2026/10/07/the-new-k-shaped-economy-wealthy/"
+  },
+  {
+   "source": "Benzinga",
+   "date": "2026-10-05",
+   "says": "The top 1% hold $60.3 trillion, a record 32.5% share of net worth, against $4.3 trillion for the bottom 50%; a commentator says the middle class is gone",
+   "url": "https://www.benzinga.com/markets/economic-data/26/10/62153752/top-one-percent-sixty-trillion-bottom-fifty-percent-wealth-middle-class"
+  },
+  {
+   "source": "US Census Bureau",
+   "date": "2026-09-15",
+   "says": "Real median household income was $87,460 in 2025, up 2.6%; income rose about 121% at the 90th percentile and about 56% at the 10th and 50th percentiles from 1967 to 2025; the 90/10 ratio widened from 9.23 to 13.06",
+   "url": "https://www.census.gov/library/stories/2026/09/median-household-income.html"
+  }
+ ],
+ "short": {
+  "title": "The richest households now own more than the whole middle class",
+  "scenes": [
+   6
+  ]
+ },
+ "shorts": [
+  {
+   "title": "Did the middle class really lose money to the rich?",
+   "scenes": [
+    8
+   ]
+  },
+  {
+   "title": "What the middle class lost to the very top, in dollars",
+   "scenes": [
+    10
+   ]
+  },
+  {
+   "title": "Pay grew for everyone, but not equally",
+   "scenes": [
+    12
+   ]
+  },
+  {
+   "title": "America's wealth pie, sliced four ways",
+   "scenes": [
+    5
+   ]
+  }
+ ]
+}
