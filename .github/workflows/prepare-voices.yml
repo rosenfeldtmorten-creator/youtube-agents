@@ -4,12 +4,12 @@ name: Prepare voices
 # narration cache, so an upload day only has to render (minutes instead of hours).
 on:
   schedule:
-    - cron: "0 2 * * *"   # nightly; episodes already in the cache are skipped in seconds
+    - cron: "0 2 * * *"   # nightly, one new episode a night (about 3 hours), well ahead of 2 uploads a week
   workflow_dispatch:
     inputs:
       episodes:
-        description: How many queued episodes to prepare
-        default: "2"
+        description: How many not-yet-prepared episodes to prepare (about 3 hours each, so 1 fits safely)
+        default: "1"
 
 permissions:
   contents: read
@@ -67,7 +67,7 @@ jobs:
           /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
 
       - name: Narrate the next episodes
-        run: python -m yta narrate --channel "$CHANNEL" --voice chatterbox --episodes "${{ inputs.episodes || '2' }}"
+        run: python -m yta narrate --channel "$CHANNEL" --voice chatterbox --episodes "${{ inputs.episodes || '1' }}"
 
       - name: Save narration
         if: always()

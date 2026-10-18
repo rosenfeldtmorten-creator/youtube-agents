@@ -185,7 +185,7 @@ def cmd_run(args) -> int:
 
 
 def cmd_narrate(args) -> int:
-    """Speak every sentence of the next episode (or the next --episodes N) into the narration cache.
+    """Speak every sentence of the next episode (or the next --episodes N not yet prepared) into the narration cache.
 
     The workflows save the cache right after this step, so a render that later fails (full disk, timeout)
     never throws away an hour of voice synthesis. The Prepare voices workflow runs it ahead of time, so
@@ -210,6 +210,9 @@ def cmd_narrate(args) -> int:
         narrator = get_narrator(cfg, args.voice, test=False)
         sentences = [s for sc in obj.scenes for s in split_sentences(sc.filled or sc.narration)]
         sentences += split_sentences(OUTRO) + ([SHORT_OUTRO] if obj.raw.get("short") else [])
+        if getattr(narrator, "ready", None) and narrator.ready(sentences):
+            print(f"{obj.slug}: voice already prepared")
+            continue
         import time
 
         began = time.time()

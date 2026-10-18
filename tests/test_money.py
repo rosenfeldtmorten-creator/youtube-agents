@@ -438,3 +438,19 @@ def test_voice_must_match_chart_labels(monkeypatch):
                         if chart is houses.chart else [])
     with pytest.raises(metrics.MetricError, match="percent"):
         money.check_voice_matches_charts(ep)
+
+
+def test_narrator_knows_when_an_episode_is_prepared(tmp_path):
+    import numpy as np
+    from yta.tts import Narrator
+
+    class Beep:
+        def say(self, text):
+            return np.zeros(2400, dtype=np.float32)
+
+    n = Narrator(Beep(), cache_dir=tmp_path)
+    assert not n.ready(["One.", "Two."])
+    n.say("One.")
+    assert not n.ready(["One.", "Two."])
+    n.say("Two.")
+    assert n.ready(["One.", "Two."])
