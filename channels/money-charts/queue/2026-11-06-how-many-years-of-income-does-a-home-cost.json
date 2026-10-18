@@ -1,0 +1,622 @@
+{
+ "slug": "how-many-years-of-income-does-a-home-cost",
+ "title": "How Many Years of Income Does a Home Cost? (1984 vs Today)",
+ "description": "In October 2026 the National Association of Realtors put the typical existing-home price at $417,500, while the Census Bureau put the typical household's income at $87,460. That is close to five years of income for one home.\n\nWe follow the price-to-income ratio back to 1984, and in today's dollars back to the 1960s: the late-1970s boom, the 2006 bubble and 2008 crash, the pandemic jump, and how long it takes to save a down payment today. Our honest take is at the end.",
+ "comment": "Where do you live, and roughly how many years of income does a typical home cost there?",
+ "tags": [
+  "house prices",
+  "price to income ratio",
+  "housing affordability",
+  "household income",
+  "housing market",
+  "housing bubble",
+  "economics explained",
+  "economics in charts",
+  "personal finance",
+  "data visualization"
+ ],
+ "hashtags": [
+  "HousingMarket",
+  "Economics",
+  "HousePrices",
+  "Affordability"
+ ],
+ "thumbnail_text": "Years of pay per home",
+ "method": "We divide the yearly average of the Census median new-home price by Census median household income for the same year. For today's dollars we restate both with the consumer price index, and the scatter fits a straight line through the yearly averages since 1984. The down-payment model assumes one fifth down and saving a tenth of income.",
+ "references": [
+  {
+   "source": "National Association of Realtors",
+   "date": "2026-10-13",
+   "says": "Existing-Home Sales Increased 1.5% in September: median existing-home price $417,500, up 1.3% from a year earlier, the 39th consecutive month of year-over-year gains",
+   "url": "https://www.nar.realtor/newsroom/existing-home-sales-increased-1-5-in-september-according-to-nar-report"
+  },
+  {
+   "source": "FOX Local",
+   "date": "2026-09-17",
+   "says": "Census Bureau: median household income was $87,460 in 2025, up 2.6% from 2024 and the highest on record",
+   "url": "https://www.fox5dc.com/news/americans-household-income-higher-data"
+  }
+ ],
+ "data": {
+  "price": {
+   "source": "fred",
+   "id": "MSPUS",
+   "label": "Median price of new homes sold",
+   "unit": "usd",
+   "short_source": "FRED (Census Bureau, HUD)"
+  },
+  "income": {
+   "source": "fred",
+   "id": "MEHOINUSA646N",
+   "label": "Median household income",
+   "unit": "usd",
+   "short_source": "FRED (Census Bureau)"
+  },
+  "cpi": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Consumer prices (CPI)",
+   "unit": "index",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "price_real": {
+   "source": "fred",
+   "id": "MSPUS",
+   "label": "Median new home price, today's dollars",
+   "unit": "usd",
+   "in_todays_dollars": "cpi",
+   "short_source": "FRED (Census Bureau, HUD; BLS CPI)"
+  },
+  "income_real": {
+   "source": "fred",
+   "id": "MEHOINUSA646N",
+   "label": "Median household income, today's dollars",
+   "unit": "usd",
+   "in_todays_dollars": "cpi",
+   "short_source": "FRED (Census Bureau; BLS CPI)"
+  },
+  "rate": {
+   "source": "fred",
+   "id": "MORTGAGE30US",
+   "label": "30-year fixed mortgage rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (Freddie Mac)"
+  },
+  "saving": {
+   "source": "fred",
+   "id": "PSAVERT",
+   "label": "Personal saving rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (BEA)"
+  },
+  "news_price": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     417500
+    ]
+   ],
+   "label": "Median existing-home price (news)",
+   "unit": "usd",
+   "short_source": "National Association of Realtors",
+   "citation": "National Association of Realtors, Existing-Home Sales for September 2026 (13 Oct 2026): median existing-home price for all housing types $417,500, up 1.3% from a year earlier"
+  },
+  "news_price_yoy": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09",
+     0.013
+    ]
+   ],
+   "label": "Median existing-home price, change on a year earlier (news)",
+   "unit": "fraction",
+   "short_source": "National Association of Realtors",
+   "citation": "National Association of Realtors, Existing-Home Sales for September 2026 (13 Oct 2026): prices up 1.3% from one year ago"
+  },
+  "news_income": {
+   "source": "inline",
+   "points": [
+    [
+     "2025",
+     87460
+    ]
+   ],
+   "label": "Median household income 2025 (news)",
+   "unit": "usd",
+   "short_source": "US Census Bureau via FOX Local",
+   "citation": "US Census Bureau income report for 2025, as reported by FOX Local (17 Sep 2026): median household income $87,460 in 2025"
+  }
+ },
+ "claims": [
+  {
+   "says": "The news price is close to five years of the news income",
+   "check": "latest(news_price) / latest(news_income) > 4.5"
+  },
+  {
+   "says": "The news price is close to five years of the news income (upper bound)",
+   "check": "latest(news_price) / latest(news_income) < 5"
+  },
+  {
+   "says": "In 1984 the median new home cost about three and a half years of income",
+   "check": "(value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") > 3.4"
+  },
+  {
+   "says": "In 1984 the median new home cost about three and a half years of income (upper bound)",
+   "check": "(value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") < 3.7"
+  },
+  {
+   "says": "Home prices rose much faster than incomes since 1984",
+   "check": "ratio(price, \"1984-01\", \"latest\") > 1.2 * ratio(income, \"1984\", \"latest\")"
+  },
+  {
+   "says": "Through the 1990s the ratio stayed close to four years",
+   "check": "(value(price, \"1990-01\") + value(price, \"1990-04\") + value(price, \"1990-07\") + value(price, \"1990-10\")) / 4 / value(income, \"1990\") > 3.8"
+  },
+  {
+   "says": "Through the 1990s the ratio stayed close to four years (upper bound)",
+   "check": "(value(price, \"1999-01\") + value(price, \"1999-04\") + value(price, \"1999-07\") + value(price, \"1999-10\")) / 4 / value(income, \"1999\") < 4.2"
+  },
+  {
+   "says": "The ratio rose above five years in the bubble",
+   "check": "(value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") > 5"
+  },
+  {
+   "says": "After the crash the ratio fell back",
+   "check": "(value(price, \"2011-01\") + value(price, \"2011-04\") + value(price, \"2011-07\") + value(price, \"2011-10\")) / 4 / value(income, \"2011\") < (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") - 0.4"
+  },
+  {
+   "says": "The ratio peaked in 2022, higher than in the 2005 bubble",
+   "check": "(value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") > (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") + 0.5"
+  },
+  {
+   "says": "2022 is the highest of all years shown",
+   "check": "(value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") > (value(price, \"2021-01\") + value(price, \"2021-04\") + value(price, \"2021-07\") + value(price, \"2021-10\")) / 4 / value(income, \"2021\")"
+  },
+  {
+   "says": "The ratio has fallen since 2022",
+   "check": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") < (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") - 0.5"
+  },
+  {
+   "says": "But it is still almost a full year above the 1990s",
+   "check": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") > (value(price, \"1999-01\") + value(price, \"1999-04\") + value(price, \"1999-07\") + value(price, \"1999-10\")) / 4 / value(income, \"1999\") + 0.7"
+  },
+  {
+   "says": "Incomes rose while prices slipped from 2022 to 2025",
+   "check": "value(income, \"2025\") > value(income, \"2022\") * 1.1"
+  },
+  {
+   "says": "Prices slipped from 2022 to 2025",
+   "check": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 < (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4"
+  },
+  {
+   "says": "Real home prices rose in the late 1970s",
+   "check": "pct_change(price_real, \"1975-01\", \"1979-04\") > 0.15"
+  },
+  {
+   "says": "Real home prices then fell in the early 1980s",
+   "check": "value(price_real, \"1982-07\") < 0.85 * value(price_real, \"1979-04\")"
+  },
+  {
+   "says": "Mortgage rates were extremely high in the early 1980s",
+   "check": "highest(rate, \"1979\", \"1983\") > 18"
+  },
+  {
+   "says": "Mortgage rates were near record lows in 2021",
+   "check": "lowest(rate, \"2021\", \"2021\") < 1.1 * lowest(rate, \"1971\", \"latest\")"
+  },
+  {
+   "says": "Real home prices rose more than real income since 1984",
+   "check": "ratio(price_real, \"1984-01\", \"latest\") > ratio(income_real, \"1984\", \"latest\") * 1.2"
+  },
+  {
+   "says": "Real income rose since 1984",
+   "check": "ratio(income_real, \"1984\", \"latest\") > 1.2"
+  },
+  {
+   "says": "Real home price peaked in 2022",
+   "check": "2022 <= year_of_highest(price_real, \"1963\", \"latest\") <= 2022"
+  },
+  {
+   "says": "Real prices and real incomes moved together closely",
+   "check": "correlation(income_real, price_real, \"1984\", \"2025\") > 0.7"
+  },
+  {
+   "says": "Each extra dollar of real income came with more extra house price than the average ratio",
+   "check": "slope(income_real, price_real, \"1984\", \"2025\") > (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\")"
+  },
+  {
+   "says": "Deposit takes much longer to save today than in 1985",
+   "check": "0.2 * (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") / 0.1 > 0.2 * (value(price, \"1985-01\") + value(price, \"1985-04\") + value(price, \"1985-07\") + value(price, \"1985-10\")) / 4 / value(income, \"1985\") / 0.1 + 2"
+  },
+  {
+   "says": "The saving rate is lower today than in the mid-1980s",
+   "check": "latest(saving) < value(saving, \"1985-06\") / 1.5"
+  },
+  {
+   "says": "Prices stayed close to the pandemic level",
+   "check": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 > 0.9 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4"
+  },
+  {
+   "says": "Ratio today is more than a whole year above 1984",
+   "check": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") > (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") + 1"
+  },
+  {
+   "says": "Prices only slightly ahead of incomes until 2000",
+   "check": "(value(price, \"2000-01\") + value(price, \"2000-04\") + value(price, \"2000-07\") + value(price, \"2000-10\")) / 4 / value(income, \"2000\") < (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") + 0.5"
+  },
+  {
+   "says": "Mortgage rate mid-1984 was very high",
+   "check": "value(rate, \"1984-06\") > 13"
+  },
+  {
+   "says": "Rates more than doubled from the 2021 low",
+   "check": "latest(rate) > 2 * lowest(rate, \"2021\", \"2021\")"
+  },
+  {
+   "says": "Rates fell from 1984 to 2021",
+   "check": "lowest(rate, \"2021\", \"2021\") < value(rate, \"1984-06\") / 4"
+  },
+  {
+   "says": "Mortgage rates peaked in 1981",
+   "check": "2022 > year_of_highest(rate, \"1979\", \"1983\") > 1980"
+  },
+  {
+   "says": "The 2022 deposit time is the highest shown",
+   "check": "0.2 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") / 0.1 > 0.2 * (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") / 0.1"
+  },
+  {
+   "says": "Median income rose again in 2025",
+   "check": "value(income, \"2025\") > value(income, \"2024\")"
+  },
+  {
+   "says": "Existing-home prices rising only slowly (news)",
+   "check": "latest(news_price_yoy) < 0.03"
+  },
+  {
+   "says": "The pandemic jump in prices",
+   "check": "(value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 > 1.25 * (value(price, \"2020-01\") + value(price, \"2020-04\") + value(price, \"2020-07\") + value(price, \"2020-10\")) / 4"
+  },
+  {
+   "says": "The news price is higher than a year earlier",
+   "check": "latest(news_price_yoy) > 0"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "On the thirteenth of October, the National Association of Realtors said the typical existing home in America sold for {{ latest(news_price) | usd }} in September, up {{ latest(news_price_yoy) | pct1 }} on a year earlier. A month before that, the Census Bureau said the typical household earned {{ latest(news_income) | usd }} in 2025.",
+   "chart": {
+    "type": "headlines",
+    "chapter": "What just happened",
+    "headlines": [
+     {
+      "source": "National Association of Realtors",
+      "date": "2026-10-13",
+      "text": "Existing-Home Sales Increased 1.5% in September, According to NAR Report"
+     },
+     {
+      "source": "FOX Local",
+      "date": "2026-09-17",
+      "text": "Americans' average household incomes are higher than ever, Census data shows"
+     }
+    ],
+    "photo": [
+     {
+      "query": "house for sale sign",
+      "after": 2015
+     },
+     {
+      "query": "suburban houses street United States",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Put those two numbers side by side and you get a simple measure. The typical home costs about {{ latest(news_price) / latest(news_income) | num }} years of the typical household's income, before tax, with nothing spent on food, rent or anything else. The median means the one in the middle: half of homes sell for more, and half of households earn more.",
+   "chart": {
+    "type": "card",
+    "title": "A home costs years of income",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "suburban house front yard",
+      "after": 2015
+     },
+     {
+      "query": "residential street houses",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Economists call this the price-to-income ratio, and it is one of the oldest ways to ask whether housing is affordable. It ignores mortgage rates and monthly payments on purpose. It just asks how many years of income one home is worth, which is roughly how a bank first sizes up a borrower too. So has that number always been this high? Today we follow it back to the 1980s, and in today's dollars back to the 1960s, using official data from the Census Bureau.",
+   "chart": {
+    "type": "card",
+    "title": "How many years of income does a home cost?",
+    "label": "HOUSING, IN NUMBERS",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "family in front of house",
+      "after": 2010
+     },
+     {
+      "query": "new homes construction neighborhood",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "One note first. The Census price series we use is the median price of newly built homes, which runs a little above the price of existing homes, so our ratios run a little high. What matters is how they change over time.",
+   "chart": {
+    "type": "photo",
+    "query": "new home construction United States",
+    "after": 2015,
+    "caption": "New homes, the price series we follow"
+   }
+  },
+  {
+   "narration": "Here are the two lines, both starting at one hundred in 1984, the first year the Census series for income begins. The household income line rose {{ pct_change(income, \"1984\", \"latest\") | pct }}. The home price line rose {{ pct_change(price, \"1984-01\", \"latest\") | pct }}. For most of the next two decades they climbed almost side by side, with prices only slightly ahead. Then, in the early 2000s, prices pulled away in the housing bubble, which peaked around 2006. The crash after 2008 brought them back towards incomes. And in the pandemic, when mortgage rates hit record lows and people wanted more space, prices jumped again, and they have stayed close to that new level ever since.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "price",
+     "income"
+    ],
+    "from": "1984-01",
+    "index": "1984-01",
+    "y_format": "index",
+    "labels": {
+     "price": "Median new home price",
+     "income": "Median household income"
+    },
+    "title": "Home prices against household income",
+    "subtitle": "Index, 1984 = 100, not adjusted for inflation",
+    "chapter": "Prices and pay",
+    "annotations": [
+     {
+      "date": "2006-01",
+      "text": "Housing bubble"
+     },
+     {
+      "date": "2009-01",
+      "text": "Crash after 2008"
+     },
+     {
+      "date": "2022-04",
+      "text": "Pandemic jump"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "The two booms looked alike on that chart, but they were different. The first was built on loose lending and ended in a crash. The second came with record-low rates and very few homes for sale, and so far it has not reversed.",
+   "chart": {
+    "type": "photo",
+    "query": "foreclosure sign house",
+    "caption": "Two booms, two different causes"
+   }
+  },
+  {
+   "narration": "Now divide one line by the other. In 1984, the median new home cost {{ (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") | num }} years of median household income. In 1990 it was {{ (value(price, \"1990-01\") + value(price, \"1990-04\") + value(price, \"1990-07\") + value(price, \"1990-10\")) / 4 / value(income, \"1990\") | num }} years, and at the end of the 1990s about {{ (value(price, \"1999-01\") + value(price, \"1999-04\") + value(price, \"1999-07\") + value(price, \"1999-10\")) / 4 / value(income, \"1999\") | num }}. In the bubble year of 2005 it passed five, at {{ (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") | num }}. By 2011, after the crash, it was back to {{ (value(price, \"2011-01\") + value(price, \"2011-04\") + value(price, \"2011-07\") + value(price, \"2011-10\")) / 4 / value(income, \"2011\") | num }}. Then came the pandemic. In 2022 the ratio hit {{ (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") | num }} years, higher than at the top of the bubble. Since then it has eased to {{ (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") | num }} years in 2025, because incomes rose about {{ pct_change(income, \"2022\", \"2025\") | pct }} while prices slipped. Better, but still well above the four years that were normal for a generation.",
+   "chart": {
+    "type": "bars",
+    "y_format": "num",
+    "title": "Years of income to buy the median new home",
+    "subtitle": "Yearly average median new home price divided by median household income",
+    "chapter": "The ratio",
+    "bars": [
+     {
+      "label": "1984",
+      "value": "(value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\")"
+     },
+     {
+      "label": "1990",
+      "value": "(value(price, \"1990-01\") + value(price, \"1990-04\") + value(price, \"1990-07\") + value(price, \"1990-10\")) / 4 / value(income, \"1990\")"
+     },
+     {
+      "label": "1999",
+      "value": "(value(price, \"1999-01\") + value(price, \"1999-04\") + value(price, \"1999-07\") + value(price, \"1999-10\")) / 4 / value(income, \"1999\")"
+     },
+     {
+      "label": "2005",
+      "value": "(value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\")"
+     },
+     {
+      "label": "2011",
+      "value": "(value(price, \"2011-01\") + value(price, \"2011-04\") + value(price, \"2011-07\") + value(price, \"2011-10\")) / 4 / value(income, \"2011\")"
+     },
+     {
+      "label": "2019",
+      "value": "(value(price, \"2019-01\") + value(price, \"2019-04\") + value(price, \"2019-07\") + value(price, \"2019-10\")) / 4 / value(income, \"2019\")"
+     },
+     {
+      "label": "2022",
+      "value": "(value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\")"
+     },
+     {
+      "label": "2025",
+      "value": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\")"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "What about inflation? Prices of everything rise over time, so let's restate both lines in today's dollars with the consumer price index. This chart starts in 1963, when the price series begins. Look at the late 1970s. In real terms, the median new home rose {{ pct_change(price_real, \"1975-01\", \"1979-04\") | pct }} in just four years, a time when many families bought homes to protect their savings from fast-rising prices. Then mortgage rates climbed to about {{ highest(rate, \"1979\", \"1983\") | num }} percent in 1981, and real prices fell back. Since 1984, the real median household income rose {{ pct_change(income_real, \"1984\", \"latest\") | pct }}. The real home price rose {{ pct_change(price_real, \"1984-01\", \"latest\") | pct }}, and its highest point was in {{ year_of_highest(price_real, \"1963\", \"latest\") | year }}. Adjusting for inflation shrinks both lines, but it does not close the gap between them. And it does not matter for the ratio itself, because inflation raises the price and the income by the same factor, so the years of income stay exactly the same. What inflation does show is that this is not just a story of rising prices everywhere. Measured in what money can buy, a home has become more expensive, while a household's income has grown much more slowly.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "price_real",
+     "income_real"
+    ],
+    "from": "1963-01",
+    "y_format": "usd",
+    "labels": {
+     "price_real": "Median new home price",
+     "income_real": "Median household income"
+    },
+    "title": "Home prices and income in today's dollars",
+    "subtitle": "Adjusted for inflation with the consumer price index",
+    "chapter": "After inflation",
+    "annotations": [
+     {
+      "date": "1979-04",
+      "text": "Late-1970s boom"
+     },
+     {
+      "date": "2022-04",
+      "text": "Pandemic peak"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So incomes did grow, even after inflation. Homes simply grew faster, and the gap is measured in whole years of work.",
+   "chart": {
+    "type": "photo",
+    "query": "aerial view suburban housing development",
+    "after": 2015,
+    "caption": "Homes grew faster than incomes"
+   }
+  },
+  {
+   "narration": "Here is a simple model of that gap. Each dot is one year since 1984: the real household income across the bottom, and the real home price up the side. The dots line up closely. The correlation is {{ correlation(income_real, price_real, \"1984\", \"2025\") | num }}, where one would be a perfect straight line. But look at the slope of the fitted line. On average, every extra dollar of real household income came with about {{ slope(income_real, price_real, \"1984\", \"2025\") | usd }} of extra home price. That is more than the {{ (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") | num }} years a home cost in 1984. When each new dollar of income buys a home that costs more than the old ratio, the ratio has to drift up. This is a description of how the two moved together, not proof that one caused the other. Things this chart leaves out, such as mortgage rates, how many homes get built and the size of new homes, all play a part too.",
+   "chart": {
+    "type": "scatter",
+    "x": "income_real",
+    "y": "price_real",
+    "from": "1984",
+    "to": "2025",
+    "fit": "linear",
+    "connect": true,
+    "x_format": "usd",
+    "y_format": "usd",
+    "x_label": "Median household income, today's dollars",
+    "y_label": "Median new home price, today's dollars",
+    "title": "Income and home prices, one dot per year",
+    "subtitle": "Yearly averages, adjusted for inflation, with a fitted straight line",
+    "chapter": "The model"
+   }
+  },
+  {
+   "narration": "Why does the ratio matter if most people borrow? Because the deposit still has to be saved from income. Say a household saves a tenth of its income before tax and wants a {{ 0.2 | pct }} down payment. In 1985 that took about {{ 0.2 * (value(price, \"1985-01\") + value(price, \"1985-04\") + value(price, \"1985-07\") + value(price, \"1985-10\")) / 4 / value(income, \"1985\") / 0.1 | num }} years of saving. In 2005, about {{ 0.2 * (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") / 0.1 | num }} years. In 2022, about {{ 0.2 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") / 0.1 | num }}. And in 2025, about {{ 0.2 * (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") / 0.1 | num }} years. Even after the recent improvement, that is years longer than in the mid-1980s. And a tenth is generous. The national saving rate, the share of after-tax income that Americans save, is well below where it was in the middle of the 1980s.",
+   "chart": {
+    "type": "bars",
+    "y_format": "num",
+    "title": "Years to save a down payment",
+    "subtitle": "One fifth of the median new home price, saving a tenth of median household income",
+    "chapter": "The down payment",
+    "bars": [
+     {
+      "label": "1985",
+      "value": "0.2 * (value(price, \"1985-01\") + value(price, \"1985-04\") + value(price, \"1985-07\") + value(price, \"1985-10\")) / 4 / value(income, \"1985\") / 0.1"
+     },
+     {
+      "label": "2005",
+      "value": "0.2 * (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") / 0.1"
+     },
+     {
+      "label": "2022",
+      "value": "0.2 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") / 0.1"
+     },
+     {
+      "label": "2025",
+      "value": "0.2 * (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") / 0.1"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Why could the ratio climb so far? A big part of the answer is the price of borrowing. This is the thirty-year mortgage rate since 1984. In the middle of 1984 it was about {{ value(rate, \"1984-06\") | num }} percent. Then it fell for almost four decades, down to {{ lowest(rate, \"2021\", \"2021\") | num }} percent in early 2021, close to the lowest on record. When loans are cheap, the same monthly payment supports a bigger price, so buyers can stretch to more years of income. Then rates more than doubled, to {{ latest(rate) | num }} percent in the latest data. The high prices stayed. The cheap loans did not. So today the ratio, on its own, understates how hard buying feels.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "rate"
+    ],
+    "from": "1984-01",
+    "y_format": "num",
+    "title": "The thirty-year mortgage rate",
+    "subtitle": "Percent per year",
+    "chapter": "Cheap loans",
+    "annotations": [
+     {
+      "date": "2021-01",
+      "text": "Record low"
+     },
+     {
+      "date": "2023-10",
+      "text": "Rates jump back"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So, how many years of income does a home cost? In the mid-1980s, about three and a half. Through the 1990s, about four. Today, about {{ (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") | num }} for a new home, and roughly five for the typical existing home in the latest news. The ratio has come down since its pandemic peak, because incomes are finally growing faster than prices. In the latest Census report, median income rose for another year, while the National Association of Realtors reports prices rising only slowly. But it is still almost a full year of income above where it sat through the 1990s. Compared with 1984, the median household now needs more than a whole extra year of income, before tax, for the median new home.",
+   "chart": {
+    "type": "card",
+    "title": "About five years, up from three and a half",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "suburban street houses",
+      "after": 2015
+     },
+     {
+      "query": "row houses street United States",
+      "after": 2015
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take. The ratio falling from its peak is genuinely good news for first-time buyers, but the improvement is slow. At this pace it would take many years of income growth to get back to four, unless prices fall or many more homes get built. What would change my mind? A sharp and lasting rise in new building, because that would bring the ratio down without existing owners losing money on their homes. Or a fall in mortgage rates, which would help payments but could push prices, and the ratio, back up. In the meantime, I find years of income a more honest yardstick for a home's price than dollars alone, because it adjusts for inflation and for pay at the same time. One caveat. These are national medians. In expensive cities a home costs far more years of income, and in cheaper towns far fewer, so your own ratio can look very different.",
+   "chart": {
+    "type": "card",
+    "title": "Better than the peak, still far from normal",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "house under construction framing",
+      "after": 2015
+     },
+     {
+      "query": "new homes construction neighborhood",
+      "after": 2015
+     }
+    ]
+   }
+  }
+ ],
+ "short": {
+  "title": "A home now costs far more years of income than in the 1980s",
+  "scenes": [
+   7
+  ]
+ },
+ "shorts": [
+  {
+   "title": "How long does it take to save a down payment now?",
+   "scenes": [
+    11
+   ]
+  },
+  {
+   "title": "Home prices left household income behind. Here is when.",
+   "scenes": [
+    5
+   ]
+  },
+  {
+   "title": "How cheap loans let house prices stretch",
+   "scenes": [
+    12
+   ]
+  }
+ ]
+}

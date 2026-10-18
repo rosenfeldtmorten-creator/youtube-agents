@@ -1,0 +1,603 @@
+{
+ "slug": "interest-rates-through-the-years",
+ "title": "Are Today's Interest Rates High? Seventy Years of US Rates Explained",
+ "description": "On 16 September 2026 the Federal Reserve raised its key rate for the first time since July 2023, and in October the ten-year Treasury yield sat near its highest level since 2002. So are today's interest rates actually high?\n\nWe chart the Fed's rate since 1954, from Paul Volcker's 1981 peak to the zero-rate years and the 2022 hikes, alongside mortgage rates and Treasury bills, and show what each era meant for savers and borrowers after inflation. Our honest take is at the end.",
+ "comment": "What is the highest interest rate you have ever paid or earned, and in which year?",
+ "tags": [
+  "interest rates",
+  "federal reserve",
+  "fed funds rate",
+  "mortgage rates",
+  "paul volcker",
+  "real interest rate",
+  "savings interest",
+  "economics explained",
+  "economics in charts",
+  "data visualization"
+ ],
+ "hashtags": [
+  "InterestRates",
+  "FederalReserve",
+  "Economics",
+  "Savings"
+ ],
+ "thumbnail_text": "Are rates really high?",
+ "method": "Real rates are the three-month Treasury bill rate minus consumer price inflation over the previous twelve months. Total interest uses the standard fixed-rate loan formula on a $200,000 thirty-year loan. The scatter fits a straight line through yearly averages since 1972.",
+ "references": [
+  {
+   "source": "Federal Reserve",
+   "date": "2026-09-16",
+   "says": "FOMC statement: the Committee decided to raise the target range for the federal funds rate by 1/4 percentage point to 3-3/4 to 4 percent",
+   "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"
+  },
+  {
+   "source": "Admiral Markets",
+   "date": "2026-09-18",
+   "says": "The Fed raised rates to 3.75%-4.00% on 16 September 2026, its first increase since July 2023",
+   "url": "https://admiralmarkets.com/analytics/traders-blog/fed-raised-interest-rates"
+  },
+  {
+   "source": "Trading Economics",
+   "date": "2026-10-16",
+   "says": "The US 10-year Treasury yield edged up to 5.12%, staying below highs reached earlier in the month that were the highest since 2002",
+   "url": "https://tradingeconomics.com/united-states/government-bond-yield/news/592783"
+  }
+ ],
+ "data": {
+  "ff": {
+   "source": "fred",
+   "id": "FEDFUNDS",
+   "label": "Federal funds rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve)"
+  },
+  "tb": {
+   "source": "fred",
+   "id": "TB3MS",
+   "label": "3-month Treasury bill (%)",
+   "unit": "percent",
+   "short_source": "FRED (Federal Reserve)"
+  },
+  "mort": {
+   "source": "fred",
+   "id": "MORTGAGE30US",
+   "label": "30-year fixed mortgage rate (%)",
+   "unit": "percent",
+   "short_source": "FRED (Freddie Mac)"
+  },
+  "infl": {
+   "source": "fred",
+   "id": "CPIAUCSL",
+   "label": "Inflation (yearly change in consumer prices)",
+   "unit": "fraction",
+   "transform": "yoy",
+   "short_source": "FRED (BLS consumer price index)"
+  },
+  "fed_low": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09-16",
+     3.75
+    ]
+   ],
+   "label": "Fed target range, lower end (news)",
+   "unit": "percent",
+   "short_source": "Federal Reserve",
+   "citation": "Federal Reserve FOMC statement (16 Sep 2026): target range for the federal funds rate raised by 1/4 percentage point to 3-3/4 to 4 percent"
+  },
+  "fed_high": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-09-16",
+     4.0
+    ]
+   ],
+   "label": "Fed target range, upper end (news)",
+   "unit": "percent",
+   "short_source": "Federal Reserve",
+   "citation": "Federal Reserve FOMC statement (16 Sep 2026): target range for the federal funds rate raised by 1/4 percentage point to 3-3/4 to 4 percent"
+  },
+  "ten_news": {
+   "source": "inline",
+   "points": [
+    [
+     "2026-10-16",
+     5.12
+    ]
+   ],
+   "label": "10-year Treasury yield (news)",
+   "unit": "percent",
+   "short_source": "Trading Economics",
+   "citation": "Trading Economics (16 Oct 2026): the US 10-year Treasury yield edged up to 5.12%, below highs reached earlier in the month that were the highest since 2002"
+  }
+ },
+ "claims": [
+  {
+   "says": "The Fed raised its target range (news)",
+   "check": "latest(fed_high) > latest(fed_low)"
+  },
+  {
+   "says": "The effective Fed funds rate is inside the new range",
+   "check": "latest(fed_low) <= latest(ff) <= latest(fed_high)"
+  },
+  {
+   "says": "The Fed funds rate peaked in 1981",
+   "check": "1981 <= year_of_highest(ff, \"1954\", \"latest\") <= 1981"
+  },
+  {
+   "says": "The 1981 peak was far above today",
+   "check": "highest(ff, \"1954\", \"latest\") > 4 * latest(ff)"
+  },
+  {
+   "says": "The Fed held rates near zero after the 2008 crisis",
+   "check": "highest(ff, \"2009-01\", \"2015-11\") < 0.25"
+  },
+  {
+   "says": "Rates were near zero again early in 2022",
+   "check": "value(ff, \"2022-02\") < 0.25"
+  },
+  {
+   "says": "The Fed raised rates fast from 2022 to 2023",
+   "check": "highest(ff, \"2023\", \"2023\") > 5"
+  },
+  {
+   "says": "The Fed funds rate in 1954 was low",
+   "check": "first(ff, \"1954\", \"1955\") < 2"
+  },
+  {
+   "says": "The T-bill rate tracks the Fed funds rate closely",
+   "check": "correlation(ff, tb, \"1954\", \"latest\") > 0.95"
+  },
+  {
+   "says": "The mortgage rate sits above the Fed funds rate today",
+   "check": "latest(mort) > latest(ff) + 2"
+  },
+  {
+   "says": "Mortgage rates moved with the Fed rate",
+   "check": "correlation(ff, mort, \"1972\", \"latest\") > 0.8"
+  },
+  {
+   "says": "But less than one for one",
+   "check": "slope(ff, mort, \"1972\", \"latest\") < 1"
+  },
+  {
+   "says": "But less than one for one (still positive)",
+   "check": "slope(ff, mort, \"1972\", \"latest\") > 0.4"
+  },
+  {
+   "says": "Mortgage rates hit a record low in 2021",
+   "check": "2021 <= year_of_lowest(mort, \"1971\", \"latest\") <= 2021"
+  },
+  {
+   "says": "Mortgage rates peaked in 1981",
+   "check": "1981 <= year_of_highest(mort, \"1971\", \"latest\") <= 1981"
+  },
+  {
+   "says": "In 1981 savers beat inflation",
+   "check": "(value(tb, \"1981-06\") / 100 - value(infl, \"1981-06\")) > 0.03"
+  },
+  {
+   "says": "In 2012 savers lost to inflation",
+   "check": "(value(tb, \"2012-06\") / 100 - value(infl, \"2012-06\")) < 0"
+  },
+  {
+   "says": "In mid-2022 savers lost a lot to inflation",
+   "check": "(value(tb, \"2022-06\") / 100 - value(infl, \"2022-06\")) < -0.06"
+  },
+  {
+   "says": "In mid-2022 the real loss was the deepest of the bars",
+   "check": "(value(tb, \"2022-06\") / 100 - value(infl, \"2022-06\")) < (value(tb, \"2012-06\") / 100 - value(infl, \"2012-06\"))"
+  },
+  {
+   "says": "Today savers barely beat inflation",
+   "check": "latest(tb) / 100 - latest(infl) > -0.01"
+  },
+  {
+   "says": "Today savers barely beat inflation (upper)",
+   "check": "latest(tb) / 100 - latest(infl) < 0.015"
+  },
+  {
+   "says": "Interest on savings in 2021 was tiny",
+   "check": "10000 * value(tb, \"2021-06\") / 100 < 10"
+  },
+  {
+   "says": "Total interest at the 1981 peak is more than four times the loan",
+   "check": "(payment(200000, highest(mort, \"1971\", \"latest\"), 30) * 360 - 200000) > 4 * 200000"
+  },
+  {
+   "says": "At the 2021 low, total interest was less than half the loan",
+   "check": "(payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000) < 0.5 * 200000"
+  },
+  {
+   "says": "Today, total interest is more than the loan itself",
+   "check": "(payment(200000, latest(mort), 30) * 360 - 200000) > 200000"
+  },
+  {
+   "says": "Today's interest is about three times the 2021 cost",
+   "check": "(payment(200000, latest(mort), 30) * 360 - 200000) > 3 * (payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000)"
+  },
+  {
+   "says": "The Fed rate in the 1990s and 2000s was mostly between those extremes",
+   "check": "highest(ff, \"1992\", \"2007\") < 7"
+  },
+  {
+   "says": "Today's rates are about the middle of history",
+   "check": "latest(ff) < highest(ff, \"1954\", \"latest\") / 4"
+  },
+  {
+   "says": "The 10-year yield is above the Fed rate (news)",
+   "check": "latest(ten_news) > latest(fed_high)"
+  },
+  {
+   "says": "In 1975 savers lost to inflation",
+   "check": "(value(tb, \"1975-06\") / 100 - value(infl, \"1975-06\")) < -0.02"
+  },
+  {
+   "says": "Inflation peaked above ten percent around 1980",
+   "check": "highest(infl, \"1979\", \"1981\") > 0.1"
+  },
+  {
+   "says": "Mortgage rates were under three percent at the 2021 low",
+   "check": "lowest(mort, \"2021\", \"2021\") < 3"
+  },
+  {
+   "says": "The Fed rate in 2000 was higher than today",
+   "check": "value(ff, \"2000-06\") > latest(ff)"
+  },
+  {
+   "says": "The 2012 real rate was negative through the 2010s",
+   "check": "(value(tb, \"2015-06\") / 100 - value(infl, \"2015-06\")) < 0"
+  },
+  {
+   "says": "The Fed cut by a full point from August 2024 to January 2025",
+   "check": "value(ff, \"2024-08\") - value(ff, \"2025-01\") > 0.95"
+  },
+  {
+   "says": "Yet mortgage rates rose",
+   "check": "highest(mort, \"2025-01\", \"2025-01\") > lowest(mort, \"2024-09\", \"2024-09\") + 0.7"
+  },
+  {
+   "says": "Savers beat inflation through the 1980s",
+   "check": "(value(tb, \"1985-06\") / 100 - value(infl, \"1985-06\")) > 0.02"
+  },
+  {
+   "says": "Savers beat inflation through the 1980s (late)",
+   "check": "(value(tb, \"1989-06\") / 100 - value(infl, \"1989-06\")) > 0.02"
+  },
+  {
+   "says": "Today's real rate on bills is positive",
+   "check": "latest(tb) / 100 - latest(infl) > 0"
+  },
+  {
+   "says": "Inflation is above the Fed's two percent goal",
+   "check": "latest(infl) > 0.025"
+  }
+ ],
+ "scenes": [
+  {
+   "narration": "On the sixteenth of September, the Federal Reserve raised its key interest rate by a quarter of a percentage point, its first increase since July 2023. The new range tops out at {{ latest(fed_high) | num }} percent. And by the middle of October, the yield on the ten-year government bond stood at {{ latest(ten_news) | num }} percent, just below highs not seen since 2002.",
+   "chart": {
+    "type": "headlines",
+    "chapter": "What just happened",
+    "headlines": [
+     {
+      "source": "Federal Reserve",
+      "date": "2026-09-16",
+      "text": "Federal Reserve issues FOMC statement"
+     },
+     {
+      "source": "Admiral Markets",
+      "date": "2026-09-18",
+      "text": "Fed Raised Interest Rates to 3.75%-4.00%: What It Means for Markets"
+     },
+     {
+      "source": "Trading Economics",
+      "date": "2026-10-16",
+      "text": "US Treasury Yields Tick Higher, but Post Weekly Decline"
+     }
+    ],
+    "photo": [
+     {
+      "query": "Marriner S. Eccles Federal Reserve Board Building"
+     },
+     {
+      "query": "Federal Reserve building Washington"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "The reason is inflation. Consumer prices were up {{ latest(infl) | pct1 }} on a year earlier in the latest data, well above the Fed's goal of two percent. So the Fed is pushing borrowing costs up again. A higher rate makes loans more expensive, which slows spending, which in time is meant to slow price rises. It is a blunt tool, and economists reckon it takes a year or more to work its way through the economy.",
+   "chart": {
+    "type": "card",
+    "title": "Rates are going up again",
+    "label": "WHAT JUST HAPPENED",
+    "photo": [
+     {
+      "query": "Marriner S. Eccles Federal Reserve Board Building"
+     },
+     {
+      "query": "Federal Reserve building Washington"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "For most people, an interest rate is two things. It is what the bank pays you on your savings, and it is what you pay the bank on a loan. So when people hear that rates are rising, they ask: is this high? Is it unusual? Who wins and who loses? Today we look at seventy years of American interest rates, from the Fed's own rate to mortgages, and see what each era meant for savers and borrowers.",
+   "chart": {
+    "type": "card",
+    "title": "Are today's interest rates high or low?",
+    "label": "RATES, IN NUMBERS",
+    "chapter": "The question",
+    "photo": [
+     {
+      "query": "bank branch interior",
+      "after": 2010
+     },
+     {
+      "query": "bank building United States",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Start with the federal funds rate. That is the rate banks charge each other for overnight loans, and it is the rate the Fed steers. Almost every other rate in the economy takes its cue from it. In 1954, it was only {{ first(ff, \"1954\", \"1955\") | num }} percent. Through the 1960s and 1970s, as inflation rose, so did the rate, but often too little and too late. By 1980, consumer prices were rising {{ highest(infl, \"1979\", \"1981\") | pct1 }} a year. Then came the most famous moment on this chart. In 1981, under chairman Paul Volcker, the Fed pushed its rate to {{ highest(ff, \"1954\", \"latest\") / 100 | pct1 }} to break double-digit inflation. It worked, but at the cost of a deep recession.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "ff"
+    ],
+    "from": "1954-07",
+    "y_format": "num",
+    "title": "The Federal Reserve's interest rate",
+    "subtitle": "Effective federal funds rate, percent per year",
+    "chapter": "Seventy years of rates",
+    "annotations": [
+     {
+      "date": "1981-06",
+      "text": "Volcker's peak"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Paul Volcker, chairman of the Federal Reserve from 1979 to 1987, is still the benchmark for how far a central bank will go to stop inflation.",
+   "chart": {
+    "type": "photo",
+    "query": "Paul Volcker",
+    "caption": "Paul Volcker, Fed chairman 1979 to 1987"
+   }
+  },
+  {
+   "narration": "After the Volcker years, rates fell, cycle after cycle, for almost thirty years. Here are the last two decades up close. After the financial crisis of 2008, the Fed cut to almost zero and kept it there for seven years. The idea was to make borrowing so cheap that families and companies would spend and invest, and help the economy recover. It went back to zero in the pandemic. Then, in March 2022, with inflation surging, it began one of its fastest rounds of increases ever, to {{ highest(ff, \"2023\", \"2023\") | num }} percent in 2023. Today the rate is {{ latest(ff) | num }} percent.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "ff"
+    ],
+    "from": "2005-01",
+    "y_format": "num",
+    "title": "From zero to the fastest hikes in decades",
+    "subtitle": "Effective federal funds rate, percent per year",
+    "annotations": [
+     {
+      "date": "2009-06",
+      "text": "Zero after 2008"
+     },
+     {
+      "date": "2022-03",
+      "text": "Hikes begin"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "The Fed's rate is not the one you see at the bank, though. Here it is with two others since 1971. The three-month Treasury bill is a short loan to the government, and it is close to what a safe savings account or money market can pay. It follows the Fed's rate almost exactly. Measured on a scale where one hundred is a perfect match, the correlation between the two is {{ correlation(ff, tb, \"1954\", \"latest\") * 100 | num }}. The thirty-year mortgage rate is different. It sits higher, because the lender ties up money for decades and takes the risk that inflation eats the repayments. Today the mortgage rate is {{ latest(mort) | num }} percent, while the bill pays {{ latest(tb) | num }} percent. The mortgage rate hit its record high of {{ highest(mort, \"1971\", \"latest\") / 100 | pct1 }} in 1981, and its record low of {{ lowest(mort, \"1971\", \"latest\") | num }} percent in 2021.",
+   "chart": {
+    "type": "line",
+    "series": [
+     "ff",
+     "tb",
+     "mort"
+    ],
+    "from": "1971-04",
+    "y_format": "num",
+    "labels": {
+     "ff": "Fed funds rate",
+     "tb": "3-month Treasury bill",
+     "mort": "30-year mortgage"
+    },
+    "title": "Three interest rates since 1971",
+    "subtitle": "Percent per year",
+    "chapter": "Savings and loans",
+    "annotations": [
+     {
+      "date": "2021-01",
+      "series": "mort",
+      "text": "Record low"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So how tightly is the mortgage rate tied to the Fed? Here is a simple model. Each dot is one year since 1972: the Fed's rate across the bottom, the mortgage rate up the side. They clearly moved together, with a correlation of {{ correlation(ff, mort, \"1972\", \"latest\") | num }}. But look at the slope. On average, when the Fed's rate was one point higher, the mortgage rate was only about {{ slope(ff, mort, \"1972\", \"latest\") | num }} of a point higher. That is because mortgage rates follow long-term bond yields, which depend on what investors expect over many years, not just on the Fed's rate today. It is why mortgage rates can rise even when the Fed is cutting. That happened in late 2024. The Fed cut its rate by a full point between August and January, from {{ value(ff, \"2024-08\") | num }} to {{ value(ff, \"2025-01\") | num }} percent, yet the mortgage rate climbed from {{ lowest(mort, \"2024-09\", \"2024-09\") | num }} percent in September to {{ highest(mort, \"2025-01\", \"2025-01\") | num }} percent in January, as long-term bond yields rose. It is also why the ten-year bond yield in the news matters as much to home buyers as the Fed's decision.",
+   "chart": {
+    "type": "scatter",
+    "x": "ff",
+    "y": "mort",
+    "from": "1972",
+    "fit": "linear",
+    "x_format": "num",
+    "y_format": "num",
+    "x_label": "Fed funds rate, percent",
+    "y_label": "30-year mortgage rate, percent",
+    "title": "The Fed's rate and mortgage rates",
+    "subtitle": "Yearly averages since 1972, with a fitted straight line",
+    "chapter": "The model"
+   }
+  },
+  {
+   "narration": "Now let's ask who won and who lost in each era, starting with savers.",
+   "chart": {
+    "type": "photo",
+    "query": "piggy bank coins",
+    "caption": "Savers: what does cash earn?"
+   }
+  },
+  {
+   "narration": "Imagine {{ 10000 | usd }} sitting in three-month Treasury bills for a year. At the peak in 1981, that would have earned about {{ 10000 * highest(tb, \"1981\", \"1981\") / 100 | usd }} in interest. In the middle of 2007, about {{ 10000 * value(tb, \"2007-06\") / 100 | usd }}. In the middle of 2021, after years of zero rates, it earned about {{ 10000 * value(tb, \"2021-06\") / 100 | usd }}, barely enough for a coffee. Today it earns about {{ 10000 * latest(tb) / 100 | usd }}. For anyone living on savings, such as retirees, the decade of zero rates was a long drought. For a government or a company with big debts, it was the opposite: a decade of almost free money.",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "A year's interest on savings",
+    "subtitle": "Interest earned in one year in three-month Treasury bills, at that month's rate",
+    "bars": [
+     {
+      "label": "Peak 1981",
+      "value": "10000 * highest(tb, \"1981\", \"1981\") / 100"
+     },
+     {
+      "label": "Mid-2007",
+      "value": "10000 * value(tb, \"2007-06\") / 100"
+     },
+     {
+      "label": "Mid-2021",
+      "value": "10000 * value(tb, \"2021-06\") / 100"
+     },
+     {
+      "label": "Latest",
+      "value": "10000 * latest(tb) / 100"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "But interest is only half the story, because inflation eats savings too. What matters is the real rate: the interest rate minus inflation. In the middle of 1975, savers lost {{ -(value(tb, \"1975-06\") / 100 - value(infl, \"1975-06\")) | pct1 }} a year, because inflation ran far ahead of interest. By the middle of 1981, the bill paid more than inflation, a real rate of {{ (value(tb, \"1981-06\") / 100 - value(infl, \"1981-06\")) | pct1 }} a year. In the middle of 2012, savers lost {{ -((value(tb, \"2012-06\") / 100 - value(infl, \"2012-06\"))) | pct1 }} a year after inflation. And in the middle of 2022, cash lost {{ -((value(tb, \"2022-06\") / 100 - value(infl, \"2022-06\"))) | pct1 }} of its buying power in a single year, the worst on this chart. Today the real rate is {{ latest(tb) / 100 - latest(infl) | pct1 }}, roughly breaking even.",
+   "chart": {
+    "type": "bars",
+    "y_format": "pct",
+    "title": "What savings earned after inflation",
+    "subtitle": "Three-month Treasury bill rate minus inflation over the past year",
+    "chapter": "After inflation",
+    "bars": [
+     {
+      "label": "Mid-1975",
+      "value": "(value(tb, \"1975-06\") / 100 - value(infl, \"1975-06\"))"
+     },
+     {
+      "label": "Mid-1981",
+      "value": "(value(tb, \"1981-06\") / 100 - value(infl, \"1981-06\"))"
+     },
+     {
+      "label": "Mid-2012",
+      "value": "(value(tb, \"2012-06\") / 100 - value(infl, \"2012-06\"))"
+     },
+     {
+      "label": "Mid-2022",
+      "value": "(value(tb, \"2022-06\") / 100 - value(infl, \"2022-06\"))"
+     },
+     {
+      "label": "Latest",
+      "value": "latest(tb) / 100 - latest(infl)"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Borrowers see the mirror image. Take a mortgage of {{ 200000 | usd }} over thirty years. At the record rate of 1981, the interest alone over the life of the loan would add up to about {{ (payment(200000, highest(mort, \"1971\", \"latest\"), 30) * 360 - 200000) | usd }}, more than four times the loan itself. At the record low of 2021, it would be about {{ (payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000) | usd }}. At today's rate, about {{ (payment(200000, latest(mort), 30) * 360 - 200000) | usd }}, more than the loan itself and over three times the cost of 2021. At a high rate, the early payments go almost entirely to interest, so the balance shrinks slowly and keeps costing interest for decades. Few people kept a mortgage from 1981 at that rate, because they refinanced when rates fell.",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "Total interest on a thirty-year loan",
+    "subtitle": "Interest paid over the whole loan on a fixed-rate mortgage, at each rate",
+    "chapter": "Borrowers",
+    "bars": [
+     {
+      "label": "Record high, 1981",
+      "value": "(payment(200000, highest(mort, \"1971\", \"latest\"), 30) * 360 - 200000)"
+     },
+     {
+      "label": "Record low, 2021",
+      "value": "(payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000)"
+     },
+     {
+      "label": "Latest",
+      "value": "(payment(200000, latest(mort), 30) * 360 - 200000)"
+     }
+    ]
+   }
+  },
+  {
+   "narration": "So, are today's interest rates high? Compared with the years since the 2008 crisis, yes. Anyone who got used to near-zero rates, or bought a home with a mortgage under three percent, is feeling the change. In the year 2000 the Fed's rate was {{ value(ff, \"2000-06\") | num }} percent, higher than today. Compared with the whole of history, no. The Fed's rate of {{ latest(ff) | num }} percent is closer to the middle of the range, far below the peak of 1981. The real story is the real rate. In the 1980s, savers earned well above inflation, year after year. In the 2010s, borrowers were the winners, and savers quietly lost money. Today, after inflation, cash roughly breaks even. Today's high rates are not especially generous to savers; they mostly just keep pace with prices. And borrowing is expensive mainly compared with the cheap years just before it.",
+   "chart": {
+    "type": "card",
+    "title": "High for recent memory, normal for history",
+    "label": "THE ANSWER",
+    "chapter": "The answer",
+    "photo": [
+     {
+      "query": "Wall Street sign New York",
+      "after": 2010
+     },
+     {
+      "query": "bank building United States",
+      "after": 2010
+     }
+    ]
+   }
+  },
+  {
+   "narration": "Here is my take. The decade of zero rates was the unusual part of this history, not today. Plans built on cheap money, whether a mortgage, a business loan or a government budget, were built on an exception. I would not assume rates go back to zero any time soon, though nobody can forecast them well, including the Fed itself. It also means today's savers, for the first time in years, are at least not losing ground to inflation, which is a quiet but real change. What would change my mind? Inflation falling back towards two percent and staying there, which would give the Fed room to cut. This is how I read the data, not a recommendation for your own savings or loans.",
+   "chart": {
+    "type": "card",
+    "title": "Zero rates were the exception",
+    "label": "MY TAKE",
+    "chapter": "My take",
+    "photo": [
+     {
+      "query": "Marriner S. Eccles Federal Reserve Board Building"
+     },
+     {
+      "query": "calculator bills household budget",
+      "after": 2010
+     }
+    ]
+   }
+  }
+ ],
+ "short": {
+  "title": "The year the Fed pushed interest rates to a record",
+  "scenes": [
+   4
+  ]
+ },
+ "shorts": [
+  {
+   "title": "From zero rates to the fastest hikes in decades",
+   "scenes": [
+    6
+   ]
+  },
+  {
+   "title": "Savers lost money even when banks paid interest",
+   "scenes": [
+    11
+   ]
+  },
+  {
+   "title": "The same mortgage, three very different price tags",
+   "scenes": [
+    12
+   ]
+  },
+  {
+   "title": "What a year of savings interest earned, then and now",
+   "scenes": [
+    10
+   ]
+  }
+ ]
+}
