@@ -1,0 +1,120 @@
+name: Daily Short
+
+# Posts one Short a day, cut from a video that is already up (newest video first), linking back to it.
+# A day when a video went up with its own Short is skipped. Like Publish, the schedule only runs once
+# the repository variable AUTOPUBLISH is "true"; run it by hand with "upload" unticked for a test render.
+on:
+  schedule:
+    - cron: "0 17 * * *"   # 17:00 UTC, after the 14:00 publish run
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload to YouTube (untick for a test render you can download)
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish   # never at the same time as a video upload, so their records don't clash
+  cancel-in-progress: false
+
+jobs:
+  short:
+    if: github.event_name != 'schedule' || vars.AUTOPUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONUNBUFFERED: "1"
+      RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
+      CHANNEL: money-charts
+      UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af > /dev/null || true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core r-base-core r-cran-ggplot2 r-cran-jsonlite r-cran-scales
+
+      - name: Cache voice model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-chatterbox-0.1.7
+
+      - name: Restore narration cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ env.CHANNEL }}-${{ github.run_id }}
+          restore-keys: narration-${{ env.CHANNEL }}-
+
+      - name: Install Python packages
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-voice.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install the voice restoration model
+        continue-on-error: true
+        run: |
+          python -m venv /tmp/re
+          /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Make and post the Short
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
+          YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ "$UPLOAD" = "true" ]; then
+            python -m yta short --channel "$CHANNEL" --voice chatterbox 2>&1 | tee run.log
+          else
+            python -m yta short --channel "$CHANNEL" --voice chatterbox --no-upload --force 2>&1 | tee run.log
+          fi
+
+      - name: Report the error
+        if: failure()
+        shell: bash
+        run: |
+          msg=$(tail -c 3500 run.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
+          echo "::error title=Daily Short failed::${msg}"
+
+      - name: Save narration cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/voice
+          key: narration-${{ env.CHANNEL }}-${{ github.run_id }}
+
+      - name: Keep the Short
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: short
+          path: out/**/short-*/video.mp4
+          retention-days: 7
+
+      - name: Record what was posted
+        if: env.UPLOAD == 'true'
+        run: |
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add channels
+          if ! git diff --cached --quiet; then
+            git commit -m "Short ${CHANNEL} $(date -u +%F)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi

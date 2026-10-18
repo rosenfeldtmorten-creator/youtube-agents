@@ -312,6 +312,37 @@ def test_short_field_is_checked(tmp_path):
         load_episode(path)
 
 
+
+def test_daily_short_candidates(tmp_path):
+    from yta.shorts import candidates, tidy_opening
+
+    data = json.loads(SAMPLE.read_text())
+    charts = [i for i, sc in enumerate(data["scenes"], 1) if sc["chart"]["type"] in ("line", "bars", "growth")]
+    data["short"] = {"title": "The launch Short", "scenes": [charts[0]]}
+    data["shorts"] = [{"title": "Two charts together", "scenes": charts[:2]}]
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    ep = load_episode(path)
+    picks = candidates(ep)
+    assert picks[0]["scenes"] == charts[:2]                      # the script's own picks come first
+    assert [charts[0]] not in [p["scenes"] for p in picks]      # the launch Short isn't repeated
+    assert all(p["scenes"] == [i] for p, i in zip(picks[1:], charts[1:]))
+    assert tidy_opening(["But look at this.", "Then that."]) == ["Look at this.", "Then that."]
+
+
+def test_one_short_a_day(tmp_path):
+    import datetime as dt
+
+    from yta.cli import shorts_today
+
+    (tmp_path / "published").mkdir()
+    today = dt.date.today().isoformat()
+    item = tmp_path / "published" / "a.json"
+    item.write_text(json.dumps({"_published": {"date": "2026-01-01", "short_url": "x"}}))
+    assert not shorts_today(tmp_path)
+    item.write_text(json.dumps({"_published": {"date": "2026-01-01", "shorts": [{"date": today, "scenes": [2]}]}}))
+    assert shorts_today(tmp_path)
+
 def test_headlines_montage(tmp_path):
     from PIL import Image
 

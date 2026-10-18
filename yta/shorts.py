@@ -1,6 +1,7 @@
 """YouTube Shorts cut from an episode: one or two scenes, vertical, with big captions and a pointer to the full video."""
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,9 @@ W, H = 1080, 1920
 BG = (14, 23, 38)
 MAX_SECONDS = 58
 OUTRO = "The full story, with all the charts, is on the channel."
+CHARTS = ("line", "bars", "growth", "scatter")
+MAX_WORDS = 115  # about 45 seconds of narration, leaving room for the outro
+LEADING = re.compile(r"^(but|and|so|now|still|yet|instead)\b[,\s]*", re.I)
 
 
 def _frame(chart_img: Image.Image | None, headline: str, caption: str, accent: str, label: str, path: Path) -> Path:
@@ -44,6 +48,8 @@ def render_short(ep, short: dict, cfg: dict, narrator, out_dir: Path, cache_dir:
     n = 0
     for k, scene in enumerate(picked, 1):
         sentences = split_sentences(scene.filled or scene.narration)
+        if k == 1:
+            sentences = tidy_opening(sentences)
         clips = [narrator.say(s) for s in sentences]
         durations = [len(c) / audio.SR + r["sentence_pause"] for c in clips]
         for c in clips:
@@ -78,6 +84,30 @@ def render_short(ep, short: dict, cfg: dict, narrator, out_dir: Path, cache_dir:
     tune = music.fetch(music.pick(ep.slug, ep.raw.get("music")), cache_dir / "music") if r.get("music", True) else None
     video, seconds = mux(frames, track, out_dir, r["fps"], music=tune)
     return video, seconds
+
+
+def candidates(ep) -> list[dict]:
+    """Every Short an episode can give: the ones the script lists in "shorts", then one per chart scene
+    whose narration fits in under a minute. The launch Short ("short") is left out, as it went up with the video."""
+    launch = (ep.raw.get("short") or {}).get("scenes")
+    picks = [dict(s) for s in ep.raw.get("shorts", [])]
+    taken = {tuple(s["scenes"]) for s in picks} | ({tuple(launch)} if launch else set())
+    for i, scene in enumerate(ep.scenes, 1):
+        if scene.chart["type"] not in CHARTS or (i,) in taken:
+            continue
+        if len((scene.filled or scene.narration).split()) > MAX_WORDS:
+            continue
+        title = scene.chart.get("title_filled") or scene.chart.get("title") or ep.title
+        picks.append({"title": title, "scenes": [i]})
+    return [s for s in picks if tuple(s["scenes"]) != tuple(launch or ())]
+
+
+def tidy_opening(sentences: list[str]) -> list[str]:
+    """A scene lifted out of a video can start mid-thought ("But look at..."); drop the joining word."""
+    if sentences and LEADING.match(sentences[0]):
+        rest = LEADING.sub("", sentences[0], count=1)
+        sentences = [rest[:1].upper() + rest[1:], *sentences[1:]]
+    return sentences
 
 
 def short_description(ep, video_id: str) -> str:

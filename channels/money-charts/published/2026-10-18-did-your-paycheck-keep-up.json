@@ -358,6 +358,38 @@
       11
     ]
   },
+  "shorts": [
+    {
+      "title": "How many hours of work buy a new home?",
+      "scenes": [
+        12
+      ]
+    },
+    {
+      "title": "Did pay keep up with prices?",
+      "scenes": [
+        8
+      ]
+    },
+    {
+      "title": "Are you better off than in 2000?",
+      "scenes": [
+        9
+      ]
+    },
+    {
+      "title": "The post-pandemic price jump in one chart",
+      "scenes": [
+        7
+      ]
+    },
+    {
+      "title": "What the price index really measures",
+      "scenes": [
+        5
+      ]
+    }
+  ],
   "_published": {
     "date": "2026-10-18",
     "video_id": "N8gzK-1BAA0",
