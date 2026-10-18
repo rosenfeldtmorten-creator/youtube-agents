@@ -143,12 +143,14 @@ def load_episode(path: Path) -> Episode:
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(ref["date"])):
             raise StoryError(f"{path.name}: reference date '{ref['date']}' must look like 2026-10-16")
 
-    short = data.get("short")
-    if short is not None:
+    extra = data.get("shorts", [])
+    if not isinstance(extra, list):
+        raise StoryError(f"{path.name}: 'shorts' must be a list like 'short'")
+    for short in ([data["short"]] if data.get("short") is not None else []) + extra:
         picks = short.get("scenes") if isinstance(short, dict) else None
         if not (isinstance(short, dict) and 5 <= len(str(short.get("title", ""))) <= 90 and picks
                 and all(isinstance(k, int) and 1 <= k <= len(data["scenes"]) for k in picks)):
-            raise StoryError(f"{path.name}: 'short' needs a 'title' (5-90 characters) and 'scenes' (scene numbers from 1)")
+            raise StoryError(f"{path.name}: 'short' and each of 'shorts' need a 'title' (5-90 characters) and 'scenes' (scene numbers from 1)")
         if any((data["scenes"][k - 1].get("chart") or {}).get("type") == "photo" for k in picks):
             raise StoryError(f"{path.name}: a Short can't use photo scenes")
 

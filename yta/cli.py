@@ -119,7 +119,6 @@ def cmd_run(args) -> int:
         print(f"Nothing to do: {why}.")
         return 0
 
-    wanted, done_episodes = getattr(args, "episodes", 1) or 1, 0
     for item in queue_items(channel_dir):
         try:
             obj = fmt.load(item)
@@ -233,6 +232,83 @@ def cmd_narrate(args) -> int:
     return 0
 
 
+def shorts_today(channel_dir: Path) -> bool:
+    """True if a Short already went up today, with a video or on its own."""
+    today = dt.date.today().isoformat()
+    for p in (channel_dir / "published").glob("*.json"):
+        meta = json.loads(p.read_text(encoding="utf-8")).get("_published", {})
+        if meta.get("date") == today and meta.get("short_url"):
+            return True
+        if any(s.get("date") == today for s in meta.get("shorts", [])):
+            return True
+    return False
+
+
+def cmd_short(args) -> int:
+    """Post one Short a day, cut from a video that is already up (newest video first), and record it."""
+    channel_dir, cfg = load_channel(args.channel)
+    if cfg["format"] != "episode":
+        print("Daily Shorts are only made for finance episodes.")
+        return 0
+    if shorts_today(channel_dir) and not args.force:
+        print("Nothing to do: a Short already went up today.")
+        return 0
+    from .shorts import candidates, render_short, short_description, split_sentences, tidy_opening
+
+    fmt = FORMATS[cfg["format"]]
+    narrator = get_narrator(cfg, args.voice, test=args.no_upload)
+    for path in sorted((channel_dir / "published").glob("*.json"), reverse=True):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        meta = data.get("_published", {})
+        done = {tuple(s["scenes"]) for s in meta.get("shorts", [])}
+        try:
+            ep = fmt.load(path)
+            ep.load_data(ROOT / ".cache" / "data")
+        except Exception as exc:  # e.g. a claim the newest data no longer supports
+            print(f"Skipping {path.name}: {exc}")
+            continue
+        for pick in candidates(ep):
+            if tuple(pick["scenes"]) in done:
+                continue
+            sentences = []
+            for k, i in enumerate(pick["scenes"], 1):
+                scene = ep.scenes[i - 1]
+                said = split_sentences(scene.filled or scene.narration)
+                sentences += tidy_opening(said) if k == 1 else said
+            if narrator.enhance:  # restore any sentence the long video didn't already need
+                for sentence in sentences:
+                    narrator.say(sentence)
+                try:
+                    narrator.enhance_cached(sentences)
+                except Exception as exc:
+                    print(f"::warning title=Voice restoration skipped::{exc}")
+            out_dir = ROOT / "out" / channel_dir.name / ep.slug / f"short-{'-'.join(map(str, pick['scenes']))}"
+            try:
+                video, seconds = render_short(ep, pick, cfg, narrator, out_dir, ROOT / ".cache")
+            except ValueError as exc:  # too long for a Short; try the next scene
+                print(f"Skipping scenes {pick['scenes']} of {ep.slug}: {exc}")
+                continue
+            print(f"Rendered Short '{pick['title']}' from {ep.slug} ({seconds:.0f} s)")
+            if args.no_upload:
+                print("Test render only: nothing uploaded.")
+                return 0
+            from . import upload
+
+            yt = cfg["youtube"]
+            client = upload.youtube_client(yt["refresh_token_secret"])
+            short_id = upload.upload_video(client, video, f"{pick['title']} #Shorts",
+                                           short_description(ep, meta["video_id"]), ep.tags, yt)
+            url = f"https://youtube.com/shorts/{short_id}"
+            meta.setdefault("shorts", []).append({"date": dt.date.today().isoformat(), "scenes": pick["scenes"],
+                                                  "title": pick["title"], "url": url})
+            data["_published"] = meta
+            path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+            print(f"::notice title=Short uploaded::{pick['title']} {url}")
+            return 0
+    print("::warning title=No Short left::every published video has used up its Shorts; add \"shorts\" to an episode")
+    return 0
+
+
 def cmd_snapshot(args) -> int:
     """Refresh data/snapshot with every series listed in data/series.json or used by any episode."""
     from .data import refresh_snapshot
@@ -253,12 +329,12 @@ def cmd_snapshot(args) -> int:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="yta", description="YouTube channel agents")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("check", "run", "render", "narrate"):
+    for name in ("check", "run", "render", "narrate", "short"):
         sp = sub.add_parser(name)
         sp.add_argument("--channel", required=True)
         if name != "check":
             sp.add_argument("--voice", choices=["chatterbox", "espeak", "silent"], help="override the channel's voice backend")
-        if name == "run":
+        if name in ("run", "short"):
             sp.add_argument("--no-upload", action="store_true", help="render only; leave the queue as it is")
             sp.add_argument("--force", action="store_true", help="ignore the pacing rules (for tests)")
         if name == "render":
@@ -268,4 +344,4 @@ def main(argv=None) -> int:
     sub.add_parser("snapshot")
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
-            "narrate": cmd_narrate}[args.cmd](args)
+            "narrate": cmd_narrate, "short": cmd_short}[args.cmd](args)

@@ -200,6 +200,44 @@
       }
     }
   ],
+  "shorts": [
+    {
+      "title": "The minimum wage peaked in 1968",
+      "scenes": [
+        4
+      ]
+    },
+    {
+      "title": "Today's minimum wage buys about half as much",
+      "scenes": [
+        5
+      ]
+    },
+    {
+      "title": "The minimum wage has been sliding for decades",
+      "scenes": [
+        7
+      ]
+    },
+    {
+      "title": "The minimum wage vs the average paycheck",
+      "scenes": [
+        6
+      ]
+    },
+    {
+      "title": "What a 1968 dollar is worth today",
+      "scenes": [
+        3
+      ]
+    },
+    {
+      "title": "Why the minimum wage looks like a staircase",
+      "scenes": [
+        2
+      ]
+    }
+  ],
   "_published": {
     "date": "2026-10-17",
     "video_id": "3nA_6_qachA",

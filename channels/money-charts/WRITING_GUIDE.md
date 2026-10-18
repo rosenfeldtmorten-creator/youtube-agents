@@ -103,3 +103,10 @@ Every chart has a short `title` (no typed numbers) and may have a `subtitle` exp
 ## Fields
 
 `slug`, `title` (at most 100 characters, a question or a clear promise, no placeholders), `description` (2 short paragraphs: what happened and what the video answers), `tags` (8-10), `hashtags`, `method`, `references`, `thumbnail_text` (at most 5 words), `data`, `claims`, `scenes` (each `narration` + `chart`).
+
+## Shorts
+
+The channel posts one Short a day, cut from videos that are already up, so each episode should give four or five.
+- `short` (`{"title", "scenes"}`) goes up with the video on its launch day. Pick the most surprising chart.
+- `shorts` is a list of the same shape for the following days, best first. Give three or four, each one chart scene that makes sense on its own (under about 115 words of narration; a leading "But" or "And" is dropped automatically). Titles are hooks of at most 90 characters, a question or a surprise, with no typed numbers ("Today's minimum wage buys about half as much").
+- Chart scenes not listed are used last, titled with the chart's own title.
