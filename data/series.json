@@ -278,5 +278,25 @@
   "median_home_existing": {
     "source": "fred",
     "id": "MSPUS"
+  },
+  "nasdaq": {
+    "source": "fred",
+    "id": "NASDAQCOM"
+  },
+  "treasury_3m": {
+    "source": "fred",
+    "id": "TB3MS"
+  },
+  "prime_rate": {
+    "source": "fred",
+    "id": "MPRIME"
+  },
+  "treasury_10y_monthly": {
+    "source": "fred",
+    "id": "GS10"
+  },
+  "sp500_daily": {
+    "source": "fred",
+    "id": "SP500"
   }
 }
