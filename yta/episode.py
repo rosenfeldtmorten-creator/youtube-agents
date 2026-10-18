@@ -143,6 +143,8 @@ def load_episode(path: Path) -> Episode:
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(ref["date"])):
             raise StoryError(f"{path.name}: reference date '{ref['date']}' must look like 2026-10-16")
 
+    if "comment" in data and not (isinstance(data["comment"], str) and 10 <= len(data["comment"]) <= 300):
+        raise StoryError(f"{path.name}: 'comment' must be a question for viewers of 10-300 characters")
     extra = data.get("shorts", [])
     if not isinstance(extra, list):
         raise StoryError(f"{path.name}: 'shorts' must be a list like 'short'")

@@ -382,3 +382,59 @@ def test_narrator_prefers_restored_copy(tmp_path):
     out = n.say("one two three four")
     assert len(out) == audio.SR and abs(float(out.mean()) - 0.1) < 1e-3
     assert len(plain) > 0
+
+
+def test_engagement_after_upload():
+    from yta import upload
+
+    calls = []
+
+    class Call:
+        def __init__(self, name, kw):
+            self.name, self.kw = name, kw
+
+        def execute(self):
+            calls.append((self.name, self.kw))
+            if self.name == "playlists.list":
+                return {"items": [{"id": "PL1", "snippet": {"title": "All episodes"}}]}
+            return {"id": "new"}
+
+    class Res:
+        def __init__(self, name):
+            self.name = name
+
+        def __getattr__(self, verb):
+            return lambda **kw: Call(f"{self.name}.{verb}", kw)
+
+    class Client:
+        def __getattr__(self, name):
+            return lambda: Res(name)
+
+    cfg = {"engagement": {"playlist": "All episodes", "shorts_playlist": "Shorts", "default_comment": "Which chart surprised you?"}}
+    upload.engage(Client(), "vid", cfg, "What year were you born?")
+    names = [n for n, _ in calls]
+    assert names == ["playlists.list", "playlistItems.insert", "commentThreads.insert"]  # existing playlist reused
+    assert calls[1][1]["body"]["snippet"]["playlistId"] == "PL1"
+    assert "born" in calls[2][1]["body"]["snippet"]["topLevelComment"]["snippet"]["textOriginal"]
+    calls.clear()
+    upload.engage(Client(), "short", cfg, short=True)
+    assert [n for n, _ in calls] == ["playlists.list", "playlists.insert", "playlistItems.insert"]  # no comment on Shorts
+
+
+def test_voice_must_match_chart_labels(monkeypatch):
+    from pathlib import Path
+
+    from yta import metrics, money
+
+    path = Path(__file__).resolve().parents[1] / "channels/money-charts/published/2026-10-18-did-your-paycheck-keep-up.json"
+    ep = load_episode(path)
+    ep.load_data(Path(__file__).resolve().parents[1] / ".cache" / "data")
+    houses = next(s for s in ep.scenes if s.chart.get("index") and "homes" in s.chart.get("series", []))
+    shown = money.shown_numbers(ep, houses.chart)
+    assert all(pct for _, pct in shown)          # rebased lines are labelled with their rise, like the voice
+    money.check_voice_matches_charts(ep)
+    # The bug a viewer caught: the chart printed index levels, so "risen 237 percent" sat next to the pay line's 237.
+    monkeypatch.setattr(money, "shown_numbers", lambda ep, chart: [(v + 100, False) for v, _ in shown]
+                        if chart is houses.chart else [])
+    with pytest.raises(metrics.MetricError, match="percent"):
+        money.check_voice_matches_charts(ep)

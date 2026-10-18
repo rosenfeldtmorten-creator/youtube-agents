@@ -110,3 +110,7 @@ The channel posts one Short a day, cut from videos that are already up, so each 
 - `short` (`{"title", "scenes"}`) goes up with the video on its launch day. Pick the most surprising chart.
 - `shorts` is a list of the same shape for the following days, best first. Give three or four, each one chart scene that makes sense on its own (under about 115 words of narration; a leading "But" or "And" is dropped automatically). Titles are hooks of at most 90 characters, a question or a surprise, with no typed numbers ("Today's minimum wage buys about half as much").
 - Chart scenes not listed are used last, titled with the chart's own title.
+
+## Comment
+
+`comment` is the channel's first comment under the video: one question viewers can answer in a few words about their own life ("What year were you born?"), at most 300 characters. It is posted automatically; without it the channel's `default_comment` is used.

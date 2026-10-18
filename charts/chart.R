@@ -68,6 +68,12 @@ value_label <- function(v, fmt) {
   )
 }
 
+# On a chart rebased to 100 the narration talks about rises ("up 237 percent"), so the line ends are
+# labelled with the same change ("+237%") rather than the index level (337), which reads like another number.
+end_label <- function(y) {
+  if (!is.null(spec$index)) sprintf("%+.0f%%", y - 100) else vapply(y, value_label, "", fmt = fmt)
+}
+
 title_txt    <- if (!is.null(spec$title_filled)) spec$title_filled else ""
 subtitle_txt <- if (!is.null(spec$subtitle)) spec$subtitle else NULL
 caption_txt  <- if (!is.null(spec$source_note)) paste("Source:", spec$source_note) else NULL
@@ -95,7 +101,7 @@ if (spec$type == "line") {
     p <- ggplot(shown, aes(x, y, colour = group)) +
       geom_line(linewidth = 2.2) +
       geom_point(data = ends, size = 6) +
-      geom_text(data = ends, aes(label = vapply(y, value_label, "", fmt = fmt)),
+      geom_text(data = ends, aes(label = end_label(y)),
                 hjust = -0.25, size = 9, fontface = "bold", show.legend = FALSE) +
       scale_colour_manual(values = colours) +
       scale_x_date(limits = c(x_rng[1], x_rng[2] + x_pad), date_labels = "%Y") +

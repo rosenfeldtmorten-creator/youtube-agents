@@ -1,6 +1,8 @@
 """Renders a finance episode: narration over charts drawn in R (charts/chart.R)."""
 from __future__ import annotations
 
+import re
+
 import csv
 import json
 import shutil
@@ -59,6 +61,43 @@ def chart_rows(ep: Episode, chart: dict) -> list[dict]:
             for year, xv, yv in metrics.paired_years(ep.series[chart["x"]], ep.series[chart["y"]], chart.get("from"), chart.get("to"))
         ]
     raise ValueError(f"no rows for chart type {kind}")
+
+
+def shown_numbers(ep: Episode, chart: dict) -> list[tuple[float, bool]]:
+    """The numbers a chart prints on screen (line ends, bar values), each with whether it reads as a percent,
+    matching what charts/chart.R draws."""
+    kind, fmt = chart["type"], chart.get("y_format", "num")
+    if kind not in ("line", "bars"):
+        return []
+    if kind == "bars":
+        return [(r["y"] * 100, True) if fmt == "pct" else (r["y"], False) for r in chart_rows(ep, chart)]
+    shown = []
+    for name in chart["series"]:
+        last = max((r for r in chart_rows(ep, {**chart, "series": [name]})), key=lambda r: r["x"])
+        if chart.get("index"):
+            shown.append((last["y"] - 100, True))
+        elif fmt == "pct":
+            shown.append((last["y"] * 100, True))
+        else:  # a series already in percent (unemployment, mortgage rates) reads as a percent too
+            shown.append((last["y"], ep.data[name].get("unit") == "percent"))
+    return shown
+
+
+def check_voice_matches_charts(ep: Episode) -> None:
+    """A percent the voice says must not appear on the same chart as a plain number for something else
+    (e.g. the voice says houses rose 237 percent while the chart prints 237 next to the pay line)."""
+    for i, scene in enumerate(ep.scenes, 1):
+        shown = shown_numbers(ep, scene.chart)
+        if not shown:
+            continue
+        said = [float(n.replace(",", "")) for n in re.findall(r"(\d[\d,]*(?:\.\d+)?) percent", scene.filled or "")]
+        for p in said:
+            as_percent = any(pct and abs(v - p) < 0.6 for v, pct in shown)
+            as_level = [v for v, pct in shown if not pct and abs(v - p) < 0.6]
+            if as_level and not as_percent:
+                raise metrics.MetricError(
+                    f"scene {i}: the voice says {p:g} percent, but the chart shows {as_level[0]:,.0f} as a level, "
+                    "so viewers will read it as something else. Show the change on the chart or reword the line.")
 
 
 def draw_chart(ep: Episode, chart: dict, out_dir: Path, n_frames: int, size: tuple[int, int]) -> list[Path]:

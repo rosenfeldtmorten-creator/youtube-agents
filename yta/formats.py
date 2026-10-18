@@ -65,6 +65,9 @@ class EpisodeFormat:
         checks.check_duplicates(item, published_items(channel_dir, self.load) + earlier_in_queue)
         try:
             item.load_data(cache_dir / "data")
+            from .money import check_voice_matches_charts
+
+            check_voice_matches_charts(item)
         except (MetricError, ValueError) as exc:
             raise checks.CheckFailed(f"data problem: {exc}") from exc
         except Exception as exc:  # network trouble is not the script's fault; report it plainly

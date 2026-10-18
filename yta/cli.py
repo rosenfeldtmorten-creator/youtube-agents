@@ -156,6 +156,7 @@ def cmd_run(args) -> int:
         upload.set_thumbnail(client, video_id, result.thumbnail)
         if yt.get("upload_captions"):
             upload.upload_captions(client, video_id, result.captions, yt.get("language", "en"))
+        upload.engage(client, video_id, cfg, obj.raw.get("comment", ""))
 
         data = json.loads(item.read_text(encoding="utf-8"))
         data["_published"] = {
@@ -171,6 +172,7 @@ def cmd_run(args) -> int:
                 short_id = upload.upload_video(client, short, f"{obj.raw['short']['title']} #Shorts",
                                                short_description(obj, video_id), obj.tags, yt)
                 data["_published"]["short_url"] = f"https://youtube.com/shorts/{short_id}"
+                upload.engage(client, short_id, cfg, short=True)
                 print(f"Uploaded Short: https://youtube.com/shorts/{short_id}")
             except Exception as exc:  # the long video is already up; don't lose its record over the Short
                 print(f"Short not uploaded: {exc}")
@@ -264,6 +266,9 @@ def cmd_short(args) -> int:
         try:
             ep = fmt.load(path)
             ep.load_data(ROOT / ".cache" / "data")
+            from .money import check_voice_matches_charts
+
+            check_voice_matches_charts(ep)  # the same voice-versus-chart check every video passes
         except Exception as exc:  # e.g. a claim the newest data no longer supports
             print(f"Skipping {path.name}: {exc}")
             continue
@@ -299,6 +304,7 @@ def cmd_short(args) -> int:
             short_id = upload.upload_video(client, video, f"{pick['title']} #Shorts",
                                            short_description(ep, meta["video_id"]), ep.tags, yt)
             url = f"https://youtube.com/shorts/{short_id}"
+            upload.engage(client, short_id, cfg, short=True)
             meta.setdefault("shorts", []).append({"date": dt.date.today().isoformat(), "scenes": pick["scenes"],
                                                   "title": pick["title"], "url": url})
             data["_published"] = meta

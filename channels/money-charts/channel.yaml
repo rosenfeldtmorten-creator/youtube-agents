@@ -17,6 +17,12 @@ youtube:
   contains_synthetic_media: false   # Owner chose to leave the AI label unticked for now (17 Oct 2026).
   upload_captions: true
 
+engagement:   # done automatically after every upload (see yta/upload.py engage)
+  playlist: "Economics in Charts: every episode"
+  shorts_playlist: "Economics in Charts: Shorts"
+  playlist_description: "Every question about the economy and your money, answered with public data and simple models."
+  default_comment: "Which chart surprised you most? Tell us below, and what question should we chart next?"
+
 voice:
   backend: chatterbox
   reference: voice/reference.wav
