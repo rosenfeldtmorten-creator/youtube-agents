@@ -11,9 +11,8 @@ on:
   workflow_dispatch:
     inputs:
       channel:
-        description: Channel
-        type: choice
-        options: [money-charts, english-stories]
+        description: Channel (its folder name under channels/)
+        type: string
         default: money-charts
       upload:
         description: Upload to YouTube (untick for a test render you can download)
@@ -116,10 +115,7 @@ jobs:
       - name: Render and publish
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
-          YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
+          YT_SECRETS: ${{ toJSON(secrets) }}   # each channel's login is the secret its channel.yaml names
         shell: bash
         run: |
           set -o pipefail

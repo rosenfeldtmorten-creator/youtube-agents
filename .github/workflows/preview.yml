@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       channel:
-        type: choice
-        options: [money-charts, english-stories]
+        description: Channel (its folder name under channels/)
+        type: string
         default: money-charts
       voice:
         type: choice

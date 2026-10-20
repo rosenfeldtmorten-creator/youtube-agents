@@ -1,6 +1,6 @@
 name: Daily Short
 
-# Posts one Short a day, cut from a video that is already up (newest video first), linking back to it.
+# Posts one Short a day on each active chart channel (ACTIVE_CHANNELS), cut from a video that is already up (newest video first), linking back to it.
 # A day when a video went up with its own Short is skipped. Like Publish, the schedule only runs once
 # the repository variable AUTOPUBLISH is "true"; run it by hand with "upload" unticked for a test render.
 on:
@@ -8,6 +8,10 @@ on:
     - cron: "0 17 * * *"   # 17:00 UTC, after the 14:00 publish run
   workflow_dispatch:
     inputs:
+      channel:
+        description: Channel (its folder name under channels/)
+        type: string
+        default: money-charts
       upload:
         description: Upload to YouTube (untick for a test render you can download)
         type: boolean
@@ -21,14 +25,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  short:
+  channels:
     if: github.event_name != 'schedule' || vars.AUTOPUBLISH == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.pick.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: pick
+        env:
+          ACTIVE: ${{ github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]' }}
+        run: |
+          python3 -m pip install -q pyyaml
+          echo "list=$(python3 -m yta channels --active "$ACTIVE" --format episode)" >> "$GITHUB_OUTPUT"
+
+  short:
+    needs: channels
+    if: needs.channels.outputs.list != '[]'
+    runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        channel: ${{ fromJSON(needs.channels.outputs.list) }}
     env:
       PYTHONUNBUFFERED: "1"
       RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
-      CHANNEL: money-charts
+      CHANNEL: ${{ matrix.channel }}
       UPLOAD: ${{ github.event_name == 'schedule' || inputs.upload }}
     steps:
       - uses: actions/checkout@v4
@@ -72,10 +96,7 @@ jobs:
 
       - name: Make and post the Short
         env:
-          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_REFRESH_TOKEN_ENGLISH_STORIES: ${{ secrets.YT_REFRESH_TOKEN_ENGLISH_STORIES }}
-          YT_REFRESH_TOKEN_MONEY_CHARTS: ${{ secrets.YT_REFRESH_TOKEN_MONEY_CHARTS }}
+          YT_SECRETS: ${{ toJSON(secrets) }}   # each channel's login is the secret its channel.yaml names
         shell: bash
         run: |
           set -o pipefail
@@ -103,7 +124,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: short
+          name: short-${{ matrix.channel }}
           path: out/**/short-*/video.mp4
           retention-days: 7
 

@@ -1,6 +1,7 @@
 """Uploads to YouTube with the Data API v3, using a stored OAuth refresh token per channel."""
 from __future__ import annotations
 
+import json
 import os
 import time
 from pathlib import Path
@@ -13,25 +14,38 @@ class UploadError(RuntimeError):
 
 
 def _env(name: str) -> str:
-    value = os.environ.get(name, "").strip()
+    # The workflows hand every repository secret over as YT_SECRETS, so a new channel only needs its secret added.
+    value = os.environ.get(name, "").strip() or str(json.loads(os.environ.get("YT_SECRETS") or "{}").get(name, "")).strip()
     if not value:
         raise UploadError(f"Missing secret {name}. Add it under the repository's Settings > Secrets > Actions (see docs/SETUP.md).")
     return value
 
 
-def youtube_client(refresh_token_secret: str):
+def youtube_client(yt_cfg: dict):
+    """Log in as the channel in channel.yaml's youtube settings. A channel can name its own Google Cloud app
+    (client_id_secret, client_secret_secret) when the shared one runs out of daily upload quota."""
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
 
     creds = Credentials(
         None,
-        refresh_token=_env(refresh_token_secret),
-        client_id=_env("YT_CLIENT_ID"),
-        client_secret=_env("YT_CLIENT_SECRET"),
+        refresh_token=_env(yt_cfg["refresh_token_secret"]),
+        client_id=_env(yt_cfg.get("client_id_secret", "YT_CLIENT_ID")),
+        client_secret=_env(yt_cfg.get("client_secret_secret", "YT_CLIENT_SECRET")),
         token_uri="https://oauth2.googleapis.com/token",
         scopes=SCOPES,
     )
     return build("youtube", "v3", credentials=creds, cache_discovery=False)
+
+
+def whoami(client) -> dict:
+    """The channel this login uploads to, so a new token can be checked before anything goes up."""
+    items = client.channels().list(part="snippet,statistics", mine=True).execute().get("items", [])
+    if not items:
+        raise UploadError("This login has no YouTube channel. Redo the token and pick the channel when Google asks.")
+    c = items[0]
+    return {"id": c["id"], "title": c["snippet"]["title"], "subscribers": c["statistics"].get("subscriberCount"),
+            "videos": c["statistics"].get("videoCount")}
 
 
 def format_timestamp(seconds: float) -> str:
