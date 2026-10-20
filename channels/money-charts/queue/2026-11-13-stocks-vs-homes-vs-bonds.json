@@ -1,6 +1,6 @@
 {
  "slug": "stocks-vs-homes-vs-bonds",
- "title": "Stocks vs Homes vs Bonds: What Really Grew Most Since 1987?",
+ "title": "Stocks vs Homes vs Bonds Since 1987: One Winner, One Surprise",
  "description": "On 14 October 2026 US stocks had their worst day since July, barely a week after the Nasdaq composite closed at a record. So over the long run, what has grown more: the stock market, the family home, or government bonds?\n\nWe start the Nasdaq, the Case-Shiller home price index and consumer prices at the same point in 1987, model a chain of ten-year Treasury bonds, and show the crashes along the way. Stocks are shown without dividends, so they did even better than the chart shows. We explain the data; we do not give advice.",
  "comment": "Which do you think grew more where you live over the last twenty years, home prices or the stock market?",
  "tags": [
@@ -21,7 +21,13 @@
   "Bonds",
   "Economics"
  ],
- "thumbnail_text": "Stocks, homes or bonds?",
+ "thumbnail_text": "STOCKS, AFTER INFLATION",
+ "experiment": {
+  "title": "versus",
+  "thumbnail": "badge",
+  "story": "countdown"
+ },
+ "thumbnail_badge": "{{ ratio(nasdaq_real, \"1987-01\", \"2026-07\") | times_short }}",
  "method": "Stocks, homes and consumer prices are each rebased to 100 in January 1987; stocks are the Nasdaq price index without dividends, homes the Case-Shiller index without rent or costs. For bonds we buy a ten-year Treasury at the January 1987 yield, hold it to maturity, roll into a new one each decade at that month's yield, and reinvest interest at the same yield.",
  "references": [
   {
@@ -182,12 +188,12 @@
    "check": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) > 10"
   },
   {
-   "says": "S&P 500 ahead of home prices over ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(homes, \"2016-10\", \"latest\")"
+   "says": "S&P 500 ahead of home prices since 2017",
+   "check": "ratio(sp, \"2017-01\", \"latest\") > ratio(homes, \"2017-01\", \"latest\")"
   },
   {
-   "says": "S&P 500 ahead of consumer prices over ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(cpi, \"2016-10\", \"latest\")"
+   "says": "S&P 500 ahead of consumer prices since 2017",
+   "check": "ratio(sp, \"2017-01\", \"latest\") > ratio(cpi, \"2017-01\", \"latest\")"
   },
   {
    "says": "Real Nasdaq fell far below its 2000 level",
@@ -210,12 +216,12 @@
    "check": "99 < first(nasdaq, \"1971\", \"1971\") < 101"
   },
   {
-   "says": "The S&P 500 rose less than the Nasdaq over the last ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") < ratio(nasdaq, \"2016-10-17\", \"latest\")"
+   "says": "The S&P 500 rose less than the Nasdaq since 2017",
+   "check": "ratio(sp, \"2017-01\", \"latest\") < ratio(nasdaq, \"2017-01\", \"latest\")"
   },
   {
    "says": "But the S&P 500 still more than tripled",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > 3"
+   "check": "ratio(sp, \"2017-01\", \"latest\") > 3"
   },
   {
    "says": "The log chart is close to a straight line (real Nasdaq grew steadily on trend)",
@@ -223,6 +229,29 @@
   }
  ],
  "scenes": [
+  {
+   "narration": "A hundred dollars of American house from 1987 grew to about {{ (100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }} after inflation. The same money in plain government bonds grew to about {{ (100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }}, and in the stock index to about {{ (100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100 | usd }}, even without dividends. So why doesn't everyone just own stocks?",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "What one hundred dollars became, after inflation",
+    "subtitle": "January 1987 to July 2026, in July 2026 dollars",
+    "bars": [
+     {
+      "label": "Home prices",
+      "value": "(100 * ratio(homes, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     },
+     {
+      "label": "Bonds",
+      "value": "(100 * grow(1, value(ten, \"1987-01\") / 100, 10) * grow(1, value(ten, \"1997-01\") / 100, 10) * grow(1, value(ten, \"2007-01\") / 100, 10) * grow(1, value(ten, \"2017-01\") / 100, 9.5)) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     },
+     {
+      "label": "Stocks",
+      "value": "(100 * ratio(nasdaq, \"1987-01\", \"2026-07\")) / (100 * ratio(cpi, \"1987-01\", \"2026-07\")) * 100"
+     }
+    ]
+   }
+  },
   {
    "narration": "On Wednesday the fourteenth of October, American stocks had their worst day since July, after a report showed inflation getting worse. The Nasdaq composite, the index packed with technology companies, fell {{ -pct_change(nasdaq, \"2026-10-13\", \"2026-10-14\") | pct1 }} in a single day.",
    "chart": {
@@ -490,7 +519,7 @@
    }
   },
   {
-   "narration": "So what grew most? Over almost four decades, stock prices, by a wide margin, and even more once dividends are counted. Government bonds came next, helped by the high yields of the 1980s. Home prices only beat inflation by a little, although a home also gives you somewhere to live, and most owners bought with borrowed money, which magnifies both gains and losses. One more check, since the Nasdaq leans on technology. Over the last ten years, the broader S&P five hundred index of large companies multiplied {{ ratio(sp, \"2016-10-17\", \"latest\") | times }}, against {{ ratio(nasdaq, \"2016-10-17\", \"latest\") | times }} for the Nasdaq. Less, but still far ahead of homes and prices.",
+   "narration": "So what grew most? Over almost four decades, stock prices, by a wide margin, and even more once dividends are counted. Government bonds came next, helped by the high yields of the 1980s. Home prices only beat inflation by a little, although a home also gives you somewhere to live, and most owners bought with borrowed money, which magnifies both gains and losses. One more check, since the Nasdaq leans on technology. Since the start of 2017, the broader S&P five hundred index of large companies multiplied {{ ratio(sp, \"2017-01\", \"latest\") | times }}, against {{ ratio(nasdaq, \"2017-01\", \"latest\") | times }} for the Nasdaq. Less, but still far ahead of homes and prices. And the reason not everyone holds only stocks is the ride: from its peak in 2000, the Nasdaq fell {{ -pct_change(nasdaq, \"2000-03-10\", \"2002-10-09\") | pct }} and took fifteen years to get back.",
    "chart": {
     "type": "card",
     "title": "Stocks grew most, with the roughest ride",
@@ -531,33 +560,38 @@
  "short": {
   "title": "Bonds beat house prices? The long-run scoreboard",
   "scenes": [
-   7
-  ]
+   8
+  ],
+  "style": "myth-buster"
  },
  "shorts": [
   {
    "title": "Stocks, homes and prices from the same starting line",
    "scenes": [
-    5
-   ]
+    6
+   ],
+   "style": "versus"
   },
   {
    "title": "The crash that took stocks fifteen years to recover",
    "scenes": [
-    10
-   ]
+    11
+   ],
+   "style": "curiosity-gap"
   },
   {
    "title": "Why a few points a year make a huge difference",
    "scenes": [
-    12
-   ]
+    13
+   ],
+   "style": "curiosity-gap"
   },
   {
    "title": "After inflation, did house prices even double?",
    "scenes": [
-    9
-   ]
+    10
+   ],
+   "style": "myth-buster"
   }
  ]
 }

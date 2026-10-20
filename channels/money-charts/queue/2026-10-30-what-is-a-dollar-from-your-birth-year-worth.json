@@ -1,6 +1,6 @@
 {
  "slug": "what-is-a-dollar-from-your-birth-year-worth",
- "title": "What Is a Dollar From Your Birth Year Worth Today?",
+ "title": "What $1 From Your Birth Year Is Worth Today",
  "description": "On the fourteenth of October 2026, Social Security announced its biggest benefit rise in four years, to keep up with rising prices. It is a yearly reminder that a dollar slowly loses its value.\n\nWe show what a dollar from every decade since 1950 is worth in today's money, how fast prices doubled in each decade using the rule of 72, why the Federal Reserve watches a different price index, and whether pay kept up. Find your birth year, and tell us in the comments.",
  "comment": "What year were you born, and what did a chocolate bar cost then? Tell us below.",
  "tags": [
@@ -15,7 +15,13 @@
   "personal finance",
   "data visualization"
  ],
- "thumbnail_text": "Your birth-year dollar today",
+ "thumbnail_text": "A 1950 DOLLAR, TODAY",
+ "experiment": {
+  "title": "then-vs-now",
+  "thumbnail": "badge",
+  "story": "cold-open"
+ },
+ "thumbnail_badge": "{{ in_todays_money(1, cpi, \"1950-01\") | usd_short }}",
  "data": {
   "cpi": {
    "source": "fred",
@@ -213,6 +219,49 @@
   }
  ],
  "scenes": [
+  {
+   "narration": "To buy what a dollar bought in 1950, you need about {{ in_todays_money(1, cpi, \"1950-01\") | usd_cents }} today, and even a dollar from 2020 now takes {{ in_todays_money(1, cpi, \"2020-01\") | usd_cents }}. Yet an hour of an average worker's pay buys about {{ latest(wages) / in_todays_money(value(wages, \"1964-01\"), cpi, \"1964-01\") - 1 | pct }} more than it did in 1964. So if the dollar keeps shrinking, who actually loses, and how fast?",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "1950",
+      "value": "in_todays_money(1, cpi, \"1950-01\")"
+     },
+     {
+      "label": "1960",
+      "value": "in_todays_money(1, cpi, \"1960-01\")"
+     },
+     {
+      "label": "1970",
+      "value": "in_todays_money(1, cpi, \"1970-01\")"
+     },
+     {
+      "label": "1980",
+      "value": "in_todays_money(1, cpi, \"1980-01\")"
+     },
+     {
+      "label": "1990",
+      "value": "in_todays_money(1, cpi, \"1990-01\")"
+     },
+     {
+      "label": "2000",
+      "value": "in_todays_money(1, cpi, \"2000-01\")"
+     },
+     {
+      "label": "2010",
+      "value": "in_todays_money(1, cpi, \"2010-01\")"
+     },
+     {
+      "label": "2020",
+      "value": "in_todays_money(1, cpi, \"2020-01\")"
+     }
+    ],
+    "y_format": "usd",
+    "title": "One dollar from each decade, in today's money",
+    "subtitle": "January of each year, restated with the consumer price index"
+   }
+  },
   {
    "narration": "On the fourteenth of October, the Social Security Administration announced that benefits for nearly {{ latest(people_news) | num }} Americans will rise {{ latest(cola_news) | pct1 }} in January. The average retirement check goes up by about {{ latest(cola_dollars_news) | usd }} a month.",
    "chart": {
@@ -548,7 +597,8 @@
  "short": {
   "title": "What is a dollar from your birth year worth today?",
   "scenes": [
-   4
-  ]
+   5
+  ],
+  "style": "then-vs-now"
  }
 }

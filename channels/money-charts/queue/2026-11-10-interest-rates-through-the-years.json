@@ -1,6 +1,6 @@
 {
  "slug": "interest-rates-through-the-years",
- "title": "Are Today's Interest Rates High? Seventy Years of US Rates Explained",
+ "title": "Interest Rates Then vs Now: Are Today's Rates Actually High?",
  "description": "On 16 September 2026 the Federal Reserve raised its key rate for the first time since July 2023, and in October the ten-year Treasury yield sat near its highest level since 2002. So are today's interest rates actually high?\n\nWe chart the Fed's rate since 1954, from Paul Volcker's 1981 peak to the zero-rate years and the 2022 hikes, alongside mortgage rates and Treasury bills, and show what each era meant for savers and borrowers after inflation. Our honest take is at the end.",
  "comment": "What is the highest interest rate you have ever paid or earned, and in which year?",
  "tags": [
@@ -21,7 +21,13 @@
   "Economics",
   "Savings"
  ],
- "thumbnail_text": "Are rates really high?",
+ "thumbnail_text": "SAME LOAN, TRIPLE THE INTEREST",
+ "experiment": {
+  "title": "then-vs-now",
+  "thumbnail": "chart",
+  "story": "cold-open"
+ },
+ "thumbnail_scene": 13,
  "method": "Real rates are the three-month Treasury bill rate minus consumer price inflation over the previous twelve months. Total interest uses the standard fixed-rate loan formula on a $200,000 thirty-year loan. The scatter fits a straight line through yearly averages since 1972.",
  "references": [
   {
@@ -276,6 +282,29 @@
   }
  ],
  "scenes": [
+  {
+   "narration": "Borrow {{ 200000 | usd }} for thirty years at the record-low rate of 2021, and the interest comes to about {{ (payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000) | usd }}. At today's rate, the same loan costs about {{ (payment(200000, latest(mort), 30) * 360 - 200000) | usd }} in interest, more than three times as much. So are today's rates really high, or were the cheap years the strange part?",
+   "chart": {
+    "type": "bars",
+    "y_format": "usd",
+    "title": "Total interest on a thirty-year loan",
+    "subtitle": "Interest paid over the whole loan on a fixed-rate mortgage, at each rate",
+    "bars": [
+     {
+      "label": "Record high, 1981",
+      "value": "(payment(200000, highest(mort, \"1971\", \"latest\"), 30) * 360 - 200000)"
+     },
+     {
+      "label": "Record low, 2021",
+      "value": "(payment(200000, lowest(mort, \"1971\", \"latest\"), 30) * 360 - 200000)"
+     },
+     {
+      "label": "Latest",
+      "value": "(payment(200000, latest(mort), 30) * 360 - 200000)"
+     }
+    ]
+   }
+  },
   {
    "narration": "On the sixteenth of September, the Federal Reserve raised its key interest rate by a quarter of a percentage point, its first increase since July 2023. The new range tops out at {{ latest(fed_high) | num }} percent. And by the middle of October, the yield on the ten-year government bond stood at {{ latest(ten_news) | num }} percent, just below highs not seen since 2002.",
    "chart": {
@@ -571,33 +600,38 @@
  "short": {
   "title": "The year the Fed pushed interest rates to a record",
   "scenes": [
-   4
-  ]
+   5
+  ],
+  "style": "curiosity-gap"
  },
  "shorts": [
   {
    "title": "From zero rates to the fastest hikes in decades",
    "scenes": [
-    6
-   ]
+    7
+   ],
+   "style": "then-vs-now"
   },
   {
    "title": "Savers lost money even when banks paid interest",
    "scenes": [
-    11
-   ]
+    12
+   ],
+   "style": "myth-buster"
   },
   {
    "title": "The same mortgage, three very different price tags",
    "scenes": [
-    12
-   ]
+    13
+   ],
+   "style": "versus"
   },
   {
    "title": "What a year of savings interest earned, then and now",
    "scenes": [
-    10
-   ]
+    11
+   ],
+   "style": "then-vs-now"
   }
  ]
 }

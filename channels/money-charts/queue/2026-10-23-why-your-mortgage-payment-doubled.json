@@ -1,6 +1,6 @@
 {
  "slug": "why-your-mortgage-payment-doubled",
- "title": "Why Your Mortgage Payment Doubled (It's Not Just House Prices)",
+ "title": "Mortgage Payments Nearly Doubled Since 2021, Mostly Not From Prices",
  "description": "US mortgage rates just hit their highest level in three years. We show why the monthly payment on a typical home nearly doubled since 2021, and how much of that came from prices versus rates.\n\nBuilt on Census, Freddie Mac and Labor Department data with the standard loan formula, plus our honest take for buyers.",
  "comment": "If you have a mortgage, what rate did you lock in, and would you move house at today's rates?",
  "tags": [
@@ -15,7 +15,13 @@
   "data visualization",
   "affordability"
  ],
- "thumbnail_text": "It's not the price",
+ "thumbnail_text": "IT'S THE RATE",
+ "experiment": {
+  "title": "shock-number",
+  "thumbnail": "badge",
+  "story": "cold-open"
+ },
+ "thumbnail_badge": "{{ ratio(rate, \"2021-01\", \"latest\") | times_short }}",
  "data": {
   "price": {
    "source": "fred",
@@ -80,9 +86,32 @@
   {
    "says": "The mortgage rate more than doubled since early 2021",
    "check": "latest(rate) > 2 * value(rate, \"2021-01\")"
+  },
+  {
+   "says": "Most of the increase in the payment came from the higher rate",
+   "check": "(payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30)) / (payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)) > 0.5"
   }
  ],
  "scenes": [
+  {
+   "narration": "In early 2021, the monthly payment on a typical new American home was about {{ payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }}. Today it is about {{ payment(0.8 * latest(price), latest(rate), 30) | usd }}, nearly twice as much, for a house whose price rose only {{ pct_change(price, \"2021-01\", \"latest\") | pct }}. So if the house didn't double, what did?",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2021",
+      "value": "payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)"
+     },
+     {
+      "label": "Latest",
+      "value": "payment(0.8 * latest(price), latest(rate), 30)"
+     }
+    ],
+    "y_format": "usd",
+    "title": "Monthly payment on the median new home",
+    "subtitle": "Twenty percent down, thirty-year fixed loan, interest and repayment only"
+   }
+  },
   {
    "narration": "At the start of October, the average rate on a thirty-year mortgage in the United States climbed to {{ latest(rate_news) | pct1 }}. That is the highest since late 2023.",
    "chart": {
@@ -275,7 +304,7 @@
    }
   },
   {
-   "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too. For buyers, the practical lesson is simple. When you compare homes, compare monthly payments at today's rate, not just prices, because the rate can matter more than the sticker.",
+   "narration": "So, why did your mortgage payment nearly double? House prices did their part, but the main reason was the jump in interest rates, which more than doubled from close to the lowest ever recorded. Of the extra {{ payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30) | usd }} a month, about {{ (payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * latest(price), value(rate, \"2021-01\"), 30)) / (payment(0.8 * latest(price), latest(rate), 30) - payment(0.8 * value(price, \"2021-01\"), value(rate, \"2021-01\"), 30)) | pct }} came from the higher rate. It also explains a puzzle. When rates rise, many current owners do not want to sell and give up their old, cheap mortgage. Fewer homes come up for sale, and that helps keep prices high too. For buyers, the practical lesson is simple. When you compare homes, compare monthly payments at today's rate, not just prices, because the rate can matter more than the sticker.",
    "chart": {
     "type": "card",
     "title": "Mostly rates, not prices",
@@ -319,7 +348,8 @@
  "short": {
   "title": "Why mortgage rates matter more than prices",
   "scenes": [
-   11
-  ]
+   12
+  ],
+  "style": "curiosity-gap"
  }
 }

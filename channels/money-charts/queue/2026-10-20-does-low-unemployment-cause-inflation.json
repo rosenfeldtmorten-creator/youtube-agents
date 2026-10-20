@@ -1,6 +1,6 @@
 {
  "slug": "does-low-unemployment-cause-inflation",
- "title": "Does Low Unemployment Cause Inflation? The Phillips Curve, Tested",
+ "title": "The Rule Linking Jobs and Prices, and Why It Keeps Breaking",
  "description": "In autumn 2026 US unemployment and inflation rose at the same time, which textbook economics says should not happen. Is the famous trade-off between jobs and prices broken?\n\nWe test the Phillips curve on more than sixty years of US data with a simple regression, decade by decade, and give our honest take on what it means for the Fed and for your money.",
  "comment": "Does it feel like prices are still rising where you live, even with plenty of jobs around? Tell us your country and what has gone up most.",
  "tags": [
@@ -15,7 +15,13 @@
   "economics in charts",
   "us economy"
  ],
- "thumbnail_text": "Low unemployment = inflation?",
+ "thumbnail_text": "THE PHILLIPS CURVE, TESTED",
+ "experiment": {
+  "title": "curiosity-gap",
+  "thumbnail": "chart",
+  "story": "mystery"
+ },
+ "thumbnail_scene": 11,
  "data": {
   "unemp": {
    "source": "fred",
@@ -98,6 +104,24 @@
   }
  ],
  "scenes": [
+  {
+   "narration": "In the 1960s, the unemployment rate explained about {{ r_squared(unemp, infl, \"1960\", \"1969\") | pct }} of the ups and downs in the prices Americans paid. From 1970 to 1985, the same straight line explained about {{ r_squared(unemp, infl, \"1970\", \"1985\") | pct }}. So what broke one of the most famous rules in economics, and does it still hold for your prices today?",
+   "chart": {
+    "type": "scatter",
+    "x": "unemp",
+    "y": "infl",
+    "from": "1970",
+    "to": "1985",
+    "x_format": "num",
+    "y_format": "pct",
+    "x_label": "Unemployment rate, %",
+    "y_label": "Inflation",
+    "fit": "linear",
+    "connect": true,
+    "title": "1970 to 1985: the curve breaks",
+    "subtitle": "One dot per year, with a fitted straight line"
+   }
+  },
   {
    "narration": "Two reports this month sent the economy two different signals. At the start of October, the jobs report showed unemployment rising to {{ latest(unemp_news) | num }} percent, up from {{ first(unemp_news, \"2026\", \"latest\") | num }} percent the month before.",
    "chart": {
@@ -274,7 +298,7 @@
    }
   },
   {
-   "narration": "So, does low unemployment cause inflation? Sometimes, a little, but not reliably. Over the whole period since 1960, one straight line explains about {{ r_squared(unemp, infl, \"1960\", \"latest\") | pct }} of the movement. The relationship is real in some decades and almost invisible in others, because what people expect inflation to be matters as much as how many people have a job. That is why central banks watch expectations so closely.",
+   "narration": "So, does low unemployment cause inflation? Sometimes, a little, but not reliably. Over the whole period since 1960, one straight line explains about {{ r_squared(unemp, infl, \"1960\", \"latest\") | pct }} of the movement. The relationship is real in some decades and almost invisible in others, because what people expect inflation to be matters as much as how many people have a job. That is what broke the rule in the 1970s: once people expected high inflation, prices kept rising whatever happened to jobs. That is why central banks watch expectations so closely.",
    "chart": {
     "type": "card",
     "title": "Sometimes. It depends on what people expect.",
@@ -327,7 +351,8 @@
  "short": {
   "title": "The 1970s broke this famous economics idea",
   "scenes": [
-   10
-  ]
+   11
+  ],
+  "style": "curiosity-gap"
  }
 }

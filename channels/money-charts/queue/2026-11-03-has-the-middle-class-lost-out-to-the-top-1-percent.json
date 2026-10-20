@@ -1,6 +1,6 @@
 {
  "slug": "has-the-middle-class-lost-out-to-the-top-1-percent",
- "title": "Has the Middle Class Lost Out to the Top 1%? Wealth vs Pay in Charts",
+ "title": "Is the Middle Class Getting Poorer? Your Slice of Wealth Since 1989",
  "description": "In early October 2026, new Federal Reserve figures showed the richest 1% of American households holding a record share of the country's wealth, while the Census Bureau reported that the typical household's income hit a record in 2025.\n\nWe separate wealth from pay, show how the slices of America's wealth have shifted since 1989, put a dollar figure on what the middle class lost compared with the top 1%, and check whether pay tells the same story. Our honest take is at the end.",
  "comment": "Do you feel better or worse off than your parents were at your age? Tell us your age bracket and why.",
  "tags": [
@@ -15,7 +15,13 @@
   "economics in charts",
   "data visualization"
  ],
- "thumbnail_text": "Middle class vs top 1%",
+ "thumbnail_text": "TOP 1% PASSED THE MIDDLE",
+ "experiment": {
+  "title": "you-question",
+  "thumbnail": "chart",
+  "story": "myth-vs-reality"
+ },
+ "thumbnail_scene": 7,
  "data": {
   "top1": {
    "source": "fred",
@@ -414,6 +420,27 @@
  ],
  "scenes": [
   {
+   "narration": "In 1989, the middle {{ 0.4 | pct }} of American households owned {{ value(mid40, \"1989-07\") / 100 | pct }} of the country's wealth, and the richest {{ 0.01 | pct }} owned {{ value(top1, \"1989-07\") / 100 | pct }}. Today the top {{ 0.01 | pct }} owns {{ latest(top1) / 100 | pct }}, more than the entire middle class at {{ latest(mid40) / 100 | pct }}. So did the middle class actually get poorer, or is something stranger going on?",
+   "chart": {
+    "type": "line",
+    "series": [
+     "top1",
+     "mid40"
+    ],
+    "from": "1989-07",
+    "y_format": "num",
+    "title": "The richest overtook the middle class",
+    "subtitle": "Share of all household net worth, percent",
+    "annotations": [
+     {
+      "date": "2014-01",
+      "text": "Lines cross",
+      "series": "top1"
+     }
+    ]
+   }
+  },
+  {
    "narration": "In early October, the Federal Reserve's newest wealth figures made headlines: the richest Americans now own a bigger slice of the country than ever. And a few weeks before that, the Census Bureau said a typical household's income hit a record.",
    "chart": {
     "type": "headlines",
@@ -551,7 +578,7 @@
    }
   },
   {
-   "narration": "Why did this happen? Mostly because of what each group owns. A middle-class family's wealth is mainly its home and a retirement account. The richest hold far more of theirs in company shares and private businesses. Fortune's analysis of the Fed data found that the top {{ 0.001 | pct }} hold {{ latest(stocks01_news) | usd }} in stocks and mutual funds alone, out of nearly {{ latest(wealth01_news) | usd }}. So when the stock market booms, as it has for most of the time since the financial crisis, wealth at the top jumps the most. When house prices rise, the middle class gains, but a home is one asset, often bought with a large mortgage.",
+   "narration": "Why did this happen? Mostly because of what each group owns. A middle-class family's wealth is mainly its home and a retirement account. The richest hold far more of theirs in company shares and private businesses. Fortune's analysis of the Fed data found that the top {{ 0.001 | pct }} hold {{ latest(stocks01_news) | usd }} in stocks and mutual funds alone, out of nearly {{ latest(wealth01_news) | usd }}. So when the stock market booms, as it has for most of the time since the financial crisis, wealth at the top jumps the most. When house prices rise, the middle class gains, but a home is one asset, often bought with a large mortgage. But did the middle class actually lose money? That is the strange part.",
    "chart": {
     "type": "photo",
     "query": "New York Stock Exchange trading floor",
@@ -685,7 +712,7 @@
    }
   },
   {
-   "narration": "So, has the middle class lost out to the top {{ 0.01 | pct }}? In share, yes, clearly. The middle {{ 0.4 | pct }} owns a much smaller slice of the country's wealth than in 1989, and the top {{ 0.01 | pct }} now owns more than the whole middle class. In dollars, no. Middle-class wealth more than doubled after inflation, and median household income is at a record. The middle class is not gone. It is a smaller slice of a much bigger pie, and the gap between it and the very top has widened over these decades.",
+   "narration": "So, has the middle class lost out to the top {{ 0.01 | pct }}? In share, yes, clearly. The middle {{ 0.4 | pct }} owns a much smaller slice of the country's wealth than in 1989, and the top {{ 0.01 | pct }} now owns more than the whole middle class. In dollars, no. Middle-class wealth rose {{ pct_change(mid40w, \"1989-07\", \"latest\") | pct }} after inflation, more than doubling, and median household income is at a record. The middle class is not gone. It is a smaller slice of a much bigger pie, and the gap between it and the very top has widened over these decades.",
    "chart": {
     "type": "card",
     "title": "A smaller slice of a bigger pie",
@@ -767,33 +794,38 @@
  "short": {
   "title": "The richest households now own more than the whole middle class",
   "scenes": [
-   6
-  ]
+   7
+  ],
+  "style": "shock-number"
  },
  "shorts": [
   {
    "title": "Did the middle class really lose money to the rich?",
    "scenes": [
-    8
-   ]
+    9
+   ],
+   "style": "you-question"
   },
   {
    "title": "What the middle class lost to the very top, in dollars",
    "scenes": [
-    10
-   ]
+    11
+   ],
+   "style": "shock-number"
   },
   {
    "title": "Pay grew for everyone, but not equally",
    "scenes": [
-    12
-   ]
+    13
+   ],
+   "style": "myth-buster"
   },
   {
    "title": "America's wealth pie, sliced four ways",
    "scenes": [
-    5
-   ]
+    6
+   ],
+   "style": "curiosity-gap"
   }
  ]
 }
