@@ -158,7 +158,7 @@ def load_episode(path: Path) -> Episode:
     if not (isinstance(exp, dict) and set(exp) <= set(EXPERIMENT_KEYS)
             and all(isinstance(v, str) and 2 <= len(v) <= 40 for v in exp.values())):
         raise StoryError(f"{path.name}: 'experiment' must map {', '.join(EXPERIMENT_KEYS)} to short style names")
-    if "thumbnail_badge" in data and not (isinstance(data["thumbnail_badge"], str) and 1 <= len(data["thumbnail_badge"]) <= 60):
+    if "thumbnail_badge" in data and not (isinstance(data["thumbnail_badge"], str) and 1 <= len(data["thumbnail_badge"]) <= 160):
         raise StoryError(f"{path.name}: 'thumbnail_badge' must be a short number such as \"{{{{ rise_pct }}}}%\"")
     if "thumbnail_scene" in data:
         k = data["thumbnail_scene"]
