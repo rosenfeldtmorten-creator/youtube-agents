@@ -183,11 +183,11 @@
   },
   {
    "says": "S&P 500 ahead of home prices over ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(homes, \"2016-10\", \"latest\")"
+   "check": "ratio(sp, \"2017-01\", \"latest\") > ratio(homes, \"2017-01\", \"latest\")"
   },
   {
    "says": "S&P 500 ahead of consumer prices over ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > ratio(cpi, \"2016-10\", \"latest\")"
+   "check": "ratio(sp, \"2017-01\", \"latest\") > ratio(cpi, \"2017-01\", \"latest\")"
   },
   {
    "says": "Real Nasdaq fell far below its 2000 level",
@@ -211,11 +211,11 @@
   },
   {
    "says": "The S&P 500 rose less than the Nasdaq over the last ten years",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") < ratio(nasdaq, \"2016-10-17\", \"latest\")"
+   "check": "ratio(sp, \"2017-01\", \"latest\") < ratio(nasdaq, \"2017-01\", \"latest\")"
   },
   {
    "says": "But the S&P 500 still more than tripled",
-   "check": "ratio(sp, \"2016-10-17\", \"latest\") > 3"
+   "check": "ratio(sp, \"2017-01\", \"latest\") > 3"
   },
   {
    "says": "The log chart is close to a straight line (real Nasdaq grew steadily on trend)",
@@ -490,7 +490,7 @@
    }
   },
   {
-   "narration": "So what grew most? Over almost four decades, stock prices, by a wide margin, and even more once dividends are counted. Government bonds came next, helped by the high yields of the 1980s. Home prices only beat inflation by a little, although a home also gives you somewhere to live, and most owners bought with borrowed money, which magnifies both gains and losses. One more check, since the Nasdaq leans on technology. Over the last ten years, the broader S&P five hundred index of large companies multiplied {{ ratio(sp, \"2016-10-17\", \"latest\") | times }}, against {{ ratio(nasdaq, \"2016-10-17\", \"latest\") | times }} for the Nasdaq. Less, but still far ahead of homes and prices.",
+   "narration": "So what grew most? Over almost four decades, stock prices, by a wide margin, and even more once dividends are counted. Government bonds came next, helped by the high yields of the 1980s. Home prices only beat inflation by a little, although a home also gives you somewhere to live, and most owners bought with borrowed money, which magnifies both gains and losses. One more check, since the Nasdaq leans on technology. Over roughly the last decade, the broader S&P five hundred index of large companies multiplied {{ ratio(sp, \"2017-01\", \"latest\") | times }}, against {{ ratio(nasdaq, \"2017-01\", \"latest\") | times }} for the Nasdaq. Less, but still far ahead of homes and prices.",
    "chart": {
     "type": "card",
     "title": "Stocks grew most, with the roughest ride",
