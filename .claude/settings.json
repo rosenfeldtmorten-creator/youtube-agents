@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh workflow run publish.yml:*)",
+      "Bash(gh workflow run daily-short.yml:*)"
+    ]
+  }
+}
