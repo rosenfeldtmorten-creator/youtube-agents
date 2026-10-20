@@ -146,10 +146,12 @@ def frames(photo: Photo, caption: str, size: tuple[int, int], seconds: float, ou
     out = []
     for i in range(n):
         t = i / fps
-        z = 1.08 - 0.08 * i / (n - 1)  # crop shrinks from the full 108% image toward the centre
-        cw, ch = int(w * z), int(h * z)
-        left, top = (base.width - cw) // 2, (base.height - ch) // 2
-        frame = base.crop((left, top, left + cw, top + ch)).resize(size, Image.BILINEAR)
+        p = i / (n - 1)
+        z = 1.08 - 0.08 * (p * p * (3 - 2 * p))  # crop shrinks from the full 108% image toward the centre, easing in and out
+        # Fractional crop box: rounding it to whole pixels each frame is what made the push-in shake.
+        cw, ch = base.width * z / 1.08, base.height * z / 1.08
+        left, top = (base.width - cw) / 2, (base.height - ch) / 2
+        frame = base.resize(size, Image.BICUBIC, box=(left, top, left + cw, top + ch))
         if text is not None:
             strength = max(0.0, min(1.0, (title_seconds - t) / 0.5))  # full until the last half second, then fade
             if strength > 0:

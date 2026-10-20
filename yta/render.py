@@ -93,16 +93,20 @@ def build_segments(story: Story, cfg: dict, narrator, out_dir: Path, cache_dir: 
     return segs, bgs
 
 
-# Voice mastering: cut rumble, thin out the boxy low-mids a phone mic adds, lift clarity, then even out
-# loudness to YouTube's speech target (-16 LUFS, peaks below -1.5 dB).
+# Voice mastering, in the order a radio or podcast chain uses: cut rumble, add a little chest (low shelf),
+# thin out the boxy low-mids a phone mic adds, lift presence and air, tame harsh "s" sounds, compress gently so
+# quiet and loud words sit together, then set loudness to YouTube's playback level (-14 LUFS, peaks below -1 dB)
+# so the channel doesn't sound quieter than the next video.
 AUDIO_MASTER = (
-    "highpass=f=70,equalizer=f=300:t=q:w=1.2:g=-2,equalizer=f=5000:t=q:w=1:g=2,"
-    "loudnorm=I=-16:TP=-1.5:LRA=11"
+    "highpass=f=75,lowshelf=f=140:g=2,equalizer=f=320:t=q:w=1.2:g=-2.5,"
+    "equalizer=f=3200:t=q:w=1.4:g=1.5,equalizer=f=9000:t=q:w=1:g=1.5,deesser=i=0.35,"
+    "acompressor=threshold=-21dB:ratio=3:attack=6:release=90:makeup=2,"
+    "loudnorm=I=-14:TP=-1:LRA=8"
 )
 
 
 # Background music sits about 14 dB under the voice and dips further while someone is speaking.
-MUSIC_LEVEL = "loudnorm=I=-30:TP=-8"
+MUSIC_LEVEL = "loudnorm=I=-28:TP=-8"
 MUSIC_DUCK = "sidechaincompress=threshold=0.03:ratio=6:attack=30:release=600"
 
 

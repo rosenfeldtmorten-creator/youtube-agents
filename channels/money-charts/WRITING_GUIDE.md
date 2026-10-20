@@ -55,13 +55,43 @@ Two optional settings on a series:
 
 ## The shape of every episode
 
-Viewers should feel they are watching a sharp news explainer, not a lecture. Every episode follows this shape:
+Viewers decide in the first fifteen seconds whether to stay, so every episode is told as a story with a question that only the end answers, not as a lecture. Every episode follows this shape:
 
-1. **News hook (first scene, chapter "What just happened").** The first scene is a `headlines` montage: 1-3 real headlines about the news, copied word for word with the outlet and date, sliding in one after another over a blurred photo. Keep its narration to one or two sentences, then continue on a photo card.
+1. **Cold open (first scene, at most three sentences, about fifteen seconds).** Start with the single most surprising result, said in terms of the viewer's own life ("In nineteen eighty-four, a typical home cost {{ ... | years }} of pay. Today it costs {{ ... | years }}.", with every number a placeholder as always), over the most dramatic chart (it can be the same chart again later). End it with an open loop: the question the video will answer, which the viewer can only resolve by watching ("So who took the difference? The answer isn't who you think."). Never "In this video we will...", never a channel greeting.
+2. **News hook (chapter "What just happened").** A `headlines` montage: 1-3 real headlines about the news, copied word for word with the outlet and date, sliding in one after another over a blurred photo. Keep its narration to one or two sentences, then continue on a photo card.
     Open on something that happened in the last two weeks: a data release, a central bank decision, a company or government announcement. Search the news before writing and say when and who ("On Thursday the Labor Department said..."). Write dates in words ("the sixteenth of October"), never digits. Any number from the news goes in an `inline` series whose `citation` names the outlet and date, so it is still a placeholder.
-2. **The question.** Turn the news into the question a normal person asks about their money.
-3. **The data and the model.** The charts, with at least one model chart where it fits (see below), and real photos between them.
-4. **My take (last chapter, named "My take").** Two to four honest sentences: what the numbers mean for an ordinary household, and what would change your mind. Opinion, never advice.
+3. **A person to follow.** Pick one typical person and carry them through the numbers ("Take someone earning the median wage in nineteen eighty-four..."). Always make clear they are an example built from the data, never a real named person. Viewers remember a person far better than a statistic.
+4. **The data and the model, with turns.** The charts, with at least one model chart where it fits (see below), and real photos between them. Build towards the strangest finding instead of showing it first in the middle. End most chapters with one short line that pulls into the next ("But that's not the strangest part."). Each tease must be paid off in the very next chapter; never tease what the video doesn't show.
+5. **The payoff.** Answer the cold open's question in plain words, with its number, before the take.
+6. **My take (last chapter, named "My take").** Two to four honest sentences: what the numbers mean for an ordinary household, and what would change your mind. Opinion, never advice.
+
+Write for the ear: short sentences, one idea each, questions the viewer would ask out loud, and a change of pace every few sentences (a short punchy line after a long one).
+
+## Experiments: titles, thumbnails, stories
+
+The channel is new, so we are finding out what gets clicked and watched. Every episode tries a named style for each of these three and records them in `"experiment": {"title": "...", "thumbnail": "...", "story": "..."}`. Use the style names below so results can be compared, or add a new name when you invent a new style.
+
+**Honesty rule.** Titles and thumbnails should make people curious, but the video must deliver exactly what they promise. No false claims, no fake urgency ("before it's too late"), no promise the data doesn't support. YouTube removes misleading titles and thumbnails, and viewers who feel tricked leave in the first seconds, which hurts more than a dull title.
+
+Title styles (at most 70 characters reads fully on a phone):
+- `curiosity-gap`: hides the answer ("The Real Reason Your Rent Keeps Going Up")
+- `shock-number`: leads with the striking result in words ("Homes Cost Twice As Many Years Of Pay As In 1984")
+- `you-question`: asks about the viewer's own money ("Are You Actually Richer Than Your Parents Were?")
+- `myth-buster`: names a common belief and challenges it ("Renting Isn't Throwing Money Away. The Data Says...")
+- `versus`: a contest ("Stocks vs Homes vs Bonds: 40 Years, One Winner")
+- `then-vs-now`: a year against today ("What $1 From Your Birth Year Is Worth Today")
+
+Title case and up to one year or number are fine in the title (it is not narration).
+
+Thumbnail styles:
+- `text`: three to five big words over the chart (the default).
+- `badge`: the words plus a big computed number in a coloured box, with `"thumbnail_badge": "{{ pct_change(homes, \"1984-01\", \"latest\") | pct_sign }}"`. Badge formats: `pct_sign` (+337%), `usd_short` ($1.2T), `times_short` (3.4x); at most nine characters once filled.
+- `chart`: pick the most dramatic chart as the background with `"thumbnail_scene": <scene number>` (otherwise the first chart is used).
+`thumbnail_text` should add to the title, not repeat it ("THEY LIED?" is not allowed; "HOMES vs PAY" is).
+
+Story styles: `cold-open` (the shape above), `countdown` (three or four findings, saving the biggest for last), `myth-vs-reality` (state the belief, test it chart by chart), `one-person` (follow one typical person's life through the decades), `mystery` (start from a strange chart and investigate why). All of them keep the cold open, the news hook and the take.
+
+**How to choose.** Until there are view numbers, rotate so each new episode tries a combination not used in the last three. Once `channels/money-charts/STATS.md` exists, check it before writing: two of every three new episodes use the title, thumbnail and story styles with the most views per video after seven days, and the third tries something different. Shorts titles can carry a `"style"` too, using the same title style names.
 
 ## Photos
 
@@ -102,7 +132,7 @@ Every chart has a short `title` (no typed numbers) and may have a `subtitle` exp
 
 ## Fields
 
-`slug`, `title` (at most 100 characters, a question or a clear promise, no placeholders), `description` (2 short paragraphs: what happened and what the video answers), `tags` (8-10), `hashtags`, `method`, `references`, `thumbnail_text` (at most 5 words), `data`, `claims`, `scenes` (each `narration` + `chart`).
+`slug`, `title` (at most 100 characters, a question or a clear promise, no placeholders), `description` (2 short paragraphs: what happened and what the video answers), `tags` (8-10), `hashtags`, `method`, `references`, `thumbnail_text` (at most 5 words), `experiment`, optional `thumbnail_badge` and `thumbnail_scene`, `data`, `claims`, `scenes` (each `narration` + `chart`).
 
 ## Shorts
 

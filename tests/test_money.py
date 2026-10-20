@@ -454,3 +454,50 @@ def test_narrator_knows_when_an_episode_is_prepared(tmp_path):
     assert not n.ready(["One.", "Two."])
     n.say("Two.")
     assert n.ready(["One.", "Two."])
+
+
+def test_experiment_fields(tmp_path, monkeypatch):
+    from yta.story import StoryError
+
+    data = json.loads(SAMPLE.read_text())
+    data.update(experiment={"title": "shock-number", "thumbnail": "badge", "story": "cold-open"},
+                thumbnail_badge='{{ pct_change(cpi, "2000-01", "latest") | pct_sign }}', thumbnail_scene=5)
+    path = tmp_path / "ep.json"
+    path.write_text(json.dumps(data))
+    ep = _with_fake_data(load_episode(path), monkeypatch)
+    assert ep.raw["thumbnail_badge_filled"].startswith("+") and ep.raw["thumbnail_badge_filled"].endswith("%")
+
+    for bad in ({"experiment": {"colour": "red"}}, {"thumbnail_scene": 1}, {"thumbnail_badge": ""}):
+        path.write_text(json.dumps({**data, **bad}))
+        with pytest.raises(StoryError):
+            load_episode(path)
+
+
+def test_sentences_come_out_at_one_level():
+    import numpy as np
+    from yta import audio
+
+    t = np.arange(audio.SR) / audio.SR
+    quiet = (0.05 * np.sin(2 * np.pi * 200 * t)).astype(np.float32)
+    loud = (0.4 * np.sin(2 * np.pi * 200 * t)).astype(np.float32)
+    a, b = audio.even_level(quiet), audio.even_level(loud)
+    assert abs(np.sqrt((a ** 2).mean()) / np.sqrt((b ** 2).mean()) - 1) < 0.05
+    assert np.abs(audio.even_level(np.zeros(100, np.float32))).max() == 0
+
+
+def test_photo_push_in_never_steps_backwards(tmp_path):
+    import numpy as np
+    from PIL import Image, ImageDraw
+    from yta import photos
+
+    img = Image.new("RGB", (800, 450))
+    ImageDraw.Draw(img).line((150, 0, 150, 450), fill=(255, 255, 255), width=3)
+    img.save(tmp_path / "p.jpg")
+    shot = photos.Photo(path=tmp_path / "p.jpg", title="t", artist="a", licence="CC0", page="")
+    out = photos.frames(shot, "", (320, 180), 2.0, tmp_path / "f", fps=24)
+    xs = []
+    for p, _ in out:
+        a = np.asarray(Image.open(p).convert("L"), float)[:120].mean(0)[:140]
+        xs.append((a * np.arange(len(a))).sum() / a.sum())
+    steps = np.diff(xs)
+    assert (steps <= 0.05).all() or (steps >= -0.05).all()

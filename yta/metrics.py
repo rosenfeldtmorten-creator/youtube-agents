@@ -143,6 +143,10 @@ FORMATS = {
     "times": lambda x: f"{x:.1f} times".replace(".0 ", " "),
     "year": lambda x: f"{int(x)}",
     "years": lambda x: f"{x:.0f} years",
+    # Short forms for a thumbnail's big number, not for narration.
+    "pct_sign": lambda x: f"{x * 100:+.0f}%",
+    "usd_short": lambda x: "$" + _words_number(x).replace(" billion", "B").replace(" million", "M").replace(" trillion", "T"),
+    "times_short": lambda x: f"{x:.1f}x".replace(".0x", "x"),
 }
 
 
