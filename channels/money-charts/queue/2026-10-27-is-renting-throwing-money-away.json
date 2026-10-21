@@ -1,6 +1,6 @@
 {
  "slug": "is-renting-throwing-money-away",
- "title": "Is Renting Really Throwing Money Away? The Maths of Rent vs Buy",
+ "title": "Renting Isn't Throwing Money Away. Here's What Owning Really Costs",
  "description": "In mid-October 2026 US asking rents fell on a year earlier for the thirty-eighth month in a row, while the thirty-year mortgage rate held at its highest level in nearly three years. So is renting still throwing money away?\n\nWe add up the money an owner never gets back (interest, property tax, upkeep and the lost return on the down payment), compare it with rent, and show how sharply the break-even moved when rates rose. Our honest take is at the end.",
  "comment": "Renter or owner? Tell us which one you are, and whether the maths in this video changes your mind.",
  "tags": [
@@ -15,7 +15,12 @@
   "economics in charts",
   "data visualization"
  ],
- "thumbnail_text": "Is rent wasted money?",
+ "thumbnail_text": "OWNERS THROW MONEY TOO",
+ "experiment": {
+  "title": "myth-buster",
+  "thumbnail": "text",
+  "story": "myth-vs-reality"
+ },
  "data": {
   "rent": {
    "source": "fred",
@@ -200,9 +205,36 @@
   {
    "says": "The mortgage payment is larger than the interest part, because part of it is repayment",
    "check": "payment(0.8 * latest(price), latest(rate), 30) > latest(price) * 0.8 * latest(rate) / 1200"
+  },
+  {
+   "says": "Rents rose much less than the cost of owning since early 2021",
+   "check": "pct_change(rent, \"2021-01\", \"latest\") < (latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12) / (value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12) - 1"
   }
  ],
  "scenes": [
+  {
+   "narration": "In early 2021, owning the typical new home cost about {{ value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12 | usd }} a month in money you never get back: interest, tax, upkeep and the return your deposit could have earned. Today that cost is about {{ latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12 | usd }}, while the rent tenants pay rose only {{ pct_change(rent, \"2021-01\", \"latest\") | pct }}. So is renting still throwing money away, or is it now the owner who throws away more?",
+   "chart": {
+    "type": "bars",
+    "bars": [
+     {
+      "label": "Early 2000",
+      "value": "value(price, \"2000-03\") * (0.8 * value(rate, \"2000-03\") + 0.2 * value(bond, \"2000-03\") + 2) / 100 / 12"
+     },
+     {
+      "label": "Early 2021",
+      "value": "value(price, \"2021-01\") * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100 / 12"
+     },
+     {
+      "label": "Latest",
+      "value": "latest(price) * (0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 / 12"
+     }
+    ],
+    "y_format": "usd",
+    "title": "The break-even rent for the median new home",
+    "subtitle": "Monthly cost of owning that never comes back, before price gains"
+   }
+  },
   {
    "narration": "On the fifteenth of October, two housing reports landed on the same day. Realtor.com said the typical asking rent in America's biggest cities was {{ latest(rent_news) | usd }} a month, down {{ -latest(rent_news_yoy) | pct1 }} on a year earlier. And Freddie Mac said the thirty-year mortgage rate was stuck at {{ latest(rate_news) | num }} percent, the highest in nearly three years.",
    "chart": {
@@ -523,7 +555,8 @@
  "short": {
   "title": "Is renting really throwing money away?",
   "scenes": [
-   10
-  ]
+   11
+  ],
+  "style": "you-question"
  }
 }

@@ -28,6 +28,10 @@ def in_todays_dollars(s: Series, cpi: Series) -> Series:
     return Series(s.name, s.label, s.unit, pts)
 
 
+# Styles tried per episode, so the stats can show which titles, thumbnails and story shapes get watched.
+EXPERIMENT_KEYS = ("title", "thumbnail", "story")
+BADGE_CHARS = 9  # the thumbnail's big number ("+337%", "$1.2T") has to read on a phone
+
 @dataclass
 class Scene:
     narration: str
@@ -69,6 +73,11 @@ class Episode:
             scene.filled = metrics.fill(scene.narration, self.series)
             if "title" in scene.chart:
                 scene.chart["title_filled"] = metrics.fill(scene.chart["title"], self.series)
+        if self.raw.get("thumbnail_badge"):
+            badge = metrics.fill(self.raw["thumbnail_badge"], self.series)
+            if len(badge) > BADGE_CHARS:
+                raise metrics.MetricError(f"thumbnail badge \"{badge}\" is longer than {BADGE_CHARS} characters")
+            self.raw["thumbnail_badge_filled"] = badge
 
     @property
     def hashtags(self) -> list[str]:
@@ -145,6 +154,17 @@ def load_episode(path: Path) -> Episode:
 
     if "comment" in data and not (isinstance(data["comment"], str) and 10 <= len(data["comment"]) <= 300):
         raise StoryError(f"{path.name}: 'comment' must be a question for viewers of 10-300 characters")
+    exp = data.get("experiment", {})
+    if not (isinstance(exp, dict) and set(exp) <= set(EXPERIMENT_KEYS)
+            and all(isinstance(v, str) and 2 <= len(v) <= 40 for v in exp.values())):
+        raise StoryError(f"{path.name}: 'experiment' must map {', '.join(EXPERIMENT_KEYS)} to short style names")
+    if "thumbnail_badge" in data and not (isinstance(data["thumbnail_badge"], str) and 1 <= len(data["thumbnail_badge"]) <= 160):
+        raise StoryError(f"{path.name}: 'thumbnail_badge' must be a short number such as \"{{{{ rise_pct }}}}%\"")
+    if "thumbnail_scene" in data:
+        k = data["thumbnail_scene"]
+        if not (isinstance(k, int) and 1 <= k <= len(data["scenes"])
+                and (data["scenes"][k - 1].get("chart") or {}).get("type") in ("line", "bars", "growth", "scatter")):
+            raise StoryError(f"{path.name}: 'thumbnail_scene' must be the number of a chart scene")
     extra = data.get("shorts", [])
     if not isinstance(extra, list):
         raise StoryError(f"{path.name}: 'shorts' must be a list like 'short'")

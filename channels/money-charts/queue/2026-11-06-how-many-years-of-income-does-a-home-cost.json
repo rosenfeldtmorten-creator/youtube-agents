@@ -1,6 +1,6 @@
 {
  "slug": "how-many-years-of-income-does-a-home-cost",
- "title": "How Many Years of Income Does a Home Cost? (1984 vs Today)",
+ "title": "A Home Now Costs Over a Year More of Income Than in 1984",
  "description": "In October 2026 the National Association of Realtors put the typical existing-home price at $417,500, while the Census Bureau put the typical household's income at $87,460. That is close to five years of income for one home.\n\nWe follow the price-to-income ratio back to 1984, and in today's dollars back to the 1960s: the late-1970s boom, the 2006 bubble and 2008 crash, the pandemic jump, and how long it takes to save a down payment today. Our honest take is at the end.",
  "comment": "Where do you live, and roughly how many years of income does a typical home cost there?",
  "tags": [
@@ -21,7 +21,12 @@
   "HousePrices",
   "Affordability"
  ],
- "thumbnail_text": "Years of pay per home",
+ "thumbnail_text": "YEARS OF PAY PER HOME",
+ "experiment": {
+  "title": "shock-number",
+  "thumbnail": "text",
+  "story": "cold-open"
+ },
  "method": "We divide the yearly average of the Census median new-home price by Census median household income for the same year. For today's dollars we restate both with the consumer price index, and the scatter fits a straight line through the yearly averages since 1984. The down-payment model assumes one fifth down and saving a tenth of income.",
  "references": [
   {
@@ -285,6 +290,49 @@
  ],
  "scenes": [
   {
+   "narration": "In 1984, the typical new home cost {{ (value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\") | num }} years of the typical household's income, and by 2022 it cost {{ (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") | num }} years, more than at the top of the housing bubble. Even after easing, it is still {{ (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") | num }} years today. So what let home prices run so far ahead of pay?",
+   "chart": {
+    "type": "bars",
+    "y_format": "num",
+    "title": "Years of income to buy the median new home",
+    "subtitle": "Yearly average median new home price divided by median household income",
+    "bars": [
+     {
+      "label": "1984",
+      "value": "(value(price, \"1984-01\") + value(price, \"1984-04\") + value(price, \"1984-07\") + value(price, \"1984-10\")) / 4 / value(income, \"1984\")"
+     },
+     {
+      "label": "1990",
+      "value": "(value(price, \"1990-01\") + value(price, \"1990-04\") + value(price, \"1990-07\") + value(price, \"1990-10\")) / 4 / value(income, \"1990\")"
+     },
+     {
+      "label": "1999",
+      "value": "(value(price, \"1999-01\") + value(price, \"1999-04\") + value(price, \"1999-07\") + value(price, \"1999-10\")) / 4 / value(income, \"1999\")"
+     },
+     {
+      "label": "2005",
+      "value": "(value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\")"
+     },
+     {
+      "label": "2011",
+      "value": "(value(price, \"2011-01\") + value(price, \"2011-04\") + value(price, \"2011-07\") + value(price, \"2011-10\")) / 4 / value(income, \"2011\")"
+     },
+     {
+      "label": "2019",
+      "value": "(value(price, \"2019-01\") + value(price, \"2019-04\") + value(price, \"2019-07\") + value(price, \"2019-10\")) / 4 / value(income, \"2019\")"
+     },
+     {
+      "label": "2022",
+      "value": "(value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\")"
+     },
+     {
+      "label": "2025",
+      "value": "(value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\")"
+     }
+    ]
+   }
+  },
+  {
    "narration": "On the thirteenth of October, the National Association of Realtors said the typical existing home in America sold for {{ latest(news_price) | usd }} in September, up {{ latest(news_price_yoy) | pct1 }} on a year earlier. A month before that, the Census Bureau said the typical household earned {{ latest(news_income) | usd }} in 2025.",
    "chart": {
     "type": "headlines",
@@ -503,7 +551,7 @@
    }
   },
   {
-   "narration": "Why does the ratio matter if most people borrow? Because the deposit still has to be saved from income. Say a household saves a tenth of its income before tax and wants a {{ 0.2 | pct }} down payment. In 1985 that took about {{ 0.2 * (value(price, \"1985-01\") + value(price, \"1985-04\") + value(price, \"1985-07\") + value(price, \"1985-10\")) / 4 / value(income, \"1985\") / 0.1 | num }} years of saving. In 2005, about {{ 0.2 * (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") / 0.1 | num }} years. In 2022, about {{ 0.2 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") / 0.1 | num }}. And in 2025, about {{ 0.2 * (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") / 0.1 | num }} years. Even after the recent improvement, that is years longer than in the mid-1980s. And a tenth is generous. The national saving rate, the share of after-tax income that Americans save, is well below where it was in the middle of the 1980s.",
+   "narration": "Why does the ratio matter if most people borrow? Because the deposit still has to be saved from income. Say a household saves a tenth of its income before tax and wants a {{ 0.2 | pct }} down payment. In 1985 that took about {{ 0.2 * (value(price, \"1985-01\") + value(price, \"1985-04\") + value(price, \"1985-07\") + value(price, \"1985-10\")) / 4 / value(income, \"1985\") / 0.1 | num }} years of saving. In 2005, about {{ 0.2 * (value(price, \"2005-01\") + value(price, \"2005-04\") + value(price, \"2005-07\") + value(price, \"2005-10\")) / 4 / value(income, \"2005\") / 0.1 | num }} years. In 2022, about {{ 0.2 * (value(price, \"2022-01\") + value(price, \"2022-04\") + value(price, \"2022-07\") + value(price, \"2022-10\")) / 4 / value(income, \"2022\") / 0.1 | num }}. And in 2025, about {{ 0.2 * (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") / 0.1 | num }} years. Even after the recent improvement, that is years longer than in the mid-1980s. And a tenth is generous. The national saving rate, the share of after-tax income that Americans save, is well below where it was in the middle of the 1980s. And behind all of this sits one more number, the one most buyers never look at.",
    "chart": {
     "type": "bars",
     "y_format": "num",
@@ -555,7 +603,7 @@
    }
   },
   {
-   "narration": "So, how many years of income does a home cost? In the mid-1980s, about three and a half. Through the 1990s, about four. Today, about {{ (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") | num }} for a new home, and roughly five for the typical existing home in the latest news. The ratio has come down since its pandemic peak, because incomes are finally growing faster than prices. In the latest Census report, median income rose for another year, while the National Association of Realtors reports prices rising only slowly. But it is still almost a full year of income above where it sat through the 1990s. Compared with 1984, the median household now needs more than a whole extra year of income, before tax, for the median new home.",
+   "narration": "So, how many years of income does a home cost? In the mid-1980s, about three and a half. Through the 1990s, about four. Today, about {{ (value(price, \"2025-01\") + value(price, \"2025-04\") + value(price, \"2025-07\") + value(price, \"2025-10\")) / 4 / value(income, \"2025\") | num }} for a new home, and roughly five for the typical existing home in the latest news. The ratio has come down since its pandemic peak, because incomes are finally growing faster than prices. In the latest Census report, median income rose for another year, while the National Association of Realtors reports prices rising only slowly. But it is still almost a full year of income above where it sat through the 1990s. A big part of what let prices run so far ahead of pay was four decades of falling mortgage rates, which let buyers stretch to more years of income. Compared with 1984, the median household now needs more than a whole extra year of income, before tax, for the median new home.",
    "chart": {
     "type": "card",
     "title": "About five years, up from three and a half",
@@ -596,27 +644,31 @@
  "short": {
   "title": "A home now costs far more years of income than in the 1980s",
   "scenes": [
-   7
-  ]
+   8
+  ],
+  "style": "then-vs-now"
  },
  "shorts": [
   {
    "title": "How long does it take to save a down payment now?",
    "scenes": [
-    11
-   ]
+    12
+   ],
+   "style": "you-question"
   },
   {
    "title": "Home prices left household income behind. Here is when.",
    "scenes": [
-    5
-   ]
+    6
+   ],
+   "style": "curiosity-gap"
   },
   {
    "title": "How cheap loans let house prices stretch",
    "scenes": [
-    12
-   ]
+    13
+   ],
+   "style": "curiosity-gap"
   }
  ]
 }
