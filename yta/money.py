@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from . import audio, headlines, metrics, music, photos
+from . import audio, footage, headlines, metrics, music, photos
 from .episode import Episode
 from .render import RenderResult, _fmt_srt, encode_segment, frame_aligned, mux_segments, remove_dirs
 from .story import split_sentences
@@ -187,7 +187,23 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
         if chart.get("chapter"):
             chapters.append((t, chart["chapter"]))
 
-        if chart["type"] == "headlines":
+        # Real footage first where the scene asks for it; the photo below is the fallback if no clip is found.
+        ready = None
+        if chart.get("video") and chart["type"] in ("photo", "card"):
+            try:
+                clip = footage.clip_for(chart, cache_dir / "footage")
+                ready = footage.segment(clip, out_dir / "segments" / f"{i:02d}.mp4", size, r["fps"], seconds,
+                                        caption=chart.get("caption", "") if chart["type"] == "photo" else "",
+                                        title=chart.get("title_filled", "") if chart["type"] == "card" else "",
+                                        label=chart.get("label", ""), accent=hex_rgb(r["accent"]))
+                if clip.description_line not in photo_credits:
+                    photo_credits.append(clip.description_line)
+            except Exception as exc:  # footage is a bonus; never let it stop a render
+                print(f"  video: {exc}; using the photo instead")
+
+        if ready is not None:
+            pass
+        elif chart["type"] == "headlines":
             background = None
             if chart.get("photo"):
                 try:
@@ -236,7 +252,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             if first_chart is None or i == ep.raw.get("thumbnail_scene"):
                 first_chart = out_dir / "first_chart.png"
                 shutil.copy(imgs[-1], first_chart)
-        segments.append(encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
+        segments.append(ready or encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
         # Frames are big (24 a second at full HD); drop them once the scene is encoded so the disk never fills.
         remove_dirs([out_dir / f"{kind}_{i:02d}" for kind in ("chart", "photo", "card", "headlines")])
         t += seconds

@@ -151,7 +151,11 @@
     "photo": {
      "query": "job fair hiring",
      "after": 2015
-    }
+    },
+    "video": [
+     "job fair interview",
+     "office workers"
+    ]
    }
   },
   {
@@ -219,7 +223,11 @@
     "photo": {
      "query": "factory workers assembly line",
      "after": 2010
-    }
+    },
+    "video": [
+     "factory assembly line workers",
+     "warehouse workers"
+    ]
    }
   },
   {
@@ -306,7 +314,10 @@
     "chapter": "The answer",
     "photo": {
      "query": "Jerome Powell press conference"
-    }
+    },
+    "video": [
+     "press conference microphones"
+    ]
    }
   },
   {

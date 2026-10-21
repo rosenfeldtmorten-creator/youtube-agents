@@ -186,6 +186,10 @@ def load_episode(path: Path) -> Episode:
         for name in list(chart.get("series", [])) + [chart[k] for k in ("x", "y") if chart["type"] == "scatter"]:
             if name not in data["data"]:
                 raise StoryError(f"{path.name}: scene {i} charts unknown data '{name}'")
+        if "video" in chart and not (chart["type"] in ("photo", "card") and (
+                isinstance(chart["video"], str) or (isinstance(chart["video"], list) and chart["video"]
+                                                    and all(isinstance(v, str) for v in chart["video"])))):
+            raise StoryError(f"{path.name}: scene {i} 'video' must be a search (or a list of searches) on a photo or card scene")
         if chart["type"] == "photo" and not (chart.get("file") or chart.get("query")):
             raise StoryError(f"{path.name}: scene {i} photo needs a Wikimedia Commons 'file' or a search 'query'")
         if chart["type"] == "headlines":

@@ -376,6 +376,10 @@
       "query": "residential street houses",
       "after": 2015
      }
+    ],
+    "video": [
+     "suburban house exterior",
+     "house front yard"
     ]
    }
   },
@@ -395,6 +399,9 @@
       "query": "new homes construction neighborhood",
       "after": 2015
      }
+    ],
+    "video": [
+     "family in front of new house"
     ]
    }
   },
@@ -404,7 +411,11 @@
     "type": "photo",
     "query": "new home construction United States",
     "after": 2015,
-    "caption": "New homes, the price series we follow"
+    "caption": "New homes, the price series we follow",
+    "video": [
+     "house construction site",
+     "new homes construction"
+    ]
    }
   },
   {
@@ -528,7 +539,11 @@
     "type": "photo",
     "query": "aerial view suburban housing development",
     "after": 2015,
-    "caption": "Homes grew faster than incomes"
+    "caption": "Homes grew faster than incomes",
+    "video": [
+     "suburban housing development aerial",
+     "housing development drone"
+    ]
    }
   },
   {
@@ -637,6 +652,10 @@
       "query": "new homes construction neighborhood",
       "after": 2015
      }
+    ],
+    "video": [
+     "house construction framing",
+     "building a house"
     ]
    }
   }

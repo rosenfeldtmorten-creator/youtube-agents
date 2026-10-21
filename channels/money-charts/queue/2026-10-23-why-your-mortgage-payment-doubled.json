@@ -136,7 +136,11 @@
     "photo": {
      "query": "real estate open house",
      "after": 2015
-    }
+    },
+    "video": [
+     "real estate open house tour",
+     "house for sale"
+    ]
    }
   },
   {
@@ -149,7 +153,10 @@
     "photo": {
      "query": "house for sale sign",
      "after": 2015
-    }
+    },
+    "video": [
+     "house for sale sign"
+    ]
    }
   },
   {
@@ -252,7 +259,11 @@
     "type": "photo",
     "query": "house keys",
     "after": 2010,
-    "caption": "Locking in a rate"
+    "caption": "Locking in a rate",
+    "video": [
+     "house keys handover",
+     "front door keys"
+    ]
    }
   },
   {
@@ -313,7 +324,11 @@
     "photo": {
      "query": "suburban street houses",
      "after": 2015
-    }
+    },
+    "video": [
+     "suburban street drone",
+     "suburban neighborhood"
+    ]
    }
   },
   {
@@ -326,7 +341,11 @@
     "photo": {
      "query": "signing mortgage documents",
      "after": 2010
-    }
+    },
+    "video": [
+     "signing contract documents",
+     "signing paperwork"
+    ]
    }
   }
  ],
