@@ -19,7 +19,16 @@ jobs:
       - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core r-base-core r-cran-ggplot2 r-cran-jsonlite r-cran-scales
       - run: pip install -r requirements.txt pytest
       - name: Tests
-        run: python -m pytest -q
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -q -rf --tb=short 2>&1 | tee pytest.log
+      - name: Report failing tests   # job logs can't be read from Claude's sandbox; annotations can
+        if: failure()
+        shell: bash
+        run: |
+          msg=$(grep -E "^(FAILED|ERROR|E  )|Error" pytest.log | tail -c 3500 | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')
+          echo "::error title=Tests failed::${msg}"
       - name: Queued stories
         run: |
           for dir in channels/*/; do
