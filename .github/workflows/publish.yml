@@ -115,6 +115,7 @@ jobs:
       - name: Render and publish
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           YT_SECRETS: ${{ toJSON(secrets) }}   # each channel's login is the secret its channel.yaml names
         shell: bash
         run: |
