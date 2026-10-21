@@ -89,6 +89,9 @@ class Narrator:
         return self.cache_dir / self.enhance / f"{key}.wav"
 
     def say(self, text: str) -> np.ndarray:
+        return audio.even_level(self._say(text))
+
+    def _say(self, text: str) -> np.ndarray:
         key = self._key(text)
         if self.enhance and self._enhanced(key).exists():
             data, sr = audio.read_wav(self._enhanced(key))

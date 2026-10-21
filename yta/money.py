@@ -233,7 +233,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
             reveal = min(seconds * 0.6, r["chart_reveal_seconds"])
             frames += [(p, reveal / n) for p in imgs[:-1]]
             frames.append((imgs[-1], seconds - reveal * (n - 1) / n))
-            if first_chart is None:
+            if first_chart is None or i == ep.raw.get("thumbnail_scene"):
                 first_chart = out_dir / "first_chart.png"
                 shutil.copy(imgs[-1], first_chart)
         segments.append(encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
@@ -252,6 +252,7 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
     srt.write_text("\n".join(f"{n}\n{_fmt_srt(a)} --> {_fmt_srt(b)}\n{txt}\n" for n, (a, b, txt) in enumerate(captions, 1)),
                    encoding="utf-8")
     bg = Image.open(first_chart).convert("RGB") if first_chart else generated_background(ep.slug, size)
-    thumb = thumbnail(bg, ep.thumbnail_text, None, r["accent"], out_dir / "thumbnail.jpg", label=cfg["thumbnail_label"])
+    thumb = thumbnail(bg, ep.thumbnail_text, ep.raw.get("thumbnail_badge_filled"), r["accent"], out_dir / "thumbnail.jpg",
+                      label=cfg["thumbnail_label"])
     return RenderResult(video, thumb, srt, seconds, photo_credits, chapters if len(chapters) >= 3 else [],
                         [music.credit(track)] if music_file else [])

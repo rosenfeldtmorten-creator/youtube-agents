@@ -64,3 +64,24 @@ def trim_silence(data: np.ndarray, threshold: float = 0.01, pad: float = 0.05, s
         return data
     p = int(pad * sr)
     return data[max(0, loud[0] - p): loud[-1] + p]
+
+
+def even_level(data: np.ndarray, target_db: float = -20.0, sr: int = SR) -> np.ndarray:
+    """Scale one spoken sentence to a common speech level.
+
+    Each sentence is cloned on its own, so some come out louder or quieter than the next; the mastering
+    compressor can't fix jumps of several dB between sentences, this does. Only the voiced 20 ms windows
+    count, so pauses don't drag the level down."""
+    if data.size == 0:
+        return data
+    win = max(1, int(sr * 0.02))
+    frames = data[: len(data) // win * win].reshape(-1, win) if len(data) >= win else data.reshape(1, -1)
+    rms = np.sqrt((frames.astype(np.float64) ** 2).mean(axis=1))
+    voiced = rms[rms > rms.max() * 0.1] if rms.max() > 0 else rms
+    level = float(np.sqrt((voiced ** 2).mean())) if voiced.size else 0.0
+    if level <= 1e-6:
+        return data
+    gain = min(4.0, 10 ** (target_db / 20) / level)
+    out = data * gain
+    peak = float(np.abs(out).max())
+    return (out / peak * 0.98 if peak > 0.98 else out).astype(data.dtype)
