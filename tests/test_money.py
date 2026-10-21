@@ -164,6 +164,15 @@ def test_snapshot_fallback(tmp_path, monkeypatch):
     data._save_points(tmp_path / "snap" / "fred-TEST-.json", [(dt.date(2020, 1, 1), 100.0), (dt.date(2021, 1, 1), 110.0)])
     s = data.fetch("t", spec, tmp_path / "cache", tmp_path / "snap")
     assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
+    # FRED sometimes answers 200 with an HTML error page; that must fall back too, not crash the render.
+    class Page:
+        text = '<!DOCTYPE html>\n    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300">'
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: Page())
+    s = data.fetch("t", spec, tmp_path / "cache2", tmp_path / "snap")
+    assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
 
 
 def _scatter_episode():

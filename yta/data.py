@@ -84,6 +84,8 @@ def _fred(series_id: str) -> list[tuple[dt.date, float]]:
     r = requests.get(url, params={"id": series_id}, timeout=60)
     r.raise_for_status()
     rows = list(csv.reader(io.StringIO(r.text)))
+    if not rows or len(rows[0]) < 2 or rows[0][0].strip().lower() not in ("date", "observation_date"):
+        raise ValueError(f"FRED sent something other than a CSV for {series_id} (an error or maintenance page?)")
     out = []
     for row in rows[1:]:
         if len(row) < 2 or row[1] in ("", "."):
@@ -156,7 +158,7 @@ def fetch(name: str, spec: dict, cache_dir: Path, snapshot_dir: Path | None = No
         try:
             points = _download(spec)
             _save_points(path, points)
-        except requests.RequestException as exc:
+        except (requests.RequestException, ValueError, KeyError, IndexError) as exc:  # down, or sent a broken page
             snap = snapshot_dir / f"{_key(spec)}.json"
             if not snap.exists():
                 raise ValueError(f"can't download {name} ({exc}) and there is no snapshot of it in data/snapshot") from exc
