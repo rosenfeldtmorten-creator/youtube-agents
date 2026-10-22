@@ -636,3 +636,51 @@ def test_music_falls_back_when_the_host_sends_a_web_page(tmp_path, monkeypatch, 
     assert music.fetch("Floating Cities", tmp_path) is None
     assert "::warning title=No music::" in capsys.readouterr().out
     assert not list(tmp_path.glob("Floating Cities.*"))                    # a web page is never cached as a track
+
+
+def test_daily_short_falls_back_to_a_teaser_from_the_queue(tmp_path, monkeypatch, capsys):
+    import argparse
+    import sys
+    import types
+
+    import yta.episode
+    from yta import cli, money, shorts
+
+    for d in ("published", "queue"):
+        (tmp_path / d).mkdir()
+    data = json.loads(SAMPLE.read_text())
+    ep = load_episode(SAMPLE)
+    _with_fake_data(ep, monkeypatch)
+    used = [{"date": "2026-01-01", "scenes": p["scenes"]} for p in shorts.candidates(ep)]
+    (tmp_path / "published" / "2026-01-01-old.json").write_text(json.dumps(
+        {**data, "_published": {"date": "2026-01-01", "video_id": "OLD", "shorts": used}}))   # every Short used up
+    queued = tmp_path / "queue" / "2026-12-01-next.json"
+    queued.write_text(json.dumps(data))
+
+    monkeypatch.setattr(yta.episode, "fetch_all", lambda specs, cache: _fake_data())
+    monkeypatch.setattr(money, "check_voice_matches_charts", lambda ep: None)
+    monkeypatch.setattr(cli, "load_channel", lambda slug: (tmp_path, {"format": "episode", "youtube": {}}))
+    monkeypatch.setattr(cli, "get_narrator", lambda *a, **k: types.SimpleNamespace(enhance=None))
+    monkeypatch.setattr(shorts, "render_short", lambda *a, **k: (tmp_path / "short.mp4", 40.0))
+    sent = {}
+    fake_upload = types.SimpleNamespace(
+        youtube_client=lambda yt: None, engage=lambda *a, **k: None,
+        upload_video=lambda client, video, title, description, tags, yt: sent.update(title=title, description=description) or "NEW")
+    monkeypatch.setitem(sys.modules, "yta.upload", fake_upload)
+    monkeypatch.setattr(sys.modules["yta"], "upload", fake_upload, raising=False)
+    args = argparse.Namespace(channel="x", force=False, voice=None, no_upload=False)
+
+    assert cli.cmd_short(args) == 0
+    teasers = json.loads(queued.read_text())["_teasers"]
+    assert len(teasers) == 1 and teasers[0]["url"].endswith("/NEW")
+    assert "youtu.be" not in sent["description"] and "coming soon" in sent["description"]
+    assert cli.shorts_today(tmp_path)
+
+    # Every Short gone everywhere: the warning says so, and why any episode was skipped.
+    q = json.loads(queued.read_text())
+    q["_teasers"] = [{"date": "2026-01-01", "scenes": p["scenes"]} for p in shorts.candidates(ep)]
+    queued.write_text(json.dumps(q))
+    monkeypatch.setattr(money, "check_voice_matches_charts", lambda ep: (_ for _ in ()).throw(ValueError("voice says 3, chart says 4")))
+    assert cli.cmd_short(argparse.Namespace(channel="x", force=True, voice=None, no_upload=False)) == 0
+    out = capsys.readouterr().out
+    assert "No Short left" in out and "voice says 3, chart says 4" in out
