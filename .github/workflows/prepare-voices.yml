@@ -1,12 +1,16 @@
 name: Prepare voices
 
-# Speaks and restores the narration of the next queued episodes ahead of time and saves it in the
+# Speaks and restores the narration of the next queued episodes of each active chart channel ahead of time and saves it in the
 # narration cache, so an upload day only has to render (minutes instead of hours).
 on:
   schedule:
     - cron: "0 2 * * *"   # nightly, one new episode a night (about 3 hours), well ahead of 2 uploads a week
   workflow_dispatch:
     inputs:
+      channel:
+        description: Channel (its folder name under channels/); empty for every active one
+        type: string
+        default: ""
       episodes:
         description: How many not-yet-prepared episodes to prepare (about 3 hours each, so 1 fits safely)
         default: "1"
@@ -19,13 +23,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  channels:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.pick.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: pick
+        env:
+          ACTIVE: ${{ inputs.channel && format('["{0}"]', inputs.channel) || vars.ACTIVE_CHANNELS || '["money-charts"]' }}
+        run: |
+          python3 -m pip install -q pyyaml
+          echo "list=$(python3 -m yta channels --active "$ACTIVE" --format episode)" >> "$GITHUB_OUTPUT"
+
   prepare:
+    needs: channels
+    if: needs.channels.outputs.list != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: ${{ fromJSON(needs.channels.outputs.list) }}   # each channel has its own runner and narration cache
     env:
       PYTHONUNBUFFERED: "1"
       RESEMBLE_ENHANCE: /tmp/re/bin/resemble-enhance
-      CHANNEL: money-charts
+      CHANNEL: ${{ matrix.channel }}
     steps:
       - uses: actions/checkout@v4
 

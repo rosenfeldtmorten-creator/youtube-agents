@@ -1,0 +1,30 @@
+name: Channel login
+
+# Shows which YouTube channel a channel's login uploads to. Run it after adding a new refresh token,
+# before the first upload, to be sure videos land on the right channel.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel (its folder name under channels/)
+        type: string
+        default: money-charts
+
+permissions:
+  contents: read
+
+jobs:
+  whoami:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Log in as the channel
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          YT_SECRETS: ${{ toJSON(secrets) }}
+        run: python -m yta whoami --channel "$CHANNEL"
