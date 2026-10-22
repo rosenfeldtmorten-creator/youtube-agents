@@ -110,6 +110,8 @@ def tidy_opening(sentences: list[str]) -> list[str]:
     return sentences
 
 
-def short_description(ep, video_id: str) -> str:
+def short_description(ep, video_id: str | None) -> str:
+    """With no video_id the Short is a teaser for an episode that isn't up yet."""
     tags = " ".join(f"#{t}" for t in ["Shorts", *ep.hashtags[:3]])
-    return f"Full video: https://youtu.be/{video_id}\n\n{ep.description.strip()}\n\n{tags}"
+    lead = f"Full video: https://youtu.be/{video_id}" if video_id else "The full video is coming soon: subscribe so you don't miss it."
+    return f"{lead}\n\n{ep.description.strip()}\n\n{tags}"
