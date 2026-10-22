@@ -249,8 +249,11 @@ def cmd_narrate(args) -> int:
 def shorts_today(channel_dir: Path) -> bool:
     """True if a Short already went up today, with a video or on its own."""
     today = dt.date.today().isoformat()
-    for p in (channel_dir / "published").glob("*.json"):
-        meta = json.loads(p.read_text(encoding="utf-8")).get("_published", {})
+    for p in [*(channel_dir / "published").glob("*.json"), *queue_items(channel_dir)]:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        meta = data.get("_published", {})
+        if any(s.get("date") == today for s in data.get("_teasers", [])):
+            return True
         if meta.get("date") == today and meta.get("short_url"):
             return True
         if any(s.get("date") == today for s in meta.get("shorts", [])):
@@ -259,7 +262,9 @@ def shorts_today(channel_dir: Path) -> bool:
 
 
 def cmd_short(args) -> int:
-    """Post one Short a day, cut from a video that is already up (newest video first), and record it."""
+    """Post one Short a day and record it. Cut from a video that is already up (newest first); when those are used
+    up or can't be loaded, cut a teaser from the next queued episode instead, so a day never goes without one.
+    Teasers are recorded under "_teasers" in the episode file, which keeps them when the episode is published."""
     channel_dir, cfg = load_channel(args.channel)
     if cfg["format"] != "episode":
         print("Daily Shorts are only made for finance episodes.")
@@ -271,10 +276,13 @@ def cmd_short(args) -> int:
 
     fmt = FORMATS[cfg["format"]]
     narrator = get_narrator(cfg, args.voice, test=args.no_upload)
-    for path in sorted((channel_dir / "published").glob("*.json"), reverse=True):
+    skipped = []
+    sources = sorted((channel_dir / "published").glob("*.json"), reverse=True) + queue_items(channel_dir)
+    for path in sources:
         data = json.loads(path.read_text(encoding="utf-8"))
         meta = data.get("_published", {})
-        done = {tuple(s["scenes"]) for s in meta.get("shorts", [])}
+        teaser = not meta.get("video_id")
+        done = {tuple(s["scenes"]) for s in meta.get("shorts", []) + data.get("_teasers", [])}
         try:
             ep = fmt.load(path)
             ep.load_data(ROOT / ".cache" / "data")
@@ -283,6 +291,7 @@ def cmd_short(args) -> int:
             check_voice_matches_charts(ep)  # the same voice-versus-chart check every video passes
         except Exception as exc:  # e.g. a claim the newest data no longer supports
             print(f"Skipping {path.name}: {exc}")
+            skipped.append(f"{path.name}: {exc}")
             continue
         for pick in candidates(ep):
             if tuple(pick["scenes"]) in done:
@@ -314,16 +323,20 @@ def cmd_short(args) -> int:
             yt = cfg["youtube"]
             client = upload.youtube_client(yt)
             short_id = upload.upload_video(client, video, f"{pick['title']} #Shorts",
-                                           short_description(ep, meta["video_id"]), ep.tags, yt)
+                                           short_description(ep, None if teaser else meta["video_id"]), ep.tags, yt)
             url = f"https://youtube.com/shorts/{short_id}"
             upload.engage(client, short_id, cfg, short=True)
-            meta.setdefault("shorts", []).append({"date": dt.date.today().isoformat(), "scenes": pick["scenes"],
-                                                  "title": pick["title"], "url": url})
-            data["_published"] = meta
+            record = {"date": dt.date.today().isoformat(), "scenes": pick["scenes"], "title": pick["title"], "url": url}
+            if teaser:
+                data.setdefault("_teasers", []).append(record)
+            else:
+                meta.setdefault("shorts", []).append(record)
+                data["_published"] = meta
             path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
             print(f"::notice title=Short uploaded::{pick['title']} {url}")
             return 0
-    print("::warning title=No Short left::every published video has used up its Shorts; add \"shorts\" to an episode")
+    why = f" Skipped: {'; '.join(skipped)}" if skipped else ""
+    print(f"::warning title=No Short left::every published and queued episode has used up its Shorts.{why}")
     return 0
 
 
