@@ -11,13 +11,13 @@ import subprocess
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from . import audio, footage, headlines, metrics, music, photos
-from .episode import Episode
+from .episode import SUBSCRIBE, Episode
 from .render import RenderResult, _fmt_srt, encode_segment, frame_aligned, mux_segments, remove_dirs
 from .story import split_sentences
-from .visuals import SlideMaker, dim, draw_rich_text, generated_background, hex_rgb, thumbnail
+from .visuals import SlideMaker, dim, draw_rich_text, font, generated_background, hex_rgb, thumbnail
 
 ROOT = Path(__file__).resolve().parent.parent
 CHART_SCRIPT = ROOT / "charts" / "chart.R"
@@ -145,6 +145,55 @@ def draw_chart(ep: Episode, chart: dict, out_dir: Path, n_frames: int, size: tup
     return frames
 
 
+def subscribe_button(size: tuple[int, int], pressed: bool) -> Image.Image:
+    """A subscribe button low in the frame: red before the 'click', grey and ticked off after it."""
+    w, h = size
+    layer = Image.new("RGBA", size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    text = "SUBSCRIBED" if pressed else "SUBSCRIBE"
+    f = font(round(h * 0.05), "bold")
+    tw = d.textlength(text, font=f)
+    bw, bh = tw + h * 0.09, h * 0.1
+    x0, y0 = (w - bw) / 2, h * 0.74
+    d.rounded_rectangle((x0 + 6, y0 + 8, x0 + bw + 6, y0 + bh + 8), radius=bh / 2, fill=(0, 0, 0, 110))  # shadow
+    d.rounded_rectangle((x0, y0, x0 + bw, y0 + bh), radius=bh / 2,
+                        fill=(96, 104, 118, 245) if pressed else (220, 30, 36, 250))
+    d.text((w / 2, y0 + bh / 2), text, font=f, fill=(255, 255, 255, 255), anchor="mm")
+    return layer
+
+
+def subscribe_prompt(segment: Path, start: float, end: float, size: tuple[int, int], fps: int) -> Path:
+    """Lay the subscribe button over a scene while the subscribe line is spoken: it fades in red, 'gets
+    clicked' halfway and turns grey, then fades out. Same codec settings as encode_segment."""
+    seconds = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                    str(segment)], capture_output=True, text=True, check=True).stdout.strip())
+    end = min(end + 0.6, seconds)
+    span = end - start
+    if span < 1:
+        return segment
+    click = start + min(1.4, span * 0.45)
+    pngs = []
+    for pressed in (False, True):
+        pngs.append(segment.with_name(f"{segment.stem}_sub{int(pressed)}.png"))
+        subscribe_button(size, pressed).save(pngs[-1])
+    out = segment.with_name(segment.stem + "_sub.mp4")
+    graph = (f"[1:v]format=rgba,fade=t=in:st=0:d=0.3:alpha=1,setpts=PTS+{start:.3f}/TB[r];"
+             f"[2:v]format=rgba,fade=t=out:st={span - 0.4:.3f}:d=0.4:alpha=1,setpts=PTS+{start:.3f}/TB[g];"
+             f"[0:v][r]overlay=0:0:enable='between(t,{start:.3f},{click:.3f})':eof_action=pass[v1];"
+             f"[v1][g]overlay=0:0:enable='between(t,{click:.3f},{end:.3f})':eof_action=pass,format=yuv420p[out]")
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-i", str(segment),
+        "-loop", "1", "-framerate", str(fps), "-t", f"{span:.3f}", "-i", str(pngs[0]),
+        "-loop", "1", "-framerate", str(fps), "-t", f"{span:.3f}", "-i", str(pngs[1]),
+        "-filter_complex", graph, "-map", "[out]", "-t", f"{seconds:.4f}", "-an",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-g", str(fps * 4), "-r", str(fps), str(out),
+    ], check=True)
+    for p in pngs:
+        p.unlink()
+    out.replace(segment)
+    return segment
+
+
 def card(slides: SlideMaker, text: str, accent_label: str = "") -> Path:
     img = dim(generated_background("money-card", slides.size), 0.55)
     if accent_label:
@@ -253,6 +302,12 @@ def render_episode(ep: Episode, cfg: dict, narrator, out_dir: Path, cache_dir: P
                 first_chart = out_dir / "first_chart.png"
                 shutil.copy(imgs[-1], first_chart)
         segments.append(ready or encode_segment(frames, out_dir / "segments" / f"{i:02d}.mp4", r["fps"], seconds))
+        said = [(a - t, b - t) for a, b, sentence in captions if sentence == SUBSCRIBE and a >= t]
+        if i == 1 and said:
+            try:
+                subscribe_prompt(segments[-1], *said[0], size, r["fps"])
+            except Exception as exc:  # the button is a nice extra; never lose the video over it
+                print(f"  subscribe button: {exc}")
         # Frames are big (24 a second at full HD); drop them once the scene is encoded so the disk never fills.
         remove_dirs([out_dir / f"{kind}_{i:02d}" for kind in ("chart", "photo", "card", "headlines")])
         t += seconds
