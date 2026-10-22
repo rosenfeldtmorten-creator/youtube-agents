@@ -83,6 +83,8 @@ def _fred(series_id: str) -> list[tuple[dt.date, float]]:
     url = "https://fred.stlouisfed.org/graph/fredgraph.csv"
     r = requests.get(url, params={"id": series_id}, timeout=60)
     r.raise_for_status()
+    if r.text.lstrip().startswith("<"):  # FRED sometimes answers with a web page (outage, bot check): use the snapshot
+        raise requests.RequestException(f"FRED sent a web page instead of data for {series_id}")
     rows = list(csv.reader(io.StringIO(r.text)))
     if not rows or len(rows[0]) < 2 or rows[0][0].strip().lower() not in ("date", "observation_date"):
         raise ValueError(f"FRED sent something other than a CSV for {series_id} (an error or maintenance page?)")

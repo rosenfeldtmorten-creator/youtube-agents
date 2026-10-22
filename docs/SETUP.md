@@ -52,6 +52,8 @@ In the repository on GitHub, open **Settings > Secrets and variables > Actions >
 | `YT_REFRESH_TOKEN_MONEY_CHARTS` | Refresh token from step 3, repeated for the finance channel |
 | `PEXELS_API_KEY` | Optional: key from step 4 |
 
+Each further channel only needs its own `YT_REFRESH_TOKEN_<SLUG>` secret: see [NEW_CHANNEL.md](NEW_CHANNEL.md).
+
 Never paste these into a chat, an issue or a file in the repository.
 
 ## 6. Add your voice

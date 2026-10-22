@@ -3,6 +3,9 @@
     python -m yta check  --channel english-stories
     python -m yta run    --channel english-stories [--no-upload] [--voice silent] [--force]
     python -m yta render --channel english-stories --item path/to/story.json --voice silent
+    python -m yta channels [--active '["money-charts"]'] [--format episode]   # JSON list, for workflow matrices
+    python -m yta new-channel --slug space-facts --name "Space Facts" --about "..." [--like money-charts]
+    python -m yta whoami --channel money-charts   # which YouTube channel this channel's login uploads to
     python -m yta snapshot   # save a copy of every data series in use (data/snapshot), for offline checks
 """
 from __future__ import annotations
@@ -150,7 +153,7 @@ def cmd_run(args) -> int:
             return 0
 
         yt = cfg["youtube"]
-        client = upload.youtube_client(yt["refresh_token_secret"])
+        client = upload.youtube_client(yt)
         video_id = upload.upload_video(client, result.video, obj.title, description, obj.tags, yt)
         print(f"Uploaded: https://youtu.be/{video_id}")
         upload.set_thumbnail(client, video_id, result.thumbnail)
@@ -303,7 +306,7 @@ def cmd_short(args) -> int:
             from . import upload
 
             yt = cfg["youtube"]
-            client = upload.youtube_client(yt["refresh_token_secret"])
+            client = upload.youtube_client(yt)
             short_id = upload.upload_video(client, video, f"{pick['title']} #Shorts",
                                            short_description(ep, meta["video_id"]), ep.tags, yt)
             url = f"https://youtube.com/shorts/{short_id}"
@@ -335,6 +338,45 @@ def cmd_snapshot(args) -> int:
     return 1 if failed and not saved else 0
 
 
+def cmd_channels(args) -> int:
+    from .channels import ChannelError, pick
+
+    try:
+        print(json.dumps(pick(ROOT, args.active, args.format)))
+    except ChannelError as exc:
+        sys.exit(str(exc))
+    return 0
+
+
+def cmd_new_channel(args) -> int:
+    from .channels import ChannelError, new_channel, token_secret
+
+    try:
+        written = new_channel(ROOT, args.slug, args.name, args.about, args.like, args.format)
+    except ChannelError as exc:
+        sys.exit(str(exc))
+    for path in written:
+        print(f"wrote {path.relative_to(ROOT)}")
+    print(f"""
+Next, once per channel (docs/NEW_CHANNEL.md has the details):
+  1. Make the channel on YouTube (a Brand Account channel under your Google account).
+  2. Get its refresh token and add it as the repository secret {token_secret(args.slug)}.
+  3. Run the "Channel login" workflow for {args.slug} to check the token points at the new channel.
+  4. Rewrite channels/{args.slug}/WRITING_GUIDE.md for the channel's subject, and queue a first item.
+  5. Add "{args.slug}" to the ACTIVE_CHANNELS variable when it should start publishing.""")
+    return 0
+
+
+def cmd_whoami(args) -> int:
+    from . import upload
+
+    _, cfg = load_channel(args.channel)
+    me = upload.whoami(upload.youtube_client(cfg["youtube"]))
+    print(f"::notice title={args.channel} uploads to::{me['title']} (https://youtube.com/channel/{me['id']}, "
+          f"{me['subscribers']} subscribers, {me['videos']} videos)")
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="yta", description="YouTube channel agents")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -351,6 +393,18 @@ def main(argv=None) -> int:
         if name == "narrate":
             sp.add_argument("--episodes", type=int, default=1, help="how many queued episodes to narrate")
     sub.add_parser("snapshot")
+    sp = sub.add_parser("channels", help="print the channels to run as a JSON list")
+    sp.add_argument("--active", default="", help='JSON list such as ACTIVE_CHANNELS; empty means every channel')
+    sp.add_argument("--format", default="", help="only channels of this format (episode, story)")
+    sp = sub.add_parser("new-channel", help="make channels/<slug>/ from an existing channel")
+    sp.add_argument("--slug", required=True, help="folder name, e.g. space-facts")
+    sp.add_argument("--name", required=True, help="channel name as shown on YouTube")
+    sp.add_argument("--about", required=True, help="one sentence on what the channel is")
+    sp.add_argument("--format", default="episode", choices=sorted(FORMATS))
+    sp.add_argument("--like", default="", help="channel to copy settings from (default: one of the same format)")
+    sp = sub.add_parser("whoami", help="show which YouTube channel a channel's login uploads to")
+    sp.add_argument("--channel", required=True)
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
-            "narrate": cmd_narrate, "short": cmd_short}[args.cmd](args)
+            "narrate": cmd_narrate, "short": cmd_short, "channels": cmd_channels,
+            "new-channel": cmd_new_channel, "whoami": cmd_whoami}[args.cmd](args)
