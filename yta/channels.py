@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 SLUG = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
-TEMPLATES = {"episode": "money-charts", "story": "english-stories"}
+TEMPLATES = {"episode": "money-charts", "story": "english-stories", "clips": "nature-unleashed"}
 
 
 class ChannelError(ValueError):

@@ -19,9 +19,9 @@ on:
         type: string
         required: true
       format:
-        description: Kind of video (episode = narrated charts, story = narrated slides)
+        description: Kind of video (episode = narrated charts, story = narrated slides, clips = narrated footage Shorts)
         type: choice
-        options: [episode, story]
+        options: [episode, story, clips]
         default: episode
 
 permissions:

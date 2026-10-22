@@ -132,7 +132,7 @@ jobs:
           dst="previews/$slug"
           rm -rf "$dst" && mkdir -p "$dst"
           cut=(); [ "$CUT" != "0" ] && cut=(-t "$CUT")
-          ffmpeg -loglevel error -y -i "$src/video.mp4" "${cut[@]}" -vf scale=1280:-2 -c:v libx264 -crf 28 -preset veryfast -c:a aac -b:a 128k "$dst/preview.mp4"
+          ffmpeg -loglevel error -y -i "$src/video.mp4" "${cut[@]}" -vf "scale='min(1280,iw)':-2" -c:v libx264 -crf 28 -preset veryfast -c:a aac -b:a 128k "$dst/preview.mp4"
           cp "$src/thumbnail.jpg" "$src/description.txt" "$dst/"
           [ -f "$src/short/video.mp4" ] && ffmpeg -loglevel error -y -i "$src/short/video.mp4" -vf scale=720:-2 -c:v libx264 -crf 28 -preset veryfast -c:a aac -b:a 128k "$dst/short.mp4"
           for t in 5 30 60 90; do ffmpeg -loglevel error -y -ss "$t" -i "$src/video.mp4" -frames:v 1 -vf scale=960:-2 "$dst/still-$t.jpg" || true; done

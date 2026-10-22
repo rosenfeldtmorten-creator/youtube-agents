@@ -3,6 +3,7 @@
     python -m yta check  --channel english-stories
     python -m yta run    --channel english-stories [--no-upload] [--voice silent] [--force]
     python -m yta render --channel english-stories --item path/to/story.json --voice silent
+    python -m yta compile --channel nature-unleashed [--no-upload] [--force]   # weekly compilation of the Shorts
     python -m yta channels [--active '["money-charts"]'] [--format episode]   # JSON list, for workflow matrices
     python -m yta new-channel --slug space-facts --name "Space Facts" --about "..." [--like money-charts]
     python -m yta whoami --channel money-charts   # which YouTube channel this channel's login uploads to
@@ -159,7 +160,7 @@ def cmd_run(args) -> int:
         upload.set_thumbnail(client, video_id, result.thumbnail)
         if yt.get("upload_captions"):
             upload.upload_captions(client, video_id, result.captions, yt.get("language", "en"))
-        upload.engage(client, video_id, cfg, obj.raw.get("comment", ""))
+        upload.engage(client, video_id, cfg, obj.raw.get("comment", ""), short=getattr(fmt, "short", False))
 
         data = json.loads(item.read_text(encoding="utf-8"))
         data["_published"] = {
@@ -167,6 +168,8 @@ def cmd_run(args) -> int:
             "video_id": video_id,
             "url": f"https://youtu.be/{video_id}",
             "minutes": round(result.seconds / 60, 1),
+            "seconds": round(result.seconds, 1),
+            **result.record,
         }
         if short:
             from .shorts import short_description
@@ -195,8 +198,8 @@ def cmd_narrate(args) -> int:
     an upload day only has to render."""
     channel_dir, cfg = load_channel(args.channel)
     fmt = FORMATS[cfg["format"]]
-    if cfg["format"] != "episode":
-        print("Narration warm-up is only needed for finance episodes.")
+    if cfg["format"] not in ("episode", "clips"):
+        print("Narration warm-up is only needed for finance episodes and clips.")
         return 0
     from .money import OUTRO
     from .shorts import OUTRO as SHORT_OUTRO
@@ -211,8 +214,11 @@ def cmd_narrate(args) -> int:
             print(f"Skipping {item.name}: {exc}")
             continue
         narrator = get_narrator(cfg, args.voice, test=False)
-        sentences = [s for sc in obj.scenes for s in split_sentences(sc.filled or sc.narration)]
-        sentences += split_sentences(OUTRO) + ([SHORT_OUTRO] if obj.raw.get("short") else [])
+        if hasattr(fmt, "sentences"):
+            sentences = fmt.sentences(obj, cfg)
+        else:
+            sentences = [s for sc in obj.scenes for s in split_sentences(sc.filled or sc.narration)]
+            sentences += split_sentences(OUTRO) + ([SHORT_OUTRO] if obj.raw.get("short") else [])
         if getattr(narrator, "ready", None) and narrator.ready(sentences):
             print(f"{obj.slug}: voice already prepared")
             continue
@@ -321,6 +327,122 @@ def cmd_short(args) -> int:
     return 0
 
 
+def speak_and_restore(narrator, sentences: list[str]) -> None:
+    """Speak every sentence into the cache and restore the new ones, so the render only reads files."""
+    for sentence in sentences:
+        narrator.say(sentence)
+    if narrator.enhance:
+        try:
+            narrator.enhance_cached(sentences)
+        except Exception as exc:  # the video still works with the plain voice
+            print(f"::warning title=Voice restoration skipped::{exc}")
+
+
+def compilation_pick(channel_dir: Path, cfg: dict, today: dt.date | None = None) -> tuple[list[Path], str]:
+    """The published Shorts for this week's compilation: oldest first, each used once, enough for min_minutes
+    and no more than max_minutes. Empty, with the reason, when it isn't due or there isn't enough yet."""
+    comp = cfg.get("compilation", {})
+    today = today or dt.date.today()
+    done, last = set(), None
+    for p in (channel_dir / "compilations").glob("*.json"):
+        rec = json.loads(p.read_text(encoding="utf-8"))
+        done.update(rec.get("shorts", []))
+        day = rec.get("_published", {}).get("date")
+        if day and (last is None or day > last):
+            last = day
+    if last and (today - dt.date.fromisoformat(last)).days < comp.get("min_days_between", 6):
+        return [], f"the last compilation went up on {last}"
+    lo, hi = comp.get("min_minutes", 6) * 60, comp.get("max_minutes", 10) * 60
+    overhead = comp.get("overhead_seconds", 25)  # intro, outro and the pauses between moments
+    picked, total = [], overhead
+    for p in sorted((channel_dir / "published").glob("*.json")):
+        meta = json.loads(p.read_text(encoding="utf-8")).get("_published", {})
+        if p.stem in done or not meta.get("seconds"):
+            continue
+        length = meta["seconds"] - 3  # the Short's own spoken outro is left out
+        if total + length > hi:
+            break
+        picked.append(p)
+        total += length
+    if total < lo:
+        return [], f"only {total / 60:.1f} min of new Shorts so far; a compilation needs {lo / 60:.0f}"
+    return picked, f"{len(picked)} Shorts, about {total / 60:.1f} min"
+
+
+def footage_credits(lines: list[str], limit: int = 2400) -> list[str]:
+    """Credit lines that fit in a description. When there are too many, Pexels and Pixabay clips (whose licences ask
+    for no credit) are listed by author only, while Creative Commons and public-domain clips keep their full line."""
+    if len("\n".join(lines)) <= limit:
+        return lines
+    keep, short = [], {}
+    for line in lines:
+        for licence, site in (("Pexels License", "Pexels"), ("Pixabay Content License", "Pixabay")):
+            if licence in line:
+                short.setdefault(site, []).append(line.rsplit(": ", 1)[-1].split(", ")[0])
+                break
+        else:
+            keep.append(line)
+    return keep + [f"{site}: {', '.join(dict.fromkeys(names))}" for site, names in short.items()]
+
+
+def cmd_compile(args) -> int:
+    """Join the week's published Shorts into one longer landscape video, upload it and record which Shorts it used."""
+    channel_dir, cfg = load_channel(args.channel)
+    if cfg["format"] != "clips":
+        print("Compilations are only made for clips channels.")
+        return 0
+    from .clips import compilation_sentences, compilation_title, load_clips, render_compilation
+
+    paths, why = compilation_pick(channel_dir, cfg)
+    if not paths and args.force:  # a test: take whatever is published
+        paths = sorted((channel_dir / "published").glob("*.json"))[-8:]
+    if not paths:
+        print(f"Nothing to do: {why}.")
+        return 0
+    print(f"Compilation: {why}")
+    items = [load_clips(p) for p in paths]
+    narrator = get_narrator(cfg, args.voice, test=args.no_upload)
+    speak_and_restore(narrator, compilation_sentences(cfg, items))
+    out_dir = ROOT / "out" / channel_dir.name / f"compilation-{dt.date.today().isoformat()}"
+    result = render_compilation(items, cfg, narrator, out_dir, ROOT / ".cache")
+    print(f"Rendered {result.video} ({result.seconds / 60:.1f} min)")
+    comp = cfg.get("compilation", {})
+    if not args.force:  # the pick aims for min-max minutes; this catches a render far off the estimate
+        checks.check_duration(result.seconds, {"min_minutes": comp.get("min_minutes", 6) - 1,
+                                               "max_minutes": comp.get("max_minutes", 10) + 2})
+    from . import upload
+
+    title = compilation_title(cfg, items)
+    shorts_list = "IN THIS VIDEO\n" + "\n".join(
+        f"{i.title}: {json.loads(p.read_text(encoding='utf-8'))['_published'].get('url', '')}" for i, p in zip(items, paths))
+    sections = [shorts_list, "FOOTAGE\n" + "\n".join(footage_credits(result.photo_credits))]
+    if result.music_credits:
+        sections.append("MUSIC\n" + "\n".join(result.music_credits))
+    hashtags = list(dict.fromkeys(h for i in items for h in i.hashtags))[:3]
+    intro = comp.get("description", "The week's wildest moments on Earth, in one place.")
+    description = upload.build_description(intro, result.chapters, sections, cfg["description_footer"], hashtags)
+    result.video.with_name("description.txt").write_text(description, encoding="utf-8")
+    if args.no_upload:
+        print("Test render only: nothing uploaded.")
+        return 0
+    yt = cfg["youtube"]
+    client = upload.youtube_client(yt)
+    tags = list(dict.fromkeys(t for i in items for t in i.tags))[:15]
+    video_id = upload.upload_video(client, result.video, title, description, tags, yt)
+    upload.set_thumbnail(client, video_id, result.thumbnail)
+    if yt.get("upload_captions"):
+        upload.upload_captions(client, video_id, result.captions, yt.get("language", "en"))
+    upload.engage(client, video_id, cfg, comp.get("comment", ""))
+    record = {"title": title, "shorts": [p.stem for p in paths],
+              "_published": {"date": dt.date.today().isoformat(), "video_id": video_id,
+                             "url": f"https://youtu.be/{video_id}", "minutes": round(result.seconds / 60, 1)}}
+    (channel_dir / "compilations").mkdir(exist_ok=True)
+    (channel_dir / "compilations" / f"{dt.date.today().isoformat()}.json").write_text(
+        json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"::notice title=Compilation uploaded::{title} https://youtu.be/{video_id}")
+    return 0
+
+
 def cmd_snapshot(args) -> int:
     """Refresh data/snapshot with every series listed in data/series.json or used by any episode."""
     from .data import refresh_snapshot
@@ -380,12 +502,12 @@ def cmd_whoami(args) -> int:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="yta", description="YouTube channel agents")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("check", "run", "render", "narrate", "short"):
+    for name in ("check", "run", "render", "narrate", "short", "compile"):
         sp = sub.add_parser(name)
         sp.add_argument("--channel", required=True)
         if name != "check":
             sp.add_argument("--voice", choices=["chatterbox", "espeak", "silent"], help="override the channel's voice backend")
-        if name in ("run", "short"):
+        if name in ("run", "short", "compile"):
             sp.add_argument("--no-upload", action="store_true", help="render only; leave the queue as it is")
             sp.add_argument("--force", action="store_true", help="ignore the pacing rules (for tests)")
         if name == "render":
@@ -395,7 +517,7 @@ def main(argv=None) -> int:
     sub.add_parser("snapshot")
     sp = sub.add_parser("channels", help="print the channels to run as a JSON list")
     sp.add_argument("--active", default="", help='JSON list such as ACTIVE_CHANNELS; empty means every channel')
-    sp.add_argument("--format", default="", help="only channels of this format (episode, story)")
+    sp.add_argument("--format", default="", help="only channels of this format (episode, story, clips)")
     sp = sub.add_parser("new-channel", help="make channels/<slug>/ from an existing channel")
     sp.add_argument("--slug", required=True, help="folder name, e.g. space-facts")
     sp.add_argument("--name", required=True, help="channel name as shown on YouTube")
@@ -406,5 +528,5 @@ def main(argv=None) -> int:
     sp.add_argument("--channel", required=True)
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
-            "narrate": cmd_narrate, "short": cmd_short, "channels": cmd_channels,
+            "narrate": cmd_narrate, "short": cmd_short, "compile": cmd_compile, "channels": cmd_channels,
             "new-channel": cmd_new_channel, "whoami": cmd_whoami}[args.cmd](args)
