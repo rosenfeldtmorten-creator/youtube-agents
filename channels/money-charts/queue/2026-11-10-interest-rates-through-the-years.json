@@ -369,6 +369,10 @@
       "query": "bank building United States",
       "after": 2010
      }
+    ],
+    "video": [
+     "bank interior",
+     "bank customers"
     ]
    }
   },
@@ -473,7 +477,11 @@
    "chart": {
     "type": "photo",
     "query": "piggy bank coins",
-    "caption": "Savers: what does cash earn?"
+    "caption": "Savers: what does cash earn?",
+    "video": [
+     "piggy bank coins",
+     "saving money"
+    ]
    }
   },
   {
@@ -575,6 +583,10 @@
       "query": "bank building United States",
       "after": 2010
      }
+    ],
+    "video": [
+     "wall street new york",
+     "new york financial district"
     ]
    }
   },

@@ -164,6 +164,15 @@ def test_snapshot_fallback(tmp_path, monkeypatch):
     data._save_points(tmp_path / "snap" / "fred-TEST-.json", [(dt.date(2020, 1, 1), 100.0), (dt.date(2021, 1, 1), 110.0)])
     s = data.fetch("t", spec, tmp_path / "cache", tmp_path / "snap")
     assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
+    # FRED sometimes answers 200 with an HTML error page; that must fall back too, not crash the render.
+    class Page:
+        text = '<!DOCTYPE html>\n    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300">'
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: Page())
+    s = data.fetch("t", spec, tmp_path / "cache2", tmp_path / "snap")
+    assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
 
 
 
@@ -516,3 +525,114 @@ def test_photo_push_in_never_steps_backwards(tmp_path):
         xs.append((a * np.arange(len(a))).sum() / a.sum())
     steps = np.diff(xs)
     assert (steps <= 0.05).all() or (steps >= -0.05).all()
+
+
+def test_footage_becomes_a_scene_of_exact_length(tmp_path, monkeypatch):
+    import subprocess
+    from yta import footage
+
+    src = tmp_path / "src.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=25:duration=3",
+                    "-pix_fmt", "yuv420p", str(src)], check=True)
+
+    def fake_source(query):
+        return {"url": "unused", "title": query, "author": "Tester", "licence": "CC0", "page": "https://example.org",
+                "source": "Test"}
+
+    class FakeResponse:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def raise_for_status(self): pass
+        def iter_content(self, n): yield src.read_bytes()
+
+    monkeypatch.setattr(footage, "SOURCES", (fake_source,))
+    monkeypatch.setattr(footage.requests, "get", FakeResponse)
+    clip = footage.clip_for({"video": ["traffic jam"]}, tmp_path / "cache")
+    assert clip.source == "Test" and "Tester" in clip.description_line
+    for title in ("", "Rents keep rising"):
+        out = footage.segment(clip, tmp_path / f"seg{bool(title)}.mp4", (640, 360), 24, 5.0, caption="A street", title=title)
+        probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                "stream=width,height:format=duration", "-of", "json", str(out)],
+                               capture_output=True, text=True, check=True)
+        info = json.loads(probe.stdout)
+        assert (info["streams"][0]["width"], info["streams"][0]["height"]) == (640, 360)
+        assert abs(float(info["format"]["duration"]) - 5.0) < 0.1
+
+    monkeypatch.setattr(footage, "SOURCES", (lambda q: None,))
+    with pytest.raises(LookupError):
+        footage.clip_for({"video": "nothing at all"}, tmp_path / "cache2")
+
+
+def test_every_video_asks_to_subscribe_in_the_first_minute(tmp_path, monkeypatch):
+    import subprocess
+
+    from PIL import Image
+
+    from yta import money
+    from yta.checks import CheckFailed
+    from yta.episode import COLD_OPEN_WORDS, SUBSCRIBE, check_script
+
+    ep = _with_fake_data(load_episode(SAMPLE), monkeypatch)
+    assert ep.scenes[0].filled.endswith(SUBSCRIBE)                       # spoken right after the cold open
+    assert sum(SUBSCRIBE in s.filled for s in ep.scenes) == 1
+    ep.load_data(None)
+    assert ep.scenes[0].filled.count(SUBSCRIBE) == 1                     # loading twice doesn't say it twice
+    ep.scenes[0].narration = "word " * (COLD_OPEN_WORDS + 1)
+    with pytest.raises(CheckFailed, match="first minute"):
+        check_script(ep, {"min_words": 0, "max_words": 99999, "min_scenes": 0, "max_scenes": 99})
+
+    # On screen: red button while the line starts, grey 'SUBSCRIBED' after the click, nothing before or after.
+    seg = tmp_path / "01.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=black:size=640x360:rate=24:duration=6",
+                    "-pix_fmt", "yuv420p", str(seg)], check=True)
+    money.subscribe_prompt(seg, 2.0, 4.0, (640, 360), 24)
+    assert abs(money.footage.duration(seg) - 6.0) < 0.05
+
+    def centre(at):
+        png = tmp_path / f"f{at}.png"
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(at), "-i", str(seg), "-frames:v", "1", str(png)], check=True)
+        return Image.open(png).convert("RGB").getpixel((320, int(360 * 0.745)))
+
+    assert max(centre(1.0)) < 30
+    red = centre(2.6)
+    assert red[0] > 150 and red[1] < 80
+    grey = centre(4.0)
+    assert 70 < grey[0] < 130 and abs(grey[0] - grey[2]) < 40
+    assert max(centre(5.5)) < 30
+
+
+def test_music_falls_back_when_the_host_sends_a_web_page(tmp_path, monkeypatch, capsys):
+    from yta import music
+
+    song = b"OggS" + b"\0" * 200_000
+
+    class Resp:
+        def __init__(self, content, ctype="text/html", payload=None):
+            self.content, self.headers, self.payload = content, {"content-type": ctype}, payload
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self.payload
+
+    pages = {"query": {"pages": {"1": {"index": 1, "title": "File:Kevin MacLeod - Interloper.ogg",
+                                       "imageinfo": [{"url": "https://upload.wikimedia.org/x/Kevin_MacLeod_-_Interloper.ogg"}]}}}}
+
+    def get(url, **kw):
+        if "incompetech" in url:
+            return Resp(b"<!DOCTYPE html><html>" + b" " * 200_000, "audio/mpeg")   # wrong body, even with an audio type
+        if "api.php" in url:
+            return Resp(b"", "application/json", pages)
+        return Resp(song, "application/ogg")
+
+    monkeypatch.setattr(music.requests, "get", get)
+    path = music.fetch("Interloper", tmp_path)
+    assert path.suffix == ".ogg" and path.read_bytes() == song
+    assert music.fetch("Interloper", tmp_path) == path                     # cached, no second download
+
+    monkeypatch.setattr(music.requests, "get", lambda url, **kw: Resp(b"<html>" * 50_000))
+    assert music.fetch("Floating Cities", tmp_path) is None
+    assert "::warning title=No music::" in capsys.readouterr().out
+    assert not list(tmp_path.glob("Floating Cities.*"))                    # a web page is never cached as a track

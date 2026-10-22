@@ -58,6 +58,7 @@ Two optional settings on a series:
 Viewers decide in the first fifteen seconds whether to stay, so every episode is told as a story with a question that only the end answers, not as a lecture. Every episode follows this shape:
 
 1. **Cold open (first scene, at most three sentences, about fifteen seconds).** Start with the single most surprising result, said in terms of the viewer's own life ("In nineteen eighty-four, a typical home cost {{ ... | years }} of pay. Today it costs {{ ... | years }}.", with every number a placeholder as always), over the most dramatic chart (it can be the same chart again later). End it with an open loop: the question the video will answer, which the viewer can only resolve by watching ("So who took the difference? The answer isn't who you think."). Never "In this video we will...", never a channel greeting.
+    The subscribe ask is added in code, not by you: right after the cold open the narrator says "If you like seeing the economy in charts, hit subscribe, so you never miss the next one." while a subscribe button appears and gets clicked on screen. So never write your own "subscribe" line, and keep the cold open under 150 words (the check fails above that) so the ask always lands in the first minute.
 2. **News hook (chapter "What just happened").** A `headlines` montage: 1-3 real headlines about the news, copied word for word with the outlet and date, sliding in one after another over a blurred photo. Keep its narration to one or two sentences, then continue on a photo card.
     Open on something that happened in the last two weeks: a data release, a central bank decision, a company or government announcement. Search the news before writing and say when and who ("On Thursday the Labor Department said..."). Write dates in words ("the sixteenth of October"), never digits. Any number from the news goes in an `inline` series whose `citation` names the outlet and date, so it is still a placeholder.
 3. **A person to follow.** Pick one typical person and carry them through the numbers ("Take someone earning the median wage in nineteen eighty-four..."). Always make clear they are an example built from the data, never a real named person. Viewers remember a person far better than a statistic.
@@ -101,6 +102,13 @@ Put 2-4 `photo` scenes between charts so the video is not only charts: a real pl
 - Add `"after": 2018` to a `query` to skip photos taken before that year, so a story about today's prices doesn't show a 1970s pump.
 - `"file": "File:Exact name.jpg"` instead of `query` picks one Commons file exactly. Prefer this when you know a good one.
 - Keep a photo scene short (one to three sentences). If no free photo is found, the video shows the caption on a card instead, so the render never fails. A card's `"photo"` can also be a list of searches, tried in order; give two or three, because Commons search is loose (a search for "office workers" once returned a bar called The Office). If none finds a photo, the card reuses the previous photo.
+
+## Footage
+
+Real moving video makes the episode feel like a documentary, so give about half of the `photo` scenes and photo `card`s a `"video"`: one stock-footage search, or a list of two tried in order (`"video": ["suburban street drone", "suburban neighborhood"]`). Keep the photo fields too: if no clip is found, the photo is used, so a render never fails.
+- Search for generic, everyday shots that stock libraries have: "counting dollar bills", "supermarket aisle", "house construction site", "stock market ticker screen", "commuters walking city street". A specific place or person (the Federal Reserve building, Paul Volcker) stays a photo.
+- Clips come from Pexels and Pixabay (when their free keys are set) and Wikimedia Commons, only with licences that allow reuse, and are credited on screen and in the description. Never use clips cut from other YouTube videos or TV.
+- A clip is cropped to fill the frame, slowed slightly if it is short, and a card's title shows over it for three seconds as with photos.
 
 ## Description fields
 
