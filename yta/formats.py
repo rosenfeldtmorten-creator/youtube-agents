@@ -100,5 +100,47 @@ class EpisodeFormat:
         return sections
 
 
-FORMATS = {"story": StoryFormat(), "episode": EpisodeFormat()}
+class ClipsFormat:
+    """Nature Unleashed: narrated vertical Shorts over licensed and public-domain footage."""
+
+    short = True  # uploads go to the Shorts playlist, with the item's own comment
+
+    @staticmethod
+    def load(path: Path):
+        from .clips import load_clips
+
+        return load_clips(path)
+
+    def check(self, item, channel_dir: Path, cfg: dict, earlier_in_queue: list, cache_dir: Path) -> str:
+        from .clips import check_script
+
+        check_script(item, cfg["script"])
+        checks.check_duplicates(item, published_items(channel_dir, self.load) + earlier_in_queue)
+        return f"{len(item.scenes)} scenes, {item.word_count} words"
+
+    @staticmethod
+    def sentences(item, cfg) -> list[str]:
+        from .clips import short_sentences
+
+        return short_sentences(item, cfg)
+
+    @staticmethod
+    def render(item, cfg, narrator, out_dir, cache_dir):
+        from .clips import render_clip_short
+
+        return render_clip_short(item, cfg, narrator, out_dir, cache_dir)
+
+    @staticmethod
+    def hashtags(item) -> list[str]:
+        return ["Shorts", *item.hashtags[:3]]
+
+    @staticmethod
+    def extra_description(item, result) -> list[str]:
+        sections = ["FOOTAGE\n" + "\n".join(result.photo_credits)] if result.photo_credits else []
+        if result.music_credits:
+            sections.append("MUSIC\n" + "\n".join(result.music_credits))
+        return sections
+
+
+FORMATS = {"story": StoryFormat(), "episode": EpisodeFormat(), "clips": ClipsFormat()}
 LOAD_ERRORS = (StoryError, checks.CheckFailed)

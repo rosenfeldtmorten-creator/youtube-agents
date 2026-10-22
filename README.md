@@ -6,6 +6,7 @@ Agents that write, narrate, render and upload videos for a set of YouTube channe
 | --- | --- |
 | Slow English Stories | Pipeline built; waiting for setup |
 | Economics in Charts | Pipeline built; waiting for setup |
+| Nature Unleashed | Daily narrated nature Shorts plus a weekly compilation (`format: clips`); waiting for its YouTube login |
 | Deep sleep sounds | Planned |
 
 ## How it works
@@ -13,6 +14,7 @@ Agents that write, narrate, render and upload videos for a set of YouTube channe
 1. **Writing.** A scheduled Claude task reads `channels/<channel>/WRITING_GUIDE.md`, writes new items into the channel's `queue/`, checks them, and pushes them here.
 2. **Checks.** `python -m yta check` validates every queued item: format, level, length, and similarity to everything already published. Items that fail at publish time move to `rejected/` with the reason.
 3. **Rendering.** `python -m yta run` takes the next item, narrates it with a clone of the creator's voice ([Chatterbox](https://github.com/resemble-ai/chatterbox), MIT licence), draws the slides or charts, and builds the video with FFmpeg. Finance charts are drawn in R with ggplot2 (`charts/chart.R`); change their look in `theme_money()`.
+   Clips channels (`yta/clips.py`) narrate over licensed stock and public-domain footage (`yta/footage.py`) as vertical Shorts, and `python -m yta compile` joins a week of them into one landscape video (`.github/workflows/compilation.yml`).
    Finance scripts never type numbers: every figure is a `{{ ... }}` placeholder computed from public data (FRED, World Bank), and every comparison made in words is listed under `claims` and checked against the data before upload.
 4. **Upload.** The YouTube Data API uploads the video with title, description, chapters, tags, thumbnail and captions, with AI voice disclosure switched on. The item moves to `published/`.
 5. **Pacing.** `channel.yaml` caps uploads per week, so the channel never posts faster than a person could.

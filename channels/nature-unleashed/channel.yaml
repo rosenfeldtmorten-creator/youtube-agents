@@ -1,0 +1,66 @@
+# Nature Unleashed: narrated Shorts of landslides, storms, lightning, volcanoes and giant waves, plus a weekly compilation.
+name: Nature Unleashed
+slug: nature-unleashed
+format: clips
+thumbnail_label: NATURE UNLEASHED
+
+cadence:              # one Short a day
+  per_week: 7
+  min_days_between: 1
+
+compilation:          # python -m yta compile: the week's Shorts as one landscape video (.github/workflows/compilation.yml)
+  min_days_between: 6
+  min_minutes: 6
+  max_minutes: 10
+  title: "{n} Times Nature Showed Its Power: {first} and More"
+  description: "The week's wildest moments on Earth in one video, each told in our own words over licensed and public-domain footage."
+  comment: "Which one hit hardest? And what should we cover next?"
+
+youtube:
+  refresh_token_secret: YT_REFRESH_TOKEN_NATURE_UNLEASHED   # see docs/NEW_CHANNEL.md
+  category_id: "28"          # Science & Technology
+  language: en
+  privacy: public
+  made_for_kids: false
+  contains_synthetic_media: true   # narration is a cloned voice
+  upload_captions: true
+
+engagement:   # done automatically after every upload (see yta/upload.py engage)
+  playlist: "Nature Unleashed: weekly compilations"
+  shorts_playlist: "Nature Unleashed: Shorts"
+  playlist_description: "Landslides, storms, lightning, volcanoes and giant waves, explained in under a minute."
+  default_comment: "Which one hit hardest? And what should we cover next?"
+
+clips:
+  outro: "Subscribe to Nature Unleashed for a new one every day."
+
+voice:
+  backend: chatterbox
+  reference: voice/reference.wav   # the creator's cloned voice, as on Economics in Charts
+  exaggeration: 0.6         # a little more energy than the finance channel
+  cfg_weight: 0.5
+  tempo: 1.0
+  enhance: resemble
+
+render:
+  fps: 30
+  sentence_pause: 0.15       # Shorts keep moving; the next clip starts almost at once
+  subscribe_at: 3.0          # seconds in: the SUBSCRIBE prompt shows while the hook lands
+  subscribe_seconds: 3.5
+  min_minutes: 0.4           # 24 s
+  max_minutes: 0.98          # 59 s, so YouTube treats it as a Short
+  accent: "#FFC233"
+  music_tracks: ["Five Armies", "Volatile Reaction", "Impact Prelude", "Heroic Age", "Interloper"]
+
+script:
+  min_words: 70
+  max_words: 140
+  min_scenes: 4
+  max_scenes: 8
+  max_scene_words: 30
+  max_hook_words: 14
+  max_title_chars: 70
+
+description_footer: |
+  Nature Unleashed: the planet's wildest moments, explained in under a minute. A new Short every day.
+  Footage is free stock video (Pexels, Pixabay) and public-domain or freely licensed footage (NASA, USGS, NOAA via Wikimedia Commons), credited above. Narration is our own, read by an AI clone of the creator's voice.

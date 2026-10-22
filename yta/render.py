@@ -35,6 +35,7 @@ class RenderResult:
     photo_credits: list[str]
     chapters: list[tuple[float, str]]
     music_credits: list[str] = field(default_factory=list)
+    record: dict = field(default_factory=dict)  # extra facts saved with the published item (e.g. footage used)
 
 
 def _fmt_srt(t: float) -> str:

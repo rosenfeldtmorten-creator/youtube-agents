@@ -17,10 +17,12 @@ def credit(title: str) -> str:
     return f"{LICENCE}: {title}"
 
 
-def pick(slug: str, wanted: str | None = None) -> str:
+def pick(slug: str, wanted: str | None = None, tracks=None) -> str:
+    """The item's own track if it names one, else one of the channel's tracks (or TRACKS), the same one every render."""
     if wanted:
         return wanted
-    return TRACKS[int(hashlib.sha1(slug.encode()).hexdigest(), 16) % len(TRACKS)]
+    tracks = tracks or TRACKS
+    return tracks[int(hashlib.sha1(slug.encode()).hexdigest(), 16) % len(tracks)]
 
 
 def fetch(title: str, cache_dir: Path) -> Path | None:
