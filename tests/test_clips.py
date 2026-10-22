@@ -142,3 +142,8 @@ def test_long_footage_credits_are_shortened_but_keep_creative_commons_lines():
     out = footage_credits(lines)
     assert out[0].startswith("Rockfall") and out[1].startswith("Pexels: Author 0, Author 1")
     assert len("\n".join(out)) < 2400
+
+
+def test_captions_do_not_break_after_abbreviations():
+    chunks = clips.caption_chunks("It shook the side of Mount St. Helens loose.")
+    assert not any(c.endswith("St.") for c in chunks)

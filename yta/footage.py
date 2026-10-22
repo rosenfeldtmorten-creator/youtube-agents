@@ -10,6 +10,7 @@ Shorts can ask for portrait footage first (`portrait`). Never clips cut from oth
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import os
 import re
@@ -111,7 +112,7 @@ def _commons(query: str, portrait: bool = False) -> list[dict]:
             continue
         if not 4 <= float(info.get("duration") or 0) <= 600:
             continue
-        artist = _strip_html(meta.get("Artist", {}).get("value", "")) or "Unknown author"
+        artist = html.unescape(_strip_html(meta.get("Artist", {}).get("value", ""))) or "Unknown author"
         title = re.sub(r"\.(webm|ogv|ogg)$", "", page["title"].removeprefix("File:"), flags=re.I)
         hits.append({"url": info["url"], "title": title, "author": artist[:80], "licence": licence,
                      "page": info.get("descriptionurl", ""), "source": "Wikimedia Commons"})

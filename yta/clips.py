@@ -27,6 +27,7 @@ WIDE = (1920, 1080)
 MAX_SHORT_SECONDS = 59
 CAPTION_WORDS = 3  # words on screen at once: Shorts are watched with the sound off as often as on
 GRADE = "eq=contrast=1.06:saturation=1.12"  # a touch more punch than raw stock footage
+ABBREVIATION = re.compile(r"(St|Mt|Dr|Mr|Mrs|Ms|No|vs)\.")  # not the end of a sentence
 HYPE = re.compile(r"\b(you won't believe|shocking|insane|gone wrong|caught on camera|viral)\b", re.I)
 
 
@@ -130,7 +131,8 @@ def caption_chunks(sentence: str, n: int = CAPTION_WORDS) -> list[str]:
     chunks, cur = [], []
     for w in sentence.split():
         cur.append(w)
-        if len(cur) >= n or (w[-1:] in ",;:.!?" and len(cur) >= 2):
+        ends = w[-1:] in ",;:" or (w[-1:] in ".!?" and not ABBREVIATION.fullmatch(w))
+        if len(cur) >= n or (ends and len(cur) >= 2):
             chunks.append(" ".join(cur))
             cur = []
     if cur:
@@ -247,6 +249,8 @@ def scene_video(clip: footage.Clip, path: Path, size: tuple[int, int], fps: int,
     length = footage.duration(clip.path)
     slow = min(1.5, max(1.0, seconds / length)) if length else 1.0
     loop = ["-stream_loop", "-1"] if length * slow < seconds else []
+    # Archive footage often opens on a title slate; start a little in when the clip is long enough to spare it.
+    skip = ["-ss", f"{min(2.0, length - seconds / slow):.2f}"] if not loop and length - seconds / slow > 0.5 else []
     inputs, graph = [], [f"[0:v]setpts={slow:.4f}*PTS,scale={w}:{h}:force_original_aspect_ratio=increase,"
                          f"crop={w}:{h},{GRADE},fps={fps},format=rgba[b0]"]
     for k, layer in enumerate(layers, 1):
@@ -258,7 +262,7 @@ def scene_video(clip: footage.Clip, path: Path, size: tuple[int, int], fps: int,
     graph.append(f"[b{len(layers)}]format=yuv420p[out]")
     path.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run([
-        "ffmpeg", "-y", "-loglevel", "error", *loop, "-i", str(clip.path), *inputs,
+        "ffmpeg", "-y", "-loglevel", "error", *loop, *skip, "-i", str(clip.path), *inputs,
         "-filter_complex", ";".join(graph), "-map", "[out]", "-t", f"{seconds:.4f}", "-an",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-g", str(fps * 2), "-r", str(fps), str(path),
     ], check=True)
