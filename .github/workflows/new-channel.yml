@@ -1,0 +1,52 @@
+name: New channel
+
+# Makes channels/<slug>/ for a new channel, copied from an existing one of the same format, and commits it.
+# Nothing publishes until the channel's YouTube login is added and its slug is in ACTIVE_CHANNELS
+# (docs/NEW_CHANNEL.md).
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Folder name, lowercase with dashes (e.g. space-facts)
+        type: string
+        required: true
+      name:
+        description: Channel name as shown on YouTube
+        type: string
+        required: true
+      about:
+        description: One sentence on what the channel is
+        type: string
+        required: true
+      format:
+        description: Kind of video (episode = narrated charts, story = narrated slides)
+        type: choice
+        options: [episode, story]
+        default: episode
+
+permissions:
+  contents: write
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install -q pyyaml
+      - name: Make the channel folder
+        env:   # passed through env, never pasted into the script, so a name with quotes can't break it
+          SLUG: ${{ inputs.slug }}
+          NAME: ${{ inputs.name }}
+          ABOUT: ${{ inputs.about }}
+          FORMAT: ${{ inputs.format }}
+        run: python3 -m yta new-channel --slug "$SLUG" --name "$NAME" --about "$ABOUT" --format "$FORMAT" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Commit it
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add "channels/$SLUG"
+          git commit -m "New channel $SLUG"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

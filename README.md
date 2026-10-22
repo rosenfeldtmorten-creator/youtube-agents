@@ -21,7 +21,13 @@ GitHub Actions runs steps 2-5 daily (`.github/workflows/publish.yml`) once the `
 
 ## Setup
 
-See [docs/SETUP.md](docs/SETUP.md).
+See [docs/SETUP.md](docs/SETUP.md) for the first channel and [docs/NEW_CHANNEL.md](docs/NEW_CHANNEL.md) to add more.
+
+## More channels
+
+Every channel is a folder in `channels/` and shares everything else. `python -m yta new-channel` (or the
+**New channel** workflow) makes the folder; you make the channel on YouTube and add its login as a secret;
+adding its slug to `ACTIVE_CHANNELS` switches it on for Publish, Daily Short and Prepare voices.
 
 ## Running it yourself
 

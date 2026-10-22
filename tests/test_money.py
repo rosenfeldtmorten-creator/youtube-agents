@@ -166,6 +166,21 @@ def test_snapshot_fallback(tmp_path, monkeypatch):
     assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
 
 
+
+def test_fred_web_page_falls_back_to_snapshot(tmp_path, monkeypatch):
+    from yta import data
+
+    class Page:
+        text = "<!DOCTYPE html>\n    <link href=\"https://fonts.googleapis.com/css\">"
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: Page())
+    data._save_points(tmp_path / "snap" / "fred-TEST-.json", [(dt.date(2020, 1, 1), 100.0)])
+    s = data.fetch("t", {"source": "fred", "id": "TEST"}, tmp_path / "cache", tmp_path / "snap")
+    assert s.points == [(dt.date(2020, 1, 1), 100.0)]
+
 def _scatter_episode():
     ep = _with_fake_data(load_episode(SAMPLE))
     ep.series.update(_model_series())
