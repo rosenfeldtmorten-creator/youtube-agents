@@ -13,6 +13,10 @@ from .story import StoryError, split_sentences
 CHART_TYPES = ("line", "bars", "growth", "scatter", "card", "photo", "headlines")
 CARD_WORDS_WITHOUT_PHOTO = 12  # a plain text card longer than this would hold the same words on screen too long
 TRENDS = ("linear", "smooth")
+# Spoken at the end of every cold open, so the subscribe ask always lands inside the first minute.
+# Added in code (not left to the script) and shown on screen as a subscribe button (money.subscribe_prompt).
+SUBSCRIBE = "If you like seeing the economy in charts, hit subscribe, so you never miss the next one."
+COLD_OPEN_WORDS = 150  # longer than this and the subscribe ask could slip past the first minute
 BANNED_PHRASES = ("you should buy", "guaranteed", "can't lose", "cannot lose", "financial advice", "get rich quick")
 
 
@@ -73,6 +77,8 @@ class Episode:
             scene.filled = metrics.fill(scene.narration, self.series)
             if "title" in scene.chart:
                 scene.chart["title_filled"] = metrics.fill(scene.chart["title"], self.series)
+        if self.scenes and SUBSCRIBE not in self.scenes[0].filled:
+            self.scenes[0].filled = f"{self.scenes[0].filled.rstrip()} {SUBSCRIBE}"
         if self.raw.get("thumbnail_badge"):
             badge = metrics.fill(self.raw["thumbnail_badge"], self.series)
             if len(badge) > BADGE_CHARS:
@@ -236,6 +242,9 @@ def check_script(ep: Episode, rules: dict) -> None:
     n = len(words(metrics.PLACEHOLDER.sub(" amount ", raw_text)))
     if not rules["min_words"] <= n <= rules["max_words"]:
         raise CheckFailed(f"script needs {rules['min_words']}-{rules['max_words']} words; this one has {n}")
+    if ep.scenes and len(ep.scenes[0].narration.split()) > COLD_OPEN_WORDS:
+        raise CheckFailed(f"the cold open (scene 1) is over {COLD_OPEN_WORDS} words; the subscribe ask after it "
+                          "must come inside the first minute")
     if not rules["min_scenes"] <= len(ep.scenes) <= rules["max_scenes"]:
         raise CheckFailed(f"episodes need {rules['min_scenes']}-{rules['max_scenes']} scenes")
     if not ep.raw.get("claims"):

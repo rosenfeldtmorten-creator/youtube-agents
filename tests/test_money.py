@@ -547,3 +547,41 @@ def test_footage_becomes_a_scene_of_exact_length(tmp_path, monkeypatch):
     monkeypatch.setattr(footage, "SOURCES", (lambda q: None,))
     with pytest.raises(LookupError):
         footage.clip_for({"video": "nothing at all"}, tmp_path / "cache2")
+
+
+def test_every_video_asks_to_subscribe_in_the_first_minute(tmp_path, monkeypatch):
+    import subprocess
+
+    from PIL import Image
+
+    from yta import money
+    from yta.checks import CheckFailed
+    from yta.episode import COLD_OPEN_WORDS, SUBSCRIBE, check_script
+
+    ep = _with_fake_data(load_episode(SAMPLE), monkeypatch)
+    assert ep.scenes[0].filled.endswith(SUBSCRIBE)                       # spoken right after the cold open
+    assert sum(SUBSCRIBE in s.filled for s in ep.scenes) == 1
+    ep.load_data(None)
+    assert ep.scenes[0].filled.count(SUBSCRIBE) == 1                     # loading twice doesn't say it twice
+    ep.scenes[0].narration = "word " * (COLD_OPEN_WORDS + 1)
+    with pytest.raises(CheckFailed, match="first minute"):
+        check_script(ep, {"min_words": 0, "max_words": 99999, "min_scenes": 0, "max_scenes": 99})
+
+    # On screen: red button while the line starts, grey 'SUBSCRIBED' after the click, nothing before or after.
+    seg = tmp_path / "01.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=black:size=640x360:rate=24:duration=6",
+                    "-pix_fmt", "yuv420p", str(seg)], check=True)
+    money.subscribe_prompt(seg, 2.0, 4.0, (640, 360), 24)
+    assert abs(money.footage.duration(seg) - 6.0) < 0.05
+
+    def centre(at):
+        png = tmp_path / f"f{at}.png"
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(at), "-i", str(seg), "-frames:v", "1", str(png)], check=True)
+        return Image.open(png).convert("RGB").getpixel((320, int(360 * 0.745)))
+
+    assert max(centre(1.0)) < 30
+    red = centre(2.6)
+    assert red[0] > 150 and red[1] < 80
+    grey = centre(4.0)
+    assert 70 < grey[0] < 130 and abs(grey[0] - grey[2]) < 40
+    assert max(centre(5.5)) < 30
