@@ -92,7 +92,7 @@ class EpisodeFormat:
             sections.append("HOW WE DID THE MATHS\n" + item.raw["method"].strip())
         sections.append("SOURCES\n" + "\n".join([*item.references, *(f"{s}" for s in item.sources)]))
         if result.photo_credits:
-            sections.append("PHOTOS (Wikimedia Commons)\n" + "\n".join(result.photo_credits))
+            sections.append("PHOTOS AND FOOTAGE\n" + "\n".join(result.photo_credits))
         sections.append("All charts and models are our own, drawn in R from the data above.")
         if result.music_credits:
             sections.append("MUSIC\n" + "\n".join(result.music_credits))

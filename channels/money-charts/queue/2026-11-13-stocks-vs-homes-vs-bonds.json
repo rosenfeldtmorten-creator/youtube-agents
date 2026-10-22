@@ -291,6 +291,10 @@
       "query": "Times Square New York",
       "after": 2015
      }
+    ],
+    "video": [
+     "stock market ticker screen",
+     "stock market"
     ]
    }
   },
@@ -310,6 +314,9 @@
       "query": "stock market ticker board",
       "after": 2010
      }
+    ],
+    "video": [
+     "suburban house exterior"
     ]
    }
   },
@@ -419,7 +426,11 @@
     "type": "photo",
     "query": "suburban house front porch",
     "after": 2015,
-    "caption": "A home is also a place to live"
+    "caption": "A home is also a place to live",
+    "video": [
+     "family on front porch",
+     "family at home"
+    ]
    }
   },
   {
@@ -534,6 +545,10 @@
       "query": "Wall Street New York",
       "after": 2010
      }
+    ],
+    "video": [
+     "stock exchange trading",
+     "stock market graph screen"
     ]
    }
   },
@@ -553,6 +568,9 @@
       "query": "suburban street houses",
       "after": 2015
      }
+    ],
+    "video": [
+     "family garden home"
     ]
    }
   }

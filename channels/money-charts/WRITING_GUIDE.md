@@ -102,6 +102,13 @@ Put 2-4 `photo` scenes between charts so the video is not only charts: a real pl
 - `"file": "File:Exact name.jpg"` instead of `query` picks one Commons file exactly. Prefer this when you know a good one.
 - Keep a photo scene short (one to three sentences). If no free photo is found, the video shows the caption on a card instead, so the render never fails. A card's `"photo"` can also be a list of searches, tried in order; give two or three, because Commons search is loose (a search for "office workers" once returned a bar called The Office). If none finds a photo, the card reuses the previous photo.
 
+## Footage
+
+Real moving video makes the episode feel like a documentary, so give about half of the `photo` scenes and photo `card`s a `"video"`: one stock-footage search, or a list of two tried in order (`"video": ["suburban street drone", "suburban neighborhood"]`). Keep the photo fields too: if no clip is found, the photo is used, so a render never fails.
+- Search for generic, everyday shots that stock libraries have: "counting dollar bills", "supermarket aisle", "house construction site", "stock market ticker screen", "commuters walking city street". A specific place or person (the Federal Reserve building, Paul Volcker) stays a photo.
+- Clips come from Pexels and Pixabay (when their free keys are set) and Wikimedia Commons, only with licences that allow reuse, and are credited on screen and in the description. Never use clips cut from other YouTube videos or TV.
+- A clip is cropped to fill the frame, slowed slightly if it is short, and a card's title shows over it for three seconds as with photos.
+
 ## Description fields
 
 The description is built for you in this order: hashtags, `description`, CHAPTERS, HOW WE DID THE MATHS, SOURCES, PHOTOS, MUSIC, hashtags again. Fill these fields:

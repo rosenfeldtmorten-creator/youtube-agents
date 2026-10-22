@@ -164,6 +164,15 @@ def test_snapshot_fallback(tmp_path, monkeypatch):
     data._save_points(tmp_path / "snap" / "fred-TEST-.json", [(dt.date(2020, 1, 1), 100.0), (dt.date(2021, 1, 1), 110.0)])
     s = data.fetch("t", spec, tmp_path / "cache", tmp_path / "snap")
     assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
+    # FRED sometimes answers 200 with an HTML error page; that must fall back too, not crash the render.
+    class Page:
+        text = '<!DOCTYPE html>\n    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300">'
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: Page())
+    s = data.fetch("t", spec, tmp_path / "cache2", tmp_path / "snap")
+    assert s.points == [(dt.date(2021, 1, 1), pytest.approx(0.1))]
 
 
 
@@ -516,3 +525,40 @@ def test_photo_push_in_never_steps_backwards(tmp_path):
         xs.append((a * np.arange(len(a))).sum() / a.sum())
     steps = np.diff(xs)
     assert (steps <= 0.05).all() or (steps >= -0.05).all()
+
+
+def test_footage_becomes_a_scene_of_exact_length(tmp_path, monkeypatch):
+    import subprocess
+    from yta import footage
+
+    src = tmp_path / "src.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=25:duration=3",
+                    "-pix_fmt", "yuv420p", str(src)], check=True)
+
+    def fake_source(query):
+        return {"url": "unused", "title": query, "author": "Tester", "licence": "CC0", "page": "https://example.org",
+                "source": "Test"}
+
+    class FakeResponse:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def raise_for_status(self): pass
+        def iter_content(self, n): yield src.read_bytes()
+
+    monkeypatch.setattr(footage, "SOURCES", (fake_source,))
+    monkeypatch.setattr(footage.requests, "get", FakeResponse)
+    clip = footage.clip_for({"video": ["traffic jam"]}, tmp_path / "cache")
+    assert clip.source == "Test" and "Tester" in clip.description_line
+    for title in ("", "Rents keep rising"):
+        out = footage.segment(clip, tmp_path / f"seg{bool(title)}.mp4", (640, 360), 24, 5.0, caption="A street", title=title)
+        probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                "stream=width,height:format=duration", "-of", "json", str(out)],
+                               capture_output=True, text=True, check=True)
+        info = json.loads(probe.stdout)
+        assert (info["streams"][0]["width"], info["streams"][0]["height"]) == (640, 360)
+        assert abs(float(info["format"]["duration"]) - 5.0) < 0.1
+
+    monkeypatch.setattr(footage, "SOURCES", (lambda q: None,))
+    with pytest.raises(LookupError):
+        footage.clip_for({"video": "nothing at all"}, tmp_path / "cache2")

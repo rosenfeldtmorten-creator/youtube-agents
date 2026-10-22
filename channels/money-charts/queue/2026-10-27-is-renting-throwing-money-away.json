@@ -287,6 +287,10 @@
       "query": "townhouses street United States",
       "after": 2015
      }
+    ],
+    "video": [
+     "apartment for rent",
+     "apartment building city"
     ]
    }
   },
@@ -310,6 +314,9 @@
       "query": "apartment balcony city",
       "after": 2015
      }
+    ],
+    "video": [
+     "family dinner at home"
     ]
    }
   },
@@ -319,7 +326,11 @@
     "type": "photo",
     "query": "apartment building balconies",
     "after": 2015,
-    "caption": "Both renters and owners pay costs they never get back"
+    "caption": "Both renters and owners pay costs they never get back",
+    "video": [
+     "apartment building balconies",
+     "apartment buildings city"
+    ]
    }
   },
   {
@@ -370,7 +381,11 @@
     "type": "photo",
     "query": "roofer repairing roof",
     "after": 2010,
-    "caption": "Owners pay too: interest, tax and repairs"
+    "caption": "Owners pay too: interest, tax and repairs",
+    "video": [
+     "roofer working on roof",
+     "house repair"
+    ]
    }
   },
   {
@@ -498,6 +513,9 @@
       "query": "row houses street",
       "after": 2015
      }
+    ],
+    "video": [
+     "suburban neighborhood drone"
     ]
    }
   },
@@ -521,6 +539,10 @@
       "query": "for sale sign house United States",
       "after": 2015
      }
+    ],
+    "video": [
+     "moving boxes apartment",
+     "moving house"
     ]
    }
   }

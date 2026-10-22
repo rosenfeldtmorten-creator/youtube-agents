@@ -497,6 +497,10 @@
       "query": "Manhattan penthouse skyline",
       "after": 2015
      }
+    ],
+    "video": [
+     "luxury yacht",
+     "mansion aerial"
     ]
    }
   },
@@ -520,6 +524,10 @@
       "query": "residential neighborhood aerial",
       "after": 2015
      }
+    ],
+    "video": [
+     "suburban neighborhood drone",
+     "suburban houses"
     ]
    }
   },
@@ -583,7 +591,11 @@
     "type": "photo",
     "query": "New York Stock Exchange trading floor",
     "after": 2010,
-    "caption": "Shares at the top, homes in the middle"
+    "caption": "Shares at the top, homes in the middle",
+    "video": [
+     "stock market trading screen",
+     "stock exchange"
+    ]
    }
   },
   {
@@ -754,6 +766,10 @@
       "query": "people crossing street New York",
       "after": 2018
      }
+    ],
+    "video": [
+     "commuters walking city street",
+     "busy city street people"
     ]
    }
   }
