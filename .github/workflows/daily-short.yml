@@ -94,9 +94,15 @@ jobs:
           python -m venv /tmp/re
           /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
 
+      - name: Find the channel's login secrets
+        id: login
+        run: python -m yta secret-names --channel "$CHANNEL" >> "$GITHUB_OUTPUT"
+
       - name: Make and post the Short
         env:
-          YT_SECRETS: ${{ toJSON(secrets) }}   # each channel's login is the secret its channel.yaml names
+          YT_REFRESH_TOKEN: ${{ secrets[steps.login.outputs.refresh_token] }}   # only this channel's login, named in its channel.yaml
+          YT_CLIENT_ID: ${{ secrets[steps.login.outputs.client_id] }}
+          YT_CLIENT_SECRET: ${{ secrets[steps.login.outputs.client_secret] }}
         shell: bash
         run: |
           set -o pipefail

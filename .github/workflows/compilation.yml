@@ -98,11 +98,17 @@ jobs:
           python -m venv /tmp/re
           /tmp/re/bin/pip install -q resemble-enhance --extra-index-url https://download.pytorch.org/whl/cpu
 
+      - name: Find the channel's login secrets
+        id: login
+        run: python -m yta secret-names --channel "${{ matrix.channel }}" >> "$GITHUB_OUTPUT"
+
       - name: Render and upload
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
-          YT_SECRETS: ${{ toJSON(secrets) }}
+          YT_REFRESH_TOKEN: ${{ secrets[steps.login.outputs.refresh_token] }}   # only this channel's login, named in its channel.yaml
+          YT_CLIENT_ID: ${{ secrets[steps.login.outputs.client_id] }}
+          YT_CLIENT_SECRET: ${{ secrets[steps.login.outputs.client_secret] }}
         shell: bash
         run: |
           set -o pipefail

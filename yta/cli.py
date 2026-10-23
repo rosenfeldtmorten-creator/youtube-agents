@@ -502,6 +502,17 @@ Next, once per channel (docs/NEW_CHANNEL.md has the details):
     return 0
 
 
+def cmd_secret_names(args) -> int:
+    """Print the names of the secrets this channel logs in with, as GitHub step outputs. Workflows pass only
+    those secrets to the upload step: handing over every secret at once makes GitHub hold the run for approval."""
+    _, cfg = load_channel(args.channel)
+    yt = cfg["youtube"]
+    print(f"refresh_token={yt['refresh_token_secret']}")
+    print(f"client_id={yt.get('client_id_secret', 'YT_CLIENT_ID')}")
+    print(f"client_secret={yt.get('client_secret_secret', 'YT_CLIENT_SECRET')}")
+    return 0
+
+
 def cmd_whoami(args) -> int:
     from . import upload
 
@@ -539,7 +550,10 @@ def main(argv=None) -> int:
     sp.add_argument("--like", default="", help="channel to copy settings from (default: one of the same format)")
     sp = sub.add_parser("whoami", help="show which YouTube channel a channel's login uploads to")
     sp.add_argument("--channel", required=True)
+    sp = sub.add_parser("secret-names", help="print the channel's login secret names as GitHub step outputs")
+    sp.add_argument("--channel", required=True)
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
             "narrate": cmd_narrate, "short": cmd_short, "compile": cmd_compile, "channels": cmd_channels,
-            "new-channel": cmd_new_channel, "whoami": cmd_whoami}[args.cmd](args)
+            "new-channel": cmd_new_channel, "whoami": cmd_whoami,
+            "secret-names": cmd_secret_names}[args.cmd](args)

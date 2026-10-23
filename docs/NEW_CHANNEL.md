@@ -47,8 +47,8 @@ The Google Cloud app from [SETUP.md](SETUP.md) step 2 is shared, so skip that. T
 5. In GitHub: **Settings > Secrets and variables > Actions > New repository secret**. Name it exactly as
    step 1 printed (`YT_REFRESH_TOKEN_SPACE_FACTS`) and paste the token.
 
-No workflow needs editing: they pass every secret to the upload step, which picks the one named in the
-channel's `channel.yaml`.
+No workflow needs editing: each run looks up the secret named in the channel's `channel.yaml` and passes only
+that one to the upload step.
 
 ## 4. Check the login (agent or you)
 

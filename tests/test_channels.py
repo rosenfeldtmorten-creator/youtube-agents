@@ -1,4 +1,3 @@
-import json
 import shutil
 
 import pytest
@@ -54,9 +53,20 @@ def test_pick_filters_active_channels_by_format(repo):
         channels.pick(repo, '["nope"]')
 
 
-def test_secrets_come_from_the_workflow_bundle(monkeypatch):
+def test_generic_secret_names_are_the_fallback(monkeypatch):
     monkeypatch.delenv("YT_REFRESH_TOKEN_SPACE_FACTS", raising=False)
-    monkeypatch.setenv("YT_SECRETS", json.dumps({"YT_REFRESH_TOKEN_SPACE_FACTS": "abc"}))
-    assert upload._env("YT_REFRESH_TOKEN_SPACE_FACTS") == "abc"
+    monkeypatch.setenv("YT_REFRESH_TOKEN", "abc")
+    assert upload._env("YT_REFRESH_TOKEN_SPACE_FACTS", "YT_REFRESH_TOKEN") == "abc"
+    monkeypatch.delenv("YT_REFRESH_TOKEN")
     with pytest.raises(upload.UploadError):
-        upload._env("YT_REFRESH_TOKEN_MISSING")
+        upload._env("YT_REFRESH_TOKEN_SPACE_FACTS", "YT_REFRESH_TOKEN")
+
+
+def test_secret_names_for_the_workflows(capsys):
+    from yta.cli import main
+
+    main(["secret-names", "--channel", "money-charts"])
+    out = dict(line.split("=", 1) for line in capsys.readouterr().out.split())
+    cfg = yaml.safe_load((ROOT / "channels/money-charts/channel.yaml").read_text())
+    assert out == {"refresh_token": cfg["youtube"]["refresh_token_secret"], "client_id": "YT_CLIENT_ID",
+                   "client_secret": "YT_CLIENT_SECRET"}
