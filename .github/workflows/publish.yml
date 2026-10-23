@@ -112,11 +112,17 @@ jobs:
           rm -rf /tmp/re   # keep ~/.cache/pip: setup-python saves it after the job
           echo "::notice title=Disk before render::$(df -h / | tail -1)"
 
+      - name: Find the channel's login secrets
+        id: login
+        run: python -m yta secret-names --channel "${{ matrix.channel }}" >> "$GITHUB_OUTPUT"
+
       - name: Render and publish
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
-          YT_SECRETS: ${{ toJSON(secrets) }}   # each channel's login is the secret its channel.yaml names
+          YT_REFRESH_TOKEN: ${{ secrets[steps.login.outputs.refresh_token] }}   # only this channel's login, named in its channel.yaml
+          YT_CLIENT_ID: ${{ secrets[steps.login.outputs.client_id] }}
+          YT_CLIENT_SECRET: ${{ secrets[steps.login.outputs.client_secret] }}
         shell: bash
         run: |
           set -o pipefail

@@ -23,8 +23,16 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Find the channel's login secrets
+        id: login
+        env:
+          CHANNEL: ${{ inputs.channel }}
+        run: python -m yta secret-names --channel "$CHANNEL" >> "$GITHUB_OUTPUT"
+
       - name: Log in as the channel
         env:
           CHANNEL: ${{ inputs.channel }}
-          YT_SECRETS: ${{ toJSON(secrets) }}
+          YT_REFRESH_TOKEN: ${{ secrets[steps.login.outputs.refresh_token] }}   # only this channel's login, named in its channel.yaml
+          YT_CLIENT_ID: ${{ secrets[steps.login.outputs.client_id] }}
+          YT_CLIENT_SECRET: ${{ secrets[steps.login.outputs.client_secret] }}
         run: python -m yta whoami --channel "$CHANNEL"

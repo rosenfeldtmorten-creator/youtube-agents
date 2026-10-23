@@ -1,7 +1,6 @@
 """Uploads to YouTube with the Data API v3, using a stored OAuth refresh token per channel."""
 from __future__ import annotations
 
-import json
 import os
 import time
 from pathlib import Path
@@ -13,9 +12,10 @@ class UploadError(RuntimeError):
     pass
 
 
-def _env(name: str) -> str:
-    # The workflows hand every repository secret over as YT_SECRETS, so a new channel only needs its secret added.
-    value = os.environ.get(name, "").strip() or str(json.loads(os.environ.get("YT_SECRETS") or "{}").get(name, "")).strip()
+def _env(name: str, generic: str = "") -> str:
+    # The workflows look up the secrets channel.yaml names and pass them under the generic names
+    # (YT_REFRESH_TOKEN, YT_CLIENT_ID, YT_CLIENT_SECRET), so a new channel only needs its secret added.
+    value = os.environ.get(name, "").strip() or os.environ.get(generic or name, "").strip()
     if not value:
         raise UploadError(f"Missing secret {name}. Add it under the repository's Settings > Secrets > Actions (see docs/SETUP.md).")
     return value
@@ -29,9 +29,9 @@ def youtube_client(yt_cfg: dict):
 
     creds = Credentials(
         None,
-        refresh_token=_env(yt_cfg["refresh_token_secret"]),
-        client_id=_env(yt_cfg.get("client_id_secret", "YT_CLIENT_ID")),
-        client_secret=_env(yt_cfg.get("client_secret_secret", "YT_CLIENT_SECRET")),
+        refresh_token=_env(yt_cfg["refresh_token_secret"], "YT_REFRESH_TOKEN"),
+        client_id=_env(yt_cfg.get("client_id_secret", "YT_CLIENT_ID"), "YT_CLIENT_ID"),
+        client_secret=_env(yt_cfg.get("client_secret_secret", "YT_CLIENT_SECRET"), "YT_CLIENT_SECRET"),
         token_uri="https://oauth2.googleapis.com/token",
         scopes=SCOPES,
     )
