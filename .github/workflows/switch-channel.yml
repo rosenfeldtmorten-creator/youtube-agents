@@ -1,0 +1,36 @@
+name: Switch channel
+
+# Adds a channel to the ACTIVE_CHANNELS variable (on) or takes it out (off). Publish, Daily Short, Prepare
+# voices and Compilation run the channels listed there. Needs the one-time ADMIN_TOKEN secret (docs/SETUP.md).
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel (its folder name under channels/)
+        type: string
+        required: true
+      state:
+        description: on or off
+        type: choice
+        options: ["on", "off"]
+        default: "on"
+
+permissions:
+  contents: read
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - env:
+          CHANNEL: ${{ inputs.channel }}
+          STATE: ${{ inputs.state }}
+          GH_REPO: ${{ github.repository }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: python -m yta switch --channel "$CHANNEL" "$STATE"

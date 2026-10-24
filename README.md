@@ -28,8 +28,9 @@ See [docs/SETUP.md](docs/SETUP.md) for the first channel and [docs/NEW_CHANNEL.m
 ## More channels
 
 Every channel is a folder in `channels/` and shares everything else. `python -m yta new-channel` (or the
-**New channel** workflow) makes the folder; you make the channel on YouTube and add its login as a secret;
-adding its slug to `ACTIVE_CHANNELS` switches it on for Publish, Daily Short and Prepare voices.
+**New channel** workflow) makes the folder; you make the channel on YouTube; **Connect channel** gives you a
+code to type at google.com/device and saves the login as a secret; **Switch channel** adds it to
+`ACTIVE_CHANNELS` for Publish, Daily Short, Prepare voices and Compilation.
 
 ## Running it yourself
 

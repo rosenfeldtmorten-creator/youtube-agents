@@ -1,0 +1,80 @@
+name: Connect channel
+
+# Gives a channel its YouTube login without the OAuth Playground (docs/NEW_CHANNEL.md step 2).
+# The first job shows a code: open google.com/device on any phone or computer, type it, pick the channel.
+# The second job waits for that, checks the login belongs to the channel named in channel.yaml, saves it as
+# the secret YT_REFRESH_TOKEN_<SLUG> and, if "switch on" is ticked, adds the channel to ACTIVE_CHANNELS.
+# Needs the one-time secrets YT_DEVICE_CLIENT_ID, YT_DEVICE_CLIENT_SECRET and ADMIN_TOKEN (docs/SETUP.md).
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel (its folder name under channels/)
+        type: string
+        required: true
+      switch_on:
+        description: Also add it to ACTIVE_CHANNELS, so it publishes from the next scheduled run
+        type: boolean
+        default: false
+      any_name:
+        description: Save the login even if the YouTube channel's name differs from channel.yaml
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: connect-${{ inputs.channel }}
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+    outputs:
+      device_code: ${{ steps.code.outputs.device_code }}
+      interval: ${{ steps.code.outputs.interval }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Get a sign-in code   # shown in this job's annotations, so Claude can read it out in the chat
+        id: code
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          YT_SECRETS: ${{ toJSON(secrets) }}
+        run: python -m yta connect-start --channel "$CHANNEL"
+
+  save:
+    needs: code
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Wait for the sign-in and save it
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          DEVICE_CODE: ${{ needs.code.outputs.device_code }}
+          INTERVAL: ${{ needs.code.outputs.interval }}
+          FLAGS: ${{ inputs.switch_on && '--activate' || '' }} ${{ inputs.any_name && '--any-name' || '' }}
+          GH_REPO: ${{ github.repository }}
+          YT_SECRETS: ${{ toJSON(secrets) }}
+        run: python -m yta connect-finish --channel "$CHANNEL" --device-code "$DEVICE_CODE" --interval "$INTERVAL" $FLAGS
+      - name: Commit the channel's sign-in app
+        env:
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "youtube-agents"
+          git config user.email "actions@users.noreply.github.com"
+          git add "channels/$CHANNEL/channel.yaml"
+          git commit -m "Connect $CHANNEL to YouTube"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
