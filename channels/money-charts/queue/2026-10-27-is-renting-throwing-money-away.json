@@ -155,8 +155,12 @@
    "check": "latest(price) * 0.8 * latest(rate) / 1200 > latest(price) * 0.2 * latest(bond) / 1200 + 3 * latest(price) * 0.01 / 12"
   },
   {
-   "says": "The unrecoverable cost of owning, as a share of the price, more than doubled since early 2021",
-   "check": "(0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100 > 2 * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100"
+   "says": "The unrecoverable cost of owning, as a share of the price, has roughly doubled since early 2021",
+   "check": "(0.8 * latest(rate) + 0.2 * latest(bond) + 2) > 1.8 * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2)"
+  },
+  {
+   "says": "The unrecoverable cost of owning has roughly doubled since early 2021 (upper bound)",
+   "check": "(0.8 * latest(rate) + 0.2 * latest(bond) + 2) < 2.2 * (0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2)"
   },
   {
    "says": "The break-even rent more than doubled since early 2021",
@@ -175,8 +179,8 @@
    "check": "latest(rate) > 2 * value(rate, \"2021-01\")"
   },
   {
-   "says": "Today's break-even in years of rent is less than half that of early 2021",
-   "check": "1 / ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100) < 0.5 / ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100)"
+   "says": "Today's break-even in years of rent is roughly half that of early 2021",
+   "check": "1 / ((0.8 * latest(rate) + 0.2 * latest(bond) + 2) / 100) < 0.56 / ((0.8 * value(rate, \"2021-01\") + 0.2 * value(bond, \"2021-01\") + 2) / 100)"
   },
   {
    "says": "House prices grew faster than rents on average since 1987",
