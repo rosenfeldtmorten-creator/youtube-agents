@@ -7,6 +7,7 @@
     python -m yta channels [--active '["money-charts"]'] [--format episode]   # JSON list, for workflow matrices
     python -m yta new-channel --slug space-facts --name "Space Facts" --about "..." [--like money-charts]
     python -m yta whoami --channel money-charts   # which YouTube channel this channel's login uploads to
+    python -m yta connect-start --channel space-facts   # sign-in code for the channel's login (Connect channel workflow)
     python -m yta snapshot   # save a copy of every data series in use (data/snapshot), for offline checks
 """
 from __future__ import annotations
@@ -14,6 +15,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -495,10 +497,10 @@ def cmd_new_channel(args) -> int:
     print(f"""
 Next, once per channel (docs/NEW_CHANNEL.md has the details):
   1. Make the channel on YouTube (a Brand Account channel under your Google account).
-  2. Get its refresh token and add it as the repository secret {token_secret(args.slug)}.
-  3. Run the "Channel login" workflow for {args.slug} to check the token points at the new channel.
-  4. Rewrite channels/{args.slug}/WRITING_GUIDE.md for the channel's subject, and queue a first item.
-  5. Add "{args.slug}" to the ACTIVE_CHANNELS variable when it should start publishing.""")
+  2. Run the "Connect channel" workflow for {args.slug}, open the link it shows, type the code and pick the
+     channel. It checks the login and saves it as the secret {token_secret(args.slug)}.
+  3. Rewrite channels/{args.slug}/WRITING_GUIDE.md for the channel's subject, and queue a first item.
+  4. Run the "Switch channel" workflow for {args.slug} (or tick "switch on" in step 2) to start publishing.""")
     return 0
 
 
@@ -510,6 +512,90 @@ def cmd_whoami(args) -> int:
     print(f"::notice title={args.channel} uploads to::{me['title']} (https://youtube.com/channel/{me['id']}, "
           f"{me['subscribers']} subscribers, {me['videos']} videos)")
     return 0
+
+
+def _gh_output(**values) -> None:
+    out = os.environ.get("GITHUB_OUTPUT")
+    if out:
+        with open(out, "a") as fh:
+            fh.writelines(f"{k}={v}\n" for k, v in values.items())
+
+
+def cmd_connect_start(args) -> int:
+    from . import connect
+
+    _, cfg = load_channel(args.channel)
+    missing = connect.missing_setup(cfg)
+    for line in missing:
+        print(f"::warning title=Not set up yet::{line}")
+    if any(not line.startswith("PIXABAY") for line in missing):
+        sys.exit("Add the secrets above first (docs/SETUP.md, 'Connect channels'), then run Connect channel again.")
+    code = connect.start(connect.secret(connect.CLIENT_ID))
+    minutes = int(code.get("expires_in", 1800)) // 60
+    print(f"::notice title=Sign in to connect {cfg['name']}::Open {code['verification_url']} and enter "
+          f"{code['user_code']}. Pick the channel {cfg['name']} when Google asks which one. The code works for "
+          f"{minutes} minutes.")
+    _gh_output(device_code=code["device_code"], interval=code.get("interval", 5))
+    return 0
+
+
+def cmd_connect_finish(args) -> int:
+    from . import connect, upload
+    from .channels import token_secret
+
+    channel_dir, cfg = load_channel(args.channel)
+    name = token_secret(args.channel)
+    try:
+        token = connect.wait_for_login(connect.secret(connect.CLIENT_ID), connect.secret(connect.CLIENT_SECRET),
+                                       args.device_code, int(args.interval), timeout=args.wait * 60)
+        print(f"::add-mask::{token}")
+        os.environ[name] = token
+        me = upload.whoami(upload.youtube_client({"refresh_token_secret": name, "client_id_secret": connect.CLIENT_ID,
+                                                  "client_secret_secret": connect.CLIENT_SECRET}))
+        if not connect.same_name(me["title"], cfg["name"]) and not args.any_name:
+            sys.exit(f"That login belongs to the channel {me['title']!r}, not {cfg['name']!r}, so it was not saved. "
+                     "Run Connect channel again and pick the right channel, or tick 'any name' if YouTube shows a "
+                     "different name for it.")
+        connect.gh(["secret", "set", name], stdin=token)
+        print(f"::notice title={args.channel} connected::Saved {name}. It uploads to {me['title']} "
+              f"(https://youtube.com/channel/{me['id']}).")
+        if connect.use_device_app(channel_dir / "channel.yaml"):
+            print(f"channels/{args.channel}/channel.yaml now names the device sign-in app")
+        if args.activate:
+            _switch(args.channel, on=True)
+    except (connect.ConnectError, upload.UploadError) as exc:
+        sys.exit(str(exc))
+    return 0
+
+
+def _switch(slug: str, on: bool) -> None:
+    from . import connect
+
+    active = connect.gh(["variable", "get", "ACTIVE_CHANNELS"], run=_allow_missing)
+    new = connect.with_channel(active, slug, on)
+    connect.gh(["variable", "set", "ACTIVE_CHANNELS"], stdin=new)
+    print(f"::notice title={slug} switched {'on' if on else 'off'}::ACTIVE_CHANNELS is now {new}")
+
+
+def cmd_switch(args) -> int:
+    from . import connect
+
+    load_channel(args.channel)
+    try:
+        _switch(args.channel, args.state == "on")
+    except connect.ConnectError as exc:
+        sys.exit(str(exc))
+    return 0
+
+
+def _allow_missing(cmd, **kw):
+    """gh variable get fails when the variable doesn't exist yet; treat that as an empty list."""
+    import subprocess
+
+    done = subprocess.run(cmd, **kw)
+    if done.returncode != 0 and "not found" in (done.stderr or "").lower():
+        done.returncode, done.stdout = 0, ""
+    return done
 
 
 def main(argv=None) -> int:
@@ -539,7 +625,20 @@ def main(argv=None) -> int:
     sp.add_argument("--like", default="", help="channel to copy settings from (default: one of the same format)")
     sp = sub.add_parser("whoami", help="show which YouTube channel a channel's login uploads to")
     sp.add_argument("--channel", required=True)
+    sp = sub.add_parser("connect-start", help="get a sign-in code for a channel's YouTube login")
+    sp.add_argument("--channel", required=True)
+    sp = sub.add_parser("connect-finish", help="wait for the sign-in, check it and save it as the channel's secret")
+    sp.add_argument("--channel", required=True)
+    sp.add_argument("--device-code", required=True)
+    sp.add_argument("--interval", default=5)
+    sp.add_argument("--wait", type=float, default=25, help="minutes to wait for the sign-in")
+    sp.add_argument("--activate", action="store_true", help="also add the channel to ACTIVE_CHANNELS")
+    sp.add_argument("--any-name", action="store_true", help="save it even if the YouTube channel's name differs")
+    sp = sub.add_parser("switch", help="add a channel to ACTIVE_CHANNELS (on) or take it out (off)")
+    sp.add_argument("--channel", required=True)
+    sp.add_argument("state", choices=["on", "off"])
     args = p.parse_args(argv)
     return {"check": cmd_check, "run": cmd_run, "render": cmd_render, "snapshot": cmd_snapshot,
             "narrate": cmd_narrate, "short": cmd_short, "compile": cmd_compile, "channels": cmd_channels,
-            "new-channel": cmd_new_channel, "whoami": cmd_whoami}[args.cmd](args)
+            "new-channel": cmd_new_channel, "whoami": cmd_whoami,
+            "connect-start": cmd_connect_start, "connect-finish": cmd_connect_finish, "switch": cmd_switch}[args.cmd](args)

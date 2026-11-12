@@ -6,9 +6,6 @@ import os
 import time
 from pathlib import Path
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.force-ssl"]
-
-
 class UploadError(RuntimeError):
     pass
 
@@ -33,8 +30,7 @@ def youtube_client(yt_cfg: dict):
         client_id=_env(yt_cfg.get("client_id_secret", "YT_CLIENT_ID")),
         client_secret=_env(yt_cfg.get("client_secret_secret", "YT_CLIENT_SECRET")),
         token_uri="https://oauth2.googleapis.com/token",
-        scopes=SCOPES,
-    )
+    )   # no scopes: a refresh keeps whatever the login was granted (upload + force-ssl, or youtube from Connect channel)
     return build("youtube", "v3", credentials=creds, cache_discovery=False)
 
 

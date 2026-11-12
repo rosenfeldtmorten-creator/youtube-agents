@@ -56,6 +56,25 @@ Each further channel only needs its own `YT_REFRESH_TOKEN_<SLUG>` secret: see [N
 
 Never paste these into a chat, an issue or a file in the repository.
 
+## 5b. Connect channels without copying tokens (optional, recommended)
+
+These three let the agents add channels with only a sign-in from you ([NEW_CHANNEL.md](NEW_CHANNEL.md) step 3).
+Each is done once for every channel.
+
+1. **Sign-in app for devices.** In <https://console.cloud.google.com/> (same `youtube-agents` project) open
+   **APIs & Services > Credentials > Create credentials > OAuth client ID**, choose application type
+   **TVs and Limited Input devices**, name it `youtube-agents device` and click **Create**. Add its Client ID
+   and Client secret as the secrets `YT_DEVICE_CLIENT_ID` and `YT_DEVICE_CLIENT_SECRET`.
+2. **A GitHub token that may save secrets.** GitHub's own workflow token can't write secrets, so the workflows
+   use one of yours. Open <https://github.com/settings/personal-access-tokens/new>, name it `youtube-agents admin`,
+   pick an expiry, **Only select repositories** > `youtube-agents`, and under **Repository permissions** set
+   **Secrets** and **Variables** to **Read and write**. Generate it and add it as the secret `ADMIN_TOKEN`.
+   It can do nothing outside those two settings of this repository. When it expires, Connect channel says so;
+   make a new one the same way.
+3. **Pixabay key** (for footage channels such as Nature Unleashed). Make a free account at
+   <https://pixabay.com/accounts/register/>, then open <https://pixabay.com/api/docs/>: your key is shown under
+   **Parameters > key**. Add it as the secret `PIXABAY_API_KEY`. One key serves every channel.
+
 ## 6. Add your voice
 
 Record **about one minute** of yourself reading any English text calmly, in a quiet room. A phone is fine.
