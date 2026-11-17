@@ -458,8 +458,12 @@ def test_voice_must_match_chart_labels(monkeypatch):
     assert all(pct for _, pct in shown)          # rebased lines are labelled with their rise, like the voice
     money.check_voice_matches_charts(ep)
     # The bug a viewer caught: the chart printed index levels, so "risen 237 percent" sat next to the pay line's 237.
-    monkeypatch.setattr(money, "shown_numbers", lambda ep, chart: [(v + 100, False) for v, _ in shown]
-                        if chart is houses.chart else [])
+    # Pin the pay line's printed level to the houses rise the voice says, so the check doesn't hang on how
+    # far pay happens to have risen in the latest data (it drifted from 237 to 238 and the test went quiet).
+    said = round(max(v for v, _ in shown))
+    assert f"{said} percent" in houses.filled
+    monkeypatch.setattr(money, "shown_numbers", lambda ep, chart: [(v + 100, False) for v, _ in shown[:-1]]
+                        + [(float(said), False)] if chart is houses.chart else [])
     with pytest.raises(metrics.MetricError, match="percent"):
         money.check_voice_matches_charts(ep)
 
