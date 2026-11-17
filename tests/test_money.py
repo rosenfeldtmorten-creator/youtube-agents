@@ -720,3 +720,23 @@ def test_read_wav_takes_float_and_24_bit_files(tmp_path):
     audio.write_wav(tmp_path / "w.wav", tone)
     data, sr = audio.read_wav(tmp_path / "w.wav")
     assert sr == audio.SR and np.allclose(data, tone, atol=1e-4)
+
+
+def test_a_shorter_download_keeps_the_saved_history(tmp_path, monkeypatch):
+    """FRED started sending only the last year of SP500; the snapshot must not lose the ten years before it."""
+    import datetime as dt
+    from yta import data
+
+    snap = tmp_path / "snap"
+    old = [(dt.date(2016, 11, 14), 2160.0), (dt.date(2020, 1, 2), 3257.0), (dt.date(2025, 11, 17), 6600.0)]
+    data._save_points(snap / "fred-SP500-.json", old)
+    new = [(dt.date(2025, 11, 17), 6672.4), (dt.date(2026, 11, 16), 6900.0)]
+    monkeypatch.setattr(data, "_download", lambda spec: new)
+
+    saved, failed = data.refresh_snapshot([{"source": "fred", "id": "SP500"}], snap)
+    assert (saved, failed) == (1, [])
+    kept = data._load_points(snap / "fred-SP500-.json")
+    assert kept[0] == old[0] and kept[-2:] == new  # older history kept, newer values win where they overlap
+
+    s = data.fetch("sp", {"source": "fred", "id": "SP500"}, tmp_path / "cache", snap)
+    assert s.first[0] == dt.date(2016, 11, 14) and s.last[1] == 6900.0

@@ -129,6 +129,20 @@ def _save_points(path: Path, points: list[tuple[dt.date, float]]) -> None:
     path.write_text(json.dumps([(d.isoformat(), v) for d, v in points]))
 
 
+def keep_history(new: list[tuple[dt.date, float]], old_path: Path) -> list[tuple[dt.date, float]]:
+    """A download that starts later than the saved copy (FRED cut SP500 to one year on 17 Nov 2026) keeps the
+    saved older points, so a shorter answer never wipes out history an episode relies on."""
+    if not new or not old_path.exists():
+        return new
+    try:
+        old = _load_points(old_path)
+    except (ValueError, json.JSONDecodeError):
+        return new
+    start = min(d for d, _ in new)
+    older = [(d, v) for d, v in old if d < start]
+    return sorted(older + list(new)) if older else new
+
+
 def year_over_year(points: list[tuple[dt.date, float]]) -> list[tuple[dt.date, float]]:
     """Change against the same period a year earlier, as a fraction (0.03 = 3%)."""
     by_date = {d: v for d, v in points}
@@ -158,7 +172,7 @@ def fetch(name: str, spec: dict, cache_dir: Path, snapshot_dir: Path | None = No
         points = _load_points(path)
     else:
         try:
-            points = _download(spec)
+            points = keep_history(_download(spec), snapshot_dir / f"{_key(spec)}.json")
             _save_points(path, points)
         except (requests.RequestException, ValueError, KeyError, IndexError) as exc:  # down, or sent a broken page
             snap = snapshot_dir / f"{_key(spec)}.json"
@@ -189,7 +203,8 @@ def refresh_snapshot(specs: list[dict], snapshot_dir: Path | None = None) -> tup
             continue
         seen.add(_key(spec))
         try:
-            _save_points(snapshot_dir / f"{_key(spec)}.json", _download(spec))
+            snap = snapshot_dir / f"{_key(spec)}.json"
+            _save_points(snap, keep_history(_download(spec), snap))
             saved += 1
         except (requests.RequestException, ValueError) as exc:
             failed.append(f"{_key(spec)}: {exc}")
