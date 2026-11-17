@@ -684,3 +684,35 @@ def test_daily_short_falls_back_to_a_teaser_from_the_queue(tmp_path, monkeypatch
     assert cli.cmd_short(argparse.Namespace(channel="x", force=True, voice=None, no_upload=False)) == 0
     out = capsys.readouterr().out
     assert "No Short left" in out and "voice says 3, chart says 4" in out
+
+
+def test_read_wav_takes_float_and_24_bit_files(tmp_path):
+    """The voice enhancer started writing 32-bit float WAVs, which the wave module refuses."""
+    import struct
+    import numpy as np
+    from yta import audio
+
+    tone = (0.5 * np.sin(np.linspace(0, 20, 480))).astype(np.float32)
+
+    def wav(path, tag, bits, body, ch=1, sr=44100):
+        fmt = struct.pack("<HHIIHH", tag, ch, sr, sr * ch * bits // 8, ch * bits // 8, bits)
+        path.write_bytes(b"RIFF" + struct.pack("<I", 4 + 8 + len(fmt) + 8 + len(body)) + b"WAVE"
+                         + b"fmt " + struct.pack("<I", len(fmt)) + fmt
+                         + b"data" + struct.pack("<I", len(body)) + body)
+        return path
+
+    data, sr = audio.read_wav(wav(tmp_path / "f.wav", 3, 32, tone.astype("<f4").tobytes()))
+    assert sr == 44100 and np.allclose(data, tone)
+
+    pcm24 = (tone * (1 << 23)).astype(np.int32)
+    body = b"".join(int(v).to_bytes(3, "little", signed=True) for v in pcm24)
+    data, _ = audio.read_wav(wav(tmp_path / "i24.wav", 1, 24, body))
+    assert np.allclose(data, tone, atol=1e-6)
+
+    stereo = np.repeat(tone, 2).astype("<f4").tobytes()
+    data, _ = audio.read_wav(wav(tmp_path / "s.wav", 3, 32, stereo, ch=2))
+    assert np.allclose(data, tone)
+
+    audio.write_wav(tmp_path / "w.wav", tone)
+    data, sr = audio.read_wav(tmp_path / "w.wav")
+    assert sr == audio.SR and np.allclose(data, tone, atol=1e-4)
