@@ -12,12 +12,40 @@ SR = 48000  # full band, so the restored voice keeps its detail above 12 kHz
 
 
 def read_wav(path: Path) -> tuple[np.ndarray, int]:
-    with wave.open(str(path), "rb") as w:
-        sr, n, ch, width = w.getframerate(), w.getnframes(), w.getnchannels(), w.getsampwidth()
-        raw = w.readframes(n)
-    if width != 2:
-        raise ValueError(f"{path}: expected 16-bit audio")
-    data = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768
+    """Read a WAV as mono float32. Takes 16/24/32-bit PCM and 32/64-bit float (the enhancer writes float)."""
+    raw = Path(path).read_bytes()
+    if raw[:4] != b"RIFF" or raw[8:12] != b"WAVE":
+        raise ValueError(f"{path}: not a WAV file")
+    fmt = body = None
+    pos = 12
+    while pos + 8 <= len(raw):
+        cid, size = raw[pos:pos + 4], int.from_bytes(raw[pos + 4:pos + 8], "little")
+        chunk = raw[pos + 8:pos + 8 + size]
+        if cid == b"fmt ":
+            fmt = chunk
+        elif cid == b"data":
+            body = chunk
+        pos += 8 + size + (size & 1)
+    if fmt is None or body is None:
+        raise ValueError(f"{path}: WAV has no fmt or data chunk")
+    tag, ch, sr = int.from_bytes(fmt[0:2], "little"), int.from_bytes(fmt[2:4], "little"), int.from_bytes(fmt[4:8], "little")
+    bits = int.from_bytes(fmt[14:16], "little")
+    if tag == 0xFFFE and len(fmt) >= 26:  # WAVE_FORMAT_EXTENSIBLE: real tag is in the sub-format GUID
+        tag = int.from_bytes(fmt[24:26], "little")
+    width = bits // 8
+    body = body[:len(body) - len(body) % (width * ch)]
+    if tag == 3 and width in (4, 8):
+        data = np.frombuffer(body, dtype="<f4" if width == 4 else "<f8").astype(np.float32)
+    elif tag == 1 and width == 2:
+        data = np.frombuffer(body, dtype="<i2").astype(np.float32) / 32768
+    elif tag == 1 and width == 3:
+        b = np.frombuffer(body, dtype=np.uint8).reshape(-1, 3).astype(np.int32)
+        v = b[:, 0] | (b[:, 1] << 8) | (b[:, 2] << 16)
+        data = (np.where(v >= 1 << 23, v - (1 << 24), v) / float(1 << 23)).astype(np.float32)
+    elif tag == 1 and width == 4:
+        data = (np.frombuffer(body, dtype="<i4") / float(1 << 31)).astype(np.float32)
+    else:
+        raise ValueError(f"{path}: unsupported WAV format (tag {tag}, {bits}-bit)")
     if ch > 1:
         data = data.reshape(-1, ch).mean(axis=1)
     return data, sr

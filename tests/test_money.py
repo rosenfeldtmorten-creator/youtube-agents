@@ -458,8 +458,12 @@ def test_voice_must_match_chart_labels(monkeypatch):
     assert all(pct for _, pct in shown)          # rebased lines are labelled with their rise, like the voice
     money.check_voice_matches_charts(ep)
     # The bug a viewer caught: the chart printed index levels, so "risen 237 percent" sat next to the pay line's 237.
-    monkeypatch.setattr(money, "shown_numbers", lambda ep, chart: [(v + 100, False) for v, _ in shown]
-                        if chart is houses.chart else [])
+    # Pin the pay line's printed level to the houses rise the voice says, so the check doesn't hang on how
+    # far pay happens to have risen in the latest data (it drifted from 237 to 238 and the test went quiet).
+    said = round(max(v for v, _ in shown))
+    assert f"{said} percent" in houses.filled
+    monkeypatch.setattr(money, "shown_numbers", lambda ep, chart: [(v + 100, False) for v, _ in shown[:-1]]
+                        + [(float(said), False)] if chart is houses.chart else [])
     with pytest.raises(metrics.MetricError, match="percent"):
         money.check_voice_matches_charts(ep)
 
@@ -684,3 +688,55 @@ def test_daily_short_falls_back_to_a_teaser_from_the_queue(tmp_path, monkeypatch
     assert cli.cmd_short(argparse.Namespace(channel="x", force=True, voice=None, no_upload=False)) == 0
     out = capsys.readouterr().out
     assert "No Short left" in out and "voice says 3, chart says 4" in out
+
+
+def test_read_wav_takes_float_and_24_bit_files(tmp_path):
+    """The voice enhancer started writing 32-bit float WAVs, which the wave module refuses."""
+    import struct
+    import numpy as np
+    from yta import audio
+
+    tone = (0.5 * np.sin(np.linspace(0, 20, 480))).astype(np.float32)
+
+    def wav(path, tag, bits, body, ch=1, sr=44100):
+        fmt = struct.pack("<HHIIHH", tag, ch, sr, sr * ch * bits // 8, ch * bits // 8, bits)
+        path.write_bytes(b"RIFF" + struct.pack("<I", 4 + 8 + len(fmt) + 8 + len(body)) + b"WAVE"
+                         + b"fmt " + struct.pack("<I", len(fmt)) + fmt
+                         + b"data" + struct.pack("<I", len(body)) + body)
+        return path
+
+    data, sr = audio.read_wav(wav(tmp_path / "f.wav", 3, 32, tone.astype("<f4").tobytes()))
+    assert sr == 44100 and np.allclose(data, tone)
+
+    pcm24 = (tone * (1 << 23)).astype(np.int32)
+    body = b"".join(int(v).to_bytes(3, "little", signed=True) for v in pcm24)
+    data, _ = audio.read_wav(wav(tmp_path / "i24.wav", 1, 24, body))
+    assert np.allclose(data, tone, atol=1e-6)
+
+    stereo = np.repeat(tone, 2).astype("<f4").tobytes()
+    data, _ = audio.read_wav(wav(tmp_path / "s.wav", 3, 32, stereo, ch=2))
+    assert np.allclose(data, tone)
+
+    audio.write_wav(tmp_path / "w.wav", tone)
+    data, sr = audio.read_wav(tmp_path / "w.wav")
+    assert sr == audio.SR and np.allclose(data, tone, atol=1e-4)
+
+
+def test_a_shorter_download_keeps_the_saved_history(tmp_path, monkeypatch):
+    """FRED started sending only the last year of SP500; the snapshot must not lose the ten years before it."""
+    import datetime as dt
+    from yta import data
+
+    snap = tmp_path / "snap"
+    old = [(dt.date(2016, 11, 14), 2160.0), (dt.date(2020, 1, 2), 3257.0), (dt.date(2025, 11, 17), 6600.0)]
+    data._save_points(snap / "fred-SP500-.json", old)
+    new = [(dt.date(2025, 11, 17), 6672.4), (dt.date(2026, 11, 16), 6900.0)]
+    monkeypatch.setattr(data, "_download", lambda spec: new)
+
+    saved, failed = data.refresh_snapshot([{"source": "fred", "id": "SP500"}], snap)
+    assert (saved, failed) == (1, [])
+    kept = data._load_points(snap / "fred-SP500-.json")
+    assert kept[0] == old[0] and kept[-2:] == new  # older history kept, newer values win where they overlap
+
+    s = data.fetch("sp", {"source": "fred", "id": "SP500"}, tmp_path / "cache", snap)
+    assert s.first[0] == dt.date(2016, 11, 14) and s.last[1] == 6900.0
